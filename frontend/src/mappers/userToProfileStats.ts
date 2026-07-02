@@ -27,8 +27,7 @@ export function userToProfileStats(user: PublicProfile | null): ProfileStatsVM {
 	// These 2 DO NOT exist in backend → either:
 	// 1. calculate later from match history (best option)
 	// 2. or placeholder for now
-	const bestWinStreak = score.currentStreak; // temporary fallback
-	const currentStreak = score.currentStreak;
+
 
 	const winRate = getWinRate(score.wins, score.losses);
 
@@ -41,8 +40,8 @@ export function userToProfileStats(user: PublicProfile | null): ProfileStatsVM {
 		winRate: winRate,
 		currentElo: score.elo,
 		bestElo: score.bestElo,
-		bestWinStreak,
-		currentStreak,
+		bestWinStreak: score.bestWinStreak,
+		currentStreak: score.currentWinStreak,
 		averageEloGain: user.score.averageEloGain, // needs match history
 		averageEloLoss: user.score.averageEloLoss, // needs match history
 	};

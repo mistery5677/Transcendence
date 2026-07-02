@@ -5,7 +5,7 @@ export type Score = {
 	draws: number;
 	totalGames: number;
 	bestWinStreak: number;
-	currentStreak: number;
+	currentWinStreak: number;
 	averageEloGain: number;
 	averageEloLoss: number;
 	bestElo: number;
