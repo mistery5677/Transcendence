@@ -66,7 +66,11 @@ export function MainRouter() {
 							{state.user && (
 								<Route
 									path={RouterPaths.LIVE_GAMES}
-									element={<LiveGames />}
+									element={
+										<GameProvider>
+											<LiveGames />
+										</GameProvider>
+									}
 								/>
 							)}
 

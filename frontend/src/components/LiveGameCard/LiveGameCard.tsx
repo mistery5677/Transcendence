@@ -1,11 +1,16 @@
 import type { ActiveGame } from "../../pages/LiveGames/LiveGames";
 import magnusImg from "../../assets/magnus-carlsen.jpg";
+import { useGame } from "../../contexts/GameContext/GameContext";
+import { useNavigate } from "react-router-dom";
 
 type LiveGameCardProps = {
 	p_game: ActiveGame;
 };
 
 export function LiveGameCard({ p_game }: LiveGameCardProps) {
+	const { spectateGame } = useGame();
+	const navigate = useNavigate();
+
 	let blackAvatar = p_game.playerBAvatar;
 	if ( p_game.mode != "online" ) {
 		blackAvatar = magnusImg;
@@ -46,7 +51,10 @@ export function LiveGameCard({ p_game }: LiveGameCardProps) {
 				</div>
 
 				 <button
-					onClick={() => (window.location.href = "/")}
+					onClick={() => {
+						navigate("/play");
+						spectateGame(p_game.gameId);
+					}}
 					className="mt-4 px-8 py-2.5 
 						bg-emerald-900/30
 						hover:bg-emerald-700/400 

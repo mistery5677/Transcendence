@@ -111,6 +111,14 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		socket.emit("startAIGame", options);
 	};
 
+	const spectateGame = (gameId: string) => {
+		if (!socket || !hasUser) return;
+
+		console.log("[Game] Spectating game", gameId);
+
+		socket.emit("spectateGame", { gameId });
+	};
+
 	useEffect(() => {
 		if (!gameId || gameOver || !color) return;
 
@@ -236,7 +244,6 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 
 		const onDrawProposed = () => setDrawProposal(true);
-		console.log("DASDADADASDS\n");
 		const onRematchProposed = () => setRematchProposal(true);
 		const onDrawRejected = () => {
 			toastWrapper.warn("The draw proposal was rejected.");
@@ -293,6 +300,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 				startOnlineGame,
 				startBotGame,
 				startAIGame,
+				spectateGame,
 				opponentId,
 				isSearchingMatch,
 				messages,
