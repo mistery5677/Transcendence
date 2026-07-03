@@ -41,6 +41,16 @@ export interface GameInstance {
   chatHistory: ChatMessage[];
 }
 
+export type GameState = {
+  fen: string;
+  turn: 'w' | 'b';
+  history: string[]; // Dependiendo de lo que retorne tu librería chess.history()
+  mode: 'online' | 'bot' | 'ai';
+  chatHistory: ChatMessage[];
+  whiteTimeLeft: number;
+  blackTimeLeft: number;
+};
+
 @Injectable()
 export class GameService {
   private games = new Map<string, GameInstance>();
@@ -154,7 +164,7 @@ export class GameService {
     };
   }
 
-  getGameState(gameId: string) {
+  getGameState(gameId: string): GameState | null {
     const game = this.games.get(gameId);
     if (!game) return null;
 
