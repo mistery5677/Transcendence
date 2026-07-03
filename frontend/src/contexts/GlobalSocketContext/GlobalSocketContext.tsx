@@ -41,7 +41,6 @@ export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }
 
 		socketInstance.on("haveActiveGame", onHaveActiveGame);
 
-		//! Can add here catch notifications ?? Or Other events
 		socketInstance.connect();
 		setSocket(socketInstance);
 		return () => {
