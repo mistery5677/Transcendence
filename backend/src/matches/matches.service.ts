@@ -26,71 +26,125 @@ export class MatchesService {
     });
 
     if (winnerId === null) {
-      await Promise.all([
-        this.prisma.score.update({
-          where: { userId: playerWId },
-          data: { draws: { increment: 1 }, totalGames: { increment: 1 } },
-        }),
-        this.prisma.score.update({
-          where: { userId: playerBId },
-          data: { draws: { increment: 1 }, totalGames: { increment: 1 } },
-        }),
-      ]);
+      await this.handleDraw(playerWId, playerBId);
       return { message: 'Match saved (Draw)', matchId: match.id };
     }
 
     const loserId = winnerId === playerWId ? playerBId : playerWId;
-
-    const [updatedWinnerUser] = await Promise.all([
-      this.prisma.user.update({
-        where: { id: winnerId },
-        data: {
-          score: {
-            update: {
-              wins: { increment: 1 },
-              elo: { increment: 8 },
-              totalGames: { increment: 1 },
-            },
-          },
-        },
-        include: { score: true },
-      }),
-      this.prisma.score.update({
-        where: { userId: loserId },
-        data: {
-          losses: { increment: 1 },
-          elo: { decrement: 8 },
-          totalGames: { increment: 1 },
-        },
-      }),
-    ]);
-
-    const winnerScore = updatedWinnerUser.score!;
-
-    if (winnerScore.elo > winnerScore.bestElo) {
-      console.log(
-        'Updating bestElo for user',
-        winnerId,
-        'from',
-        winnerScore.bestElo,
-        'to',
-        winnerScore.elo,
-      );
-
-      await this.prisma.score.update({
-        where: { userId: winnerId },
-        data: { bestElo: winnerScore.elo },
-      });
-    }
-    // Check the first win achievement
-    await this.achievementsService.checkFirstWin(winnerId);
-
-    // Check the grandmaster achievement
-    await this.achievementsService.checkGrandMaster(winnerId, winnerScore.elo);
+    await Promise.all([this.handleLoss(loserId), this.handleWin(winnerId)]);
 
     return { message: 'Match saved', matchId: match.id };
   }
 
+  //*Aux functions
+  private async handleDraw(
+    playerWId: number,
+    playerBId: number,
+  ): Promise<void> {
+    const drawData = {
+      draws: { increment: 1 },
+      totalGames: { increment: 1 },
+      currentWinStreak: 0,
+    };
+
+    await Promise.all([
+      this.prisma.score.update({
+        where: { userId: playerWId },
+        data: drawData,
+      }),
+      this.prisma.score.update({
+        where: { userId: playerBId },
+        data: drawData,
+      }),
+    ]);
+  }
+
+  private async handleWin(winnerId: number): Promise<void> {
+    const updatedWinnerUser = await this.prisma.user.update({
+      where: { id: winnerId },
+      data: {
+        score: {
+          update: {
+            wins: { increment: 1 },
+            elo: { increment: 8 },
+            totalGames: { increment: 1 },
+            currentWinStreak: { increment: 1 },
+          },
+        },
+      },
+      include: { score: true },
+    });
+    const winnerScore = updatedWinnerUser.score!;
+
+    await Promise.all([
+      this.updateBestElo(winnerId, winnerScore.elo, winnerScore.bestElo),
+      this.updateBestWinStreak(
+        winnerId,
+        winnerScore.currentWinStreak,
+        winnerScore.bestWinStreak,
+      ),
+    ]);
+    await this.triggerWinnerAchievements(winnerId, winnerScore.elo);
+  }
+
+  private async handleLoss(loserId: number): Promise<void> {
+    await this.prisma.score.update({
+      where: { userId: loserId },
+      data: {
+        losses: { increment: 1 },
+        elo: { decrement: 8 },
+        totalGames: { increment: 1 },
+        currentWinStreak: 0,
+      },
+    });
+  }
+
+  private async updateBestElo(
+    userId: number,
+    currentElo: number,
+    bestElo: number,
+  ) {
+    if (currentElo <= bestElo) return;
+
+    console.log(
+      `Updating bestElo for user ${userId} from ${bestElo} to ${currentElo}`,
+    );
+
+    await this.prisma.score.update({
+      where: { userId },
+      data: { bestElo: currentElo },
+    });
+  }
+  private async updateBestWinStreak(
+    userId: number,
+    currentStreak: number,
+    bestStreak: number,
+  ): Promise<void> {
+    if (currentStreak <= bestStreak) return;
+
+    console.log(
+      `New record! Updating bestWinStreak for user ${userId} from ${bestStreak} to ${currentStreak}`,
+    );
+
+    await this.prisma.score.update({
+      where: { userId },
+      data: { bestWinStreak: currentStreak },
+    });
+  }
+
+  private async triggerWinnerAchievements(
+    winnerId: number,
+    elo: number,
+  ): Promise<void> {
+    await Promise.all([
+      // Check the first win achievement
+      this.achievementsService.checkFirstWin(winnerId),
+      // Check the grandmaster achievement
+      this.achievementsService.checkGrandMaster(winnerId, elo),
+    ]);
+  }
+
+  //*
   // Get the information of the match
   async getUserMatchHistory(userId: number) {
     return await this.prisma.matchHistory.findMany({
