@@ -245,14 +245,14 @@ export function Friends() {
 										</div>
 										<div className="min-w-0">
 											<Link
-												to={`/history/${friend.username}`}
+												to={`/profile/${friend.username}`}
 												className="hover:text-emerald-400 font-bold text-base text-stone-200 block 
 												truncate transition-colors"
 												title={`View ${friend.username}'s Match History`}>
 												{friend.username}
 											</Link>
 											<p className="text-xs font-mono text-emerald-400/90 mt-0.5">
-												ELO: {friend.elo ?? 1000}
+												ELO: {friend.score?.elo ?? "N/A"}
 											</p>
 										</div>
 									</div>

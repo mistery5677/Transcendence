@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import { authReducer, initialAuthState } from "./authReducer";
-import type { AuthAction, AuthState, User } from "./authTypes";
+import type { AuthAction, AuthState } from "./authTypes";
+import type { User } from "../../types";
 
 type AuthContextValue = {
 	state: AuthState;

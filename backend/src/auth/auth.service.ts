@@ -103,8 +103,6 @@ export class AuthService {
         totalGames: user.score!.totalGames,
         bestWinStreak: user.score!.bestWinStreak,
         currentWinStreak: user.score!.currentWinStreak,
-        averageEloGain: user.score!.averageEloGain,
-        averageEloLoss: user.score!.averageEloLoss,
         bestElo: user.score!.bestElo,
       },
     };

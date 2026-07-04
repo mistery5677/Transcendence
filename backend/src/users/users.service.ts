@@ -203,8 +203,6 @@ export class UsersService {
             totalGames: true,
             bestWinStreak: true,
             currentWinStreak: true,
-            averageEloGain: true,
-            averageEloLoss: true,
             bestElo: true,
           },
         },

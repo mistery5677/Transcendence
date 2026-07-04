@@ -206,8 +206,7 @@ export class GameGateway {
           this.processGameState(data.gameId, validAiMove);
         }
       }, humanizedDelay);
-    }
-    if (game.mode === 'bot' && !game.chess.isGameOver()) {
+    } else if (game.mode === 'bot' && !game.chess.isGameOver()) {
       const humanizedDelay =
         Math.floor(Math.random() * (3500 - 1200 + 1)) + 1200;
 

@@ -68,7 +68,6 @@ export class MatchGateway {
   ) {
     const gameId = `ai_${uuidv4()}`;
 
-    console.log('payload: ', payload.level ?? 1);
 
     const newGame = this.gameService.createGame(
       gameId,

@@ -12,7 +12,8 @@ import {
 } from "../../api/users";
 import { toast } from "react-toastify";
 import { toastWrapper } from "../../adapters/toastWrapper";
-import { IconUser, IconDeviceLaptop, IconPalette, IconTrophy } from "@tabler/icons-react";
+import { IconUser, IconDeviceLaptop, IconPalette, IconTrophy, IconHistory } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
 import styles from "./style.module.css";
 import { BoardThemeButton } from "../../components/index";
 import { userNameValidation } from "../../hooks/userNameValidation";
@@ -38,6 +39,7 @@ export function Settings({ tabOpt }: SettingsProps) {
 	const { state, refreshMe, dispatch } = useAuth();
 	const [avatarUrlKey, setAvatarUrlKey] = useState(Date.now());
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const navigate = useNavigate();
 
 	const handleUploadClick = () => {
 		fileInputRef.current?.click();
@@ -82,7 +84,7 @@ export function Settings({ tabOpt }: SettingsProps) {
 		}
 	};
 
-	const handlePasswordChange = async (e: React.SubmitEvent<HTMLFormElement>) => {
+	const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		const formData = new FormData(e.currentTarget);
@@ -118,7 +120,7 @@ export function Settings({ tabOpt }: SettingsProps) {
 		}
 	};
 
-	const handleProfileChange = async (e: React.SubmitEvent<HTMLFormElement>) => {
+	const handleProfileChange = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		const formData = new FormData(e.currentTarget);
@@ -230,6 +232,8 @@ export function Settings({ tabOpt }: SettingsProps) {
 		}
 	};
 
+	const currentUsername = state.user?.username || "me";
+
 	return (
 		<>
 			<main className="relative min-h-screen overflow-hidden bg-stone-900 py-16">
@@ -285,6 +289,20 @@ export function Settings({ tabOpt }: SettingsProps) {
 											Achievements
 										</div>
 									</button>
+
+									{/* Separation divider */}
+									<div className="my-1 border-t border-stone-800" />
+
+									{/* Match History redirect button */}
+									<button
+										type="button"
+										onClick={() => navigate(`/history/${currentUsername}`)}
+										className="rounded-xl px-4 py-3 text-left font-light text-stone-300 transition-colors hover:bg-stone-800/70 hover:text-emerald-400">
+										<div className="flex flex-row gap-2">
+											<IconHistory stroke={2} />
+											Match History
+										</div>
+									</button>
 								</nav>
 							</aside>
 
@@ -292,8 +310,9 @@ export function Settings({ tabOpt }: SettingsProps) {
 								<div className="absolute top-5 bottom-5 left-0 hidden w-px bg-stone-700/70 lg:block" />
 								{activeTab === "profile" && (
 									<div>
-										<div className="text-stone-400 text-lg">
-											Profile info is now shown in your public profile.
+										{/* Styled Blue Info Box */}
+										<div className="mb-4 p-4 rounded-xl border border-blue-500/10 bg-blue-500/5 text-sm text-blue-300/90">
+											Profile statistics and records are accessible via your public showcase page.
 										</div>
 										<Profile />
 									</div>
@@ -335,7 +354,7 @@ export function Settings({ tabOpt }: SettingsProps) {
 													<button
 														type="button"
 														onClick={handleUploadClick}
-														className="rounded-xl border border-emerald-300/40 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-100 transition-colors hover:bg-emerald-500/25">
+														className="rounded-xl border border-emerald-300/40 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-100 transition-colors hover:bg-emerald-500/2//5">
 														Upload
 													</button>
 												</div>

@@ -6,6 +6,10 @@ export type StockfishAnalysisResponse = {
 	pv?: string;
 };
 
+/// Analyze a position using the Stockfish engine by sending a request to the backend API.
+/// @param fen The FEN string representing the chess position.
+/// @param options Optional parameters including skill level, move time, and abort signal.
+/// @returns A promise that resolves to the analysis result containing the best move and evaluation.
 export async function analyzePosition(
 	fen: string,
 	options?: { level?: number; moveTimeMs?: number; signal?: AbortSignal },
