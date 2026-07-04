@@ -5,7 +5,6 @@ import { toastWrapper } from "../../adapters/toastWrapper";
 
 type GlobalSocketContextType = {
 	socket: Socket | null;
-	isOnline: boolean; //! Not so useful for now
 };
 
 const GlobalSocketContext = createContext<GlobalSocketContextType | undefined>(undefined);
@@ -13,12 +12,10 @@ const GlobalSocketContext = createContext<GlobalSocketContextType | undefined>(u
 export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }) => {
 	const { state: authState } = useAuth();
 	const [socket, setSocket] = useState<Socket | null>(null);
-	const [isOnline, setIsOnline] = useState(false);
 
 	useEffect(() => {
 		if (!authState.user) {
 			setSocket(null);
-			setIsOnline(false);
 			return;
 		}
 
@@ -32,12 +29,10 @@ export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }
 
 		socketInstance.on("connect", () => {
 			console.log("Global Socket Connected");
-			setIsOnline(true);
 		});
 
 		socketInstance.on("disconnect", () => {
 			console.warn("Global Socket Disconnected");
-			setIsOnline(false);
 		});
 
 		const onHaveActiveGame = () => {
@@ -60,7 +55,7 @@ export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }
 		};
 	}, [authState.user]);
 
-	return <GlobalSocketContext.Provider value={{ socket, isOnline }}>{children}</GlobalSocketContext.Provider>;
+	return <GlobalSocketContext.Provider value={{ socket }}>{children}</GlobalSocketContext.Provider>;
 };
 
 export const useGlobalSocket = () => {

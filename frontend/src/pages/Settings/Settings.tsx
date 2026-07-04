@@ -14,9 +14,10 @@ import { toast } from "react-toastify";
 import { toastWrapper } from "../../adapters/toastWrapper";
 import { IconUser, IconDeviceLaptop, IconPalette, IconTrophy } from "@tabler/icons-react";
 import styles from "./style.module.css";
-import { BoardThemeButton, Profile } from "../../components/index";
+import { BoardThemeButton } from "../../components/index";
 import { userNameValidation } from "../../hooks/userNameValidation";
 import { ProfileAchievements } from "./Achievements";
+import { Profile } from "./Profile";
 
 function tabClass(isActive: boolean): string {
 	if (isActive) {

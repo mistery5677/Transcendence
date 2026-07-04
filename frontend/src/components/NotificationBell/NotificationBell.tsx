@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useNotifications } from "../../contexts/NotificationContext/NotificationContext";
 import { BellIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { markNotificationAsRead } from "../../api/users";
 
 export function NotificationBell() {
 	const { unreadCount, notifications, markOneAsRead, markAllAsRead } = useNotifications();
@@ -115,7 +114,21 @@ export function NotificationBell() {
 													: "bg-stone-800/70 hover:bg-stone-800/90 border-emerald-500"
 											}`}>
 											<p className="text-xs font-medium text-stone-200">{notification.title}</p>
-											<p className="text-[11px] text-stone-400 mt-0.5">{notification.message}</p>
+											<div className="flex items-center gap-2 mt-1">
+												<div className="ring ring-emerald-500 rounded-full w-6 h-6 flex items-center justify-center overflow-hidden">
+													<img
+														src={notification.payload?.senderAvatarUrl}
+														alt="Sender Avatar"
+														className="w-6 h-6 rounded-full mt-1"
+													/>
+												</div>{" "}
+												<p className="text-[11px] text-stone-400 mt-0.5 flex gap-1">
+													<p className="text-emerald-500 font-bold">
+														{notification.payload?.senderUsername}
+													</p>
+													{notification.message}
+												</p>
+											</div>
 										</div>
 									))
 								)}

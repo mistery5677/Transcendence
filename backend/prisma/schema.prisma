@@ -49,10 +49,7 @@ model user {
     backgroundTheme Int @default(1)
 
     // Profile statistics
-    wins   Int @default(0)
-    losses Int @default(0)
-    draws  Int @default(0)
-    elo    Int @default(800)
+    score Score?
 
     // Player position
     matchesAsPlayerA MatchHistory[] @relation("PlayerAMatches")
@@ -67,6 +64,23 @@ model user {
     receivedMessages PrivateMessage[] @relation("ReceivedMessages")
 
     notification Notification[] @relation("UserNotifications")
+    scoreId      Int?
+}
+
+model Score {
+    id Int @id @default(autoincrement())
+
+    wins             Int @default(0)
+    losses           Int @default(0)
+    draws            Int @default(0)
+    elo              Int @default(800)
+    totalGames       Int @default(0)
+    bestWinStreak    Int @default(0)
+    currentWinStreak Int @default(0)
+    bestElo          Int @default(800)
+
+    userId Int  @unique
+    user   user @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model MatchHistory {

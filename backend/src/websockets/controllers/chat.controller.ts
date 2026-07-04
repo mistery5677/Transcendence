@@ -41,7 +41,7 @@ export class ChatController {
       maxMessages,
     );
 
-    return history.map((msg) => ({
+    return history.map((msg: any) => ({
       fromId: String(msg.fromId),
       toId: String(msg.toId),
       fromUsername: msg.fromUser.username,

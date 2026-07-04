@@ -22,12 +22,16 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'node:path';
 import { diskStorage } from 'multer';
 import { AchievementsService } from '../achievements/achievements.service';
+import {
+  getOpponentDto,
+  getPublicProfileDto,
+} from 'src/auth/dto/getProfile.dto';
 
 @Controller('/users')
 export class UsersController {
   constructor(
-      private readonly usersService: UsersService,
-      private readonly achievementsService: AchievementsService,
+    private readonly usersService: UsersService,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   @Get()
@@ -96,11 +100,13 @@ export class UsersController {
   @Get('achievements')
   async getMyAchievements(@Req() req: any) {
     const userId = req.user.userId;
-    
+
     if (!userId) {
       return [];
     }
-    return await this.achievementsService.getUserUnlockedAchievements(parseInt(userId));
+    return await this.achievementsService.getUserUnlockedAchievements(
+      parseInt(userId),
+    );
   }
 
   @UseGuards(AuthGuard)
@@ -158,25 +164,39 @@ export class UsersController {
   }
 
   @Get('opponent/:id')
-  async getOpponentById(@Param('id') id: string) {
+  async getOpponentById(
+    @Param('id') id: string,
+  ): Promise<getOpponentDto | null> {
     const user = await this.usersService.findOneById(parseInt(id));
     if (!user) return null;
 
-    if (isNaN(user.id))
-        throw new BadRequestException("Invalid opponent ID");
+    if (isNaN(user.id)) throw new BadRequestException('Invalid opponent ID');
 
-    const {
-      email,
-      wins,
-      losses,
-      draws,
-      boardTheme,
-      name,
-      createdAt,
-      updatedAt,
-      ...opponent
-    } = user;
-    return opponent;
+    return {
+      id: user.id,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      score: user.score!,
+    };
+  }
+
+  @Get('profile/:username')
+  async getPublicProfileByUsername(
+    @Param('username') username: string,
+  ): Promise<getPublicProfileDto | null> {
+    const user = await this.usersService.findOneByUsername(username);
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      boardTheme: user.boardTheme,
+      backgroundTheme: user.backgroundTheme,
+      score: user.score!,
+    };
   }
 
   @Delete(':id')

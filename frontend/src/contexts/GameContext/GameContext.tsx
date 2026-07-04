@@ -31,6 +31,13 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 
 	if (!authState.user) return null;
 
+	const inviteToPlay = (friendId: number) => {
+		if (socket) {
+			socket.emit("inviteToPlay", { friendId });
+			console.log("invite to Play");
+		}
+	};
+
 	const surrender = () => {
 		if (socket && gameId) {
 			socket.emit("requestSurrender", { gameId });
@@ -119,6 +126,17 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		socket.emit("spectateGame", { gameId });
 	};
 
+	const resetGameContextToDefault = () => {
+		setGameOver(null);
+		setFen("start");
+		setCurrentTurn("w");
+		setGameId(null);
+		gameIdRef.current = null;
+		setOpponentId(null);
+		setWhiteTimeLeft(10);
+		setBlackTimeLeft(10);
+	};
+
 	useEffect(() => {
 		if (!gameId || gameOver || !color) return;
 
@@ -187,13 +205,8 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 			setLastFinishedGameId(gameIdRef.current);
 			setIsSearchingMatch(false);
 			setGameOver(data.gameOver);
-			setFen("start");
-			setCurrentTurn("w");
-			setGameId(null);
-			gameIdRef.current = null;
-			setOpponentId(null);
-			setWhiteTimeLeft(10);
-			setBlackTimeLeft(10);
+			setWhiteTimeLeft(data.gameOver.whiteTimeLeft ?? 10);
+			setBlackTimeLeft(data.gameOver.blackTimeLeft ?? 10);
 		};
 
 		const onActiveGameNotFound = () => {
@@ -305,7 +318,8 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 				isSearchingMatch,
 				messages,
 				setMessages,
-
+				resetGameContextToDefault,
+				inviteToPlay,
 				// Timer variables
 				whiteTimeLeft,
 				blackTimeLeft,

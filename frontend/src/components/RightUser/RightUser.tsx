@@ -48,18 +48,19 @@ export function RightUser({ onTimeOut }: RightUserProps) {
 	// 4. Dynamic Identity Assets Assignments
 	let username = "Opponent";
 	let opponentAvatarUrl: string | undefined = undefined;
+	let eloRating: number | null = null;
 
 	if (isSearchingMatch) {
 		username = "Searching...";
 	} else if (isEngineOpponent) {
 		username = isBotOpponent ? "Uncle Carlsen (bot)" : "Uncle Carlsen (AI)";
 		opponentAvatarUrl = magnusImg;
+		eloRating = 2850;
 	} else {
 		username = opponentProfile?.username ?? opponentId ?? "Opponent";
 		opponentAvatarUrl = opponentProfile?.avatarUrl ?? undefined;
+		eloRating = opponentProfile?.score?.elo ?? null;
 	}
-
-	const eloRating = opponentProfile?.elo ?? null;
 
 	return (
 		<div

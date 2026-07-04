@@ -45,7 +45,9 @@ export function useBoardController({
 
 	const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
 
-	const { socket, gameId, color, fen, currentTurn } = useGame();
+	const { socket, gameId, color, fen, currentTurn, gameOver } = useGame();
+
+	
 
 	const [chessPosition, setChessPosition] = useState(() => {
 		if (fen && fen != "start") return fen;
@@ -54,7 +56,7 @@ export function useBoardController({
 
 	const canDragPiece = useCallback(
 		(args: any) => {
-			if (currentTurn !== color) return false;
+			if (currentTurn !== color || gameOver) return false;
 
 			const pieceString = args?.piece?.pieceType;
 
@@ -165,7 +167,7 @@ export function useBoardController({
 
 	const submitMove = useCallback(
 		(from: string, to: string, promotion?: PromotionPiece) => {
-			if (!gameId || !socket || currentTurn !== color) return false;
+			if (!gameId || !socket || currentTurn !== color || gameOver ) return false;
 			if (chessGame.turn() !== color || chessGame.isGameOver()) return false;
 
 			const moveData = promotion ? { from, to, promotion } : { from, to };
@@ -190,7 +192,7 @@ export function useBoardController({
 
 	const onPieceDrop = useCallback(
 		({ sourceSquare, targetSquare }: PieceDropHandlerArgs) => {
-			if (!gameId || !socket || currentTurn !== color) return false;
+			if (!gameId || !socket || currentTurn !== color || gameOver) return false;
 			if (chessGame.turn() !== color || chessGame.isGameOver()) return false;
 
 			if (!targetSquare) {

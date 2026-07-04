@@ -2,7 +2,6 @@ import { Chessboard } from "react-chessboard";
 import { useAuth } from "../../contexts/UserContext";
 import { PromotionPicker } from "./PromotionPicker";
 import { useBoardController } from "./boardController";
-
 export type PieceColor = "w" | "b";
 
 interface BoardProps {

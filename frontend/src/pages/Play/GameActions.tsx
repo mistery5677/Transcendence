@@ -9,9 +9,13 @@ export const GameActions = () => {
 	const disabled = !isConnected || Boolean(gameOver);
 
 	return (
-		<div className="mt-3 flex flex-row items-center gap-2 sm:justify-center sm:gap-3">
-			<SurrenderButton func={surrender} />
-			<OfferDrawButton func={proposeDraw} />
-		</div>
+		<>
+			{!disabled && (
+				<div className="mt-3 flex flex-row items-center gap-2 sm:justify-center sm:gap-3">
+					<SurrenderButton func={surrender} />
+					<OfferDrawButton func={proposeDraw} />
+				</div>
+			)}
+		</>
 	);
 };

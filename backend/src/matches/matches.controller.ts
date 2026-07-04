@@ -1,6 +1,7 @@
 import { Controller, UseGuards, Get, Req, Param } from '@nestjs/common';
 import { MatchesService } from './matches.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { getUserMatchHistory } from './dto/getMatchHistory.dto';
 
 @Controller('matches')
 export class MatchesController {
@@ -13,7 +14,9 @@ export class MatchesController {
   }
 
   @Get('player/:username') // The username that we want to check the match history
-  async getHistoryByUsername(@Param('username') username: string) {
+  async getHistoryByUsername(
+    @Param('username') username: string,
+  ): Promise<getUserMatchHistory[] | null> {
     return await this.matchesService.getUserMatchHistoryByUsername(username);
   }
 }

@@ -35,6 +35,7 @@ export type GameContextType = {
 	whiteTimeLeft: number;
 	blackTimeLeft: number;
 	handleTimeOut: () => void;
+	inviteToPlay: (friendId: number) => void;
 
 	//Messages
 	messages: MessageType[];
@@ -43,6 +44,7 @@ export type GameContextType = {
 	surrender: () => void;
 	proposeDraw: () => void;
 	proposeRematch: () => void;
+	resetGameContextToDefault: () => void;
 	startOnlineGame: (options: MatchStartOptions) => void;
 	startBotGame: (options: MatchStartOptions) => void;
 	startAIGame: (options: MatchStartOptions) => void;

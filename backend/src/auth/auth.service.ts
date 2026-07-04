@@ -9,7 +9,7 @@ import { RegisterDto } from './dto/register.dto';
 import * as bcryptjs from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { getProfileDto } from './dto/getProfile.dto';
+import { getMyProfileDto } from './dto/getProfile.dto';
 
 const DEFAULT_AVATARS = [
   '/assets/avatars/default1.png',
@@ -79,8 +79,7 @@ export class AuthService {
     });
   }
 
-  async getProfile(id: number): Promise<getProfileDto> {
-    // const user = await this.usersService.findOneByEmail(email);
+  async getProfile(id: number): Promise<getMyProfileDto> {
     const user = await this.usersService.findOneById(id);
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -95,12 +94,16 @@ export class AuthService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       boardTheme: user.boardTheme,
-	    backgroundTheme: user.backgroundTheme,
+      backgroundTheme: user.backgroundTheme,
       score: {
-        elo: user.elo,
-        wins: user.wins,
-        losses: user.losses,
-        draws: user.draws,
+        elo: user.score!.elo,
+        wins: user.score!.wins,
+        losses: user.score!.losses,
+        draws: user.score!.draws,
+        totalGames: user.score!.totalGames,
+        bestWinStreak: user.score!.bestWinStreak,
+        currentWinStreak: user.score!.currentWinStreak,
+        bestElo: user.score!.bestElo,
       },
     };
   }

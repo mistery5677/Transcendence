@@ -8,9 +8,11 @@ interface PlayerData {
 	rank: number;
 	username: string;
 	avatarUrl?: string;
-	elo: number;
-	wins: number;
-	losses: number;
+	score: {
+		elo: number;
+		wins: number;
+		losses: number;
+	};
 }
 
 function classNames(...classes: (string | undefined | false)[]): string {
@@ -153,19 +155,19 @@ export function LeaderBoards() {
 
 											<td className="p-4 text-center">
 												<span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-medium">
-													{player.wins} W
+													{player.score.wins} W
 												</span>
 											</td>
 
 											<td className="p-4 text-center">
 												<span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 font-medium">
-													{player.losses} L
+													{player.score.losses} L
 												</span>
 											</td>
 
 											<td className="p-4 text-right pr-8">
 												<span className="text-xl font-black text-stone-100 tracking-tight">
-													{player.elo}
+													{player.score.elo}
 												</span>
 											</td>
 										</tr>

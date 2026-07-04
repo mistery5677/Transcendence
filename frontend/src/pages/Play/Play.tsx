@@ -23,7 +23,7 @@ export function Play() {
 	const { state } = useAuth();
 	const [currentTurn, setCurrentTurn] = useState<PieceColor>("w");
 
-	const { color, opponentId, isSearchingMatch, whiteTimeLeft = 0, blackTimeLeft = 0, handleTimeOut } = useGame();
+	const { color, handleTimeOut } = useGame();
 
 	const handleTurnChange = (newTurn: PieceColor) => {
 		setCurrentTurn(newTurn);

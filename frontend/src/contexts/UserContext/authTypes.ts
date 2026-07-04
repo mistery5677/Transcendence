@@ -1,22 +1,4 @@
-export type Score = {
-	wins: number;
-	losses: number;
-	draws: number;
-	elo: number;
-};
-
-export type User = {
-	id: number;
-	name: string | null;
-	username: string;
-	email: string;
-	avatarUrl: string;
-	createdAt: string;
-	updateAt: string;
-	boardTheme: 1 | 2 | 3;
-	backgroundTheme: 1 | 2 | 3 | 4 | 5;
-	score: Score | null;
-};
+import type { User } from "../../types/index";
 
 export type AuthState = {
 	user: User | null;

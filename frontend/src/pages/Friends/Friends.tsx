@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { useAuth } from "../../contexts/UserContext"; // Ajusta o caminho se for preciso
+import { useState, useEffect, useRef, useTransition } from "react";
+import { useAuth } from "../../contexts/UserContext";
 import {
 	sendFriendRequest,
 	acceptFriendRequest,
@@ -10,268 +10,310 @@ import {
 } from "../../api/friendRequest";
 import { ConfirmDialog } from "../../components/index";
 import { toastWrapper } from "../../adapters/toastWrapper";
-import { getUsers } from "../../api/users"; // Adjust path if needed
+import { getUsers } from "../../api/users";
 import { Link } from "react-router-dom";
 import { UserStatusBadge } from "../../components/UserStatusBandage/UserStatusBandage";
 
-type Friends = "list" | "requests" | "add";
+type FriendsTab = "list" | "requests" | "add";
+
+type FriendSuggestion = {
+	id: number;
+	username: string;
+	avatarUrl?: string;
+	score: {
+		elo: number;
+	};
+};
 
 export function Friends() {
 	const { state } = useAuth();
+	const [activeTab, setActiveTab] = useState<FriendsTab>("list");
 
-	const [activeTab, setActiveTab] = useState<Friends>("list");
-	// States to safe from backend
+	// Data States
 	const [friends, setFriends] = useState<any[]>([]);
 	const [requests, setRequests] = useState<any[]>([]);
 	const [searchUsername, setSearchUsername] = useState("");
+	const [suggestions, setSuggestions] = useState<FriendSuggestion[]>([]);
+	const [showSuggestions, setShowSuggestions] = useState(false);
 
-	// New state for dialog
+	// UX Control States
+	const [isPending, startTransition] = useTransition();
 	const [confirmDialog, setConfirmDialog] = useState<{
 		open: boolean;
 		friendId?: number;
 		username?: string;
 	}>({ open: false });
 
-	// Loading protection
-	if (!state || !state.user) {
-		return <div className="text-white text-center mt-20">Loading profile...</div>;
+	const inputRef = useRef<HTMLInputElement>(null);
+	const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// Early return protection if auth state is loading or absent
+	if (!state?.user) {
+		return <div className="text-white text-center mt-20 animate-pulse">Loading profile...</div>;
 	}
 
-	// Handle the friend request button
+	// Handle sending a friend request
 	const handleAddFriend = async (username: string) => {
+		if (!username.trim()) return;
 		try {
 			await sendFriendRequest(username);
 			toastWrapper.success(`Friend request sent to ${username}`);
+			setSearchUsername("");
+			setSuggestions([]);
 		} catch (error: any) {
 			toastWrapper.warn(error.message || "Error sending friend request");
 		}
 	};
 
-	// Handle the accept friend request button
+	// Handle accepting a request
 	const handleAccept = async (senderId: number) => {
 		try {
 			await acceptFriendRequest(senderId);
-			// Allows to always have the pending request updated.
-			setRequests((actualRequest) => actualRequest.filter((req) => req.senderId !== senderId));
+			setRequests((prev) => prev.filter((req) => req.senderId !== senderId));
 			toastWrapper.success("Friend request accepted!");
-		} catch (error) {
-			alert("Error accepting friend request.");
+
+			// Refresh list if we are currently looking at it
+			if (activeTab === "list") {
+				const updatedFriends = await getFriendsList();
+				setFriends(updatedFriends);
+			}
+		} catch {
+			toastWrapper.error("Error accepting friend request.");
 		}
 	};
 
-	// Handle the decline friend request button
+	// Handle declining a request
 	const handleDecline = async (senderId: number) => {
 		try {
 			await declineFriendRequest(senderId);
-			// Allows to always have the pending request updated.
-			setRequests((actualRequest) => actualRequest.filter((req) => req.senderId !== senderId));
-		} catch (error) {
-			alert("Error declining friend request.");
+			setRequests((prev) => prev.filter((req) => req.senderId !== senderId));
+			toastWrapper.success("Request declined.");
+		} catch {
+			toastWrapper.error("Error declining friend request.");
 		}
 	};
 
-	// Handle the remove friend from the list
+	// Open remove confirmation modal
 	const handleRemoveFriend = (friendId: number, username: string) => {
 		setConfirmDialog({ open: true, friendId, username });
 	};
 
+	// Confirm actual removal action
 	const handleConfirmRemove = async () => {
-		if (!confirmDialog.friendId || !confirmDialog.username) return;
+		const { friendId } = confirmDialog;
+		if (!friendId) return;
 		try {
-			await removeFriend(confirmDialog.friendId);
-			setFriends((prev) => prev.filter((f) => f.id !== confirmDialog.friendId));
-		} catch (error) {
-			alert("Error removing friend.");
+			await removeFriend(friendId);
+			setFriends((prev) => prev.filter((f) => f.id !== friendId));
+			toastWrapper.success("Friend removed.");
+		} catch {
+			toastWrapper.error("Error removing friend.");
 		} finally {
 			setConfirmDialog({ open: false });
 		}
 	};
 
-	// Updates automatically the friend request list, when we accept or decline
+	// Centralized data synchronizer
 	useEffect(() => {
-		const fetchRequests = async () => {
+		let isMounted = true;
+
+		const syncData = async () => {
 			try {
-				const data = await getPendingFriendRequests();
-				setRequests(data); // Fill the request list with the backend
+				// Always sync pending request numbers for tab badge counter updates
+				const pendingData = await getPendingFriendRequests();
+				if (!isMounted) return;
+				setRequests(pendingData);
+
+				if (activeTab === "list") {
+					const friendsData = await getFriendsList();
+					if (!isMounted) return;
+					setFriends(friendsData);
+				}
 			} catch (error) {
-				console.error("Failed to load the friend request:", error);
+				console.error("Sync error:", error);
 			}
 		};
 
-		fetchRequests();
-		if (activeTab === "list") {
-			// Loads the friends list
-			const fetchFriendsList = async () => {
-				try {
-					const data = await getFriendsList();
-					setFriends(data);
-				} catch (error) {
-					console.error("Failed to get the friends list: ", error);
-				}
-			};
+		syncData();
+		return () => {
+			isMounted = false;
+		};
+	}, [activeTab]);
 
-			fetchFriendsList();
-		}
-	}, [activeTab]); // If the activeTab change we just update the request list
-
-	const handleUsernameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	// Debounced suggestion searches to save database/API performance
+	const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value;
 		setSearchUsername(value);
-		if (value.trim().length > 0) {
+
+		if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+		if (value.trim().length === 0) {
+			setSuggestions([]);
+			setShowSuggestions(false);
+			return;
+		}
+
+		searchTimeoutRef.current = setTimeout(async () => {
 			try {
-				const users = await getUsers(value.trim());
-				setSuggestions(users.slice(0, 5));
-				setShowSuggestions(true);
+				const currentUserId = state?.user?.id;
+				const users = await getUsers(value.trim(), currentUserId ? [currentUserId] : []);
+				startTransition(() => {
+					setSuggestions(users.slice(0, 5));
+					setShowSuggestions(true);
+				});
 			} catch {
 				setSuggestions([]);
 				setShowSuggestions(false);
 			}
-		} else {
-			setSuggestions([]);
-			setShowSuggestions(false);
-		}
+		}, 300); // 300ms delay
 	};
 
+	// Graceful dropdown loss-of-focus close
 	const handleBlur = () => {
-		setTimeout(() => setShowSuggestions(false), 100);
+		setTimeout(() => setShowSuggestions(false), 180);
 	};
-
-	const [suggestions, setSuggestions] = useState<any[]>([]);
-	const [showSuggestions, setShowSuggestions] = useState(false);
-	const inputRef = useRef<HTMLInputElement>(null);
 
 	return (
-		<div className="relative min-h-screen overflow-hidden bg-stone-900 py-16">
-			<div className="pointer-events-none absolute -top-28 -left-20 h-80 w-80 rounded-full bg-stone-400/20 blur-3xl" />
-			<div className="pointer-events-none absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-amber-200/10 blur-3xl" />
-			<div className="pointer-events-none absolute -bottom-28 left-1/4 h-80 w-80 rounded-full bg-stone-600/20 blur-3xl" />
+		<div className="relative min-h-screen overflow-hidden bg-stone-900 py-16 selection:bg-emerald-500/30 selection:text-emerald-200">
+			{/* Ambient Light Flares */}
+			<div className="pointer-events-none absolute -top-28 -left-20 h-80 w-80 rounded-full bg-stone-400/10 blur-3xl" />
+			<div className="pointer-events-none absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-amber-200/5 blur-3xl" />
+			<div className="pointer-events-none absolute -bottom-28 left-1/4 h-80 w-80 rounded-full bg-stone-600/10 blur-3xl" />
 
-			<div className="relative max-w-4xl sm:mx-auto mx-2 p-8 text-stone-100 rounded-3xl border border-white/15 bg-stone-900/50 shadow-[0_24px_70px_rgba(15,23,42,0.6)] backdrop-blur-2xl">
+			<div
+				className="relative max-w-4xl sm:mx-auto mx-4 p-6 sm:p-8 text-stone-100 rounded-3xl border
+			 border-white/10 bg-stone-950/40 shadow-[0_24px_70px_rgba(10,10,10,0.7)] backdrop-blur-2xl">
 				<div className="flex items-center justify-between mb-8">
-					<h1 className="text-4xl font-black bg-linear-to-t from-green-button via-emerald-500 to-emerald-600 bg-clip-text text-transparent">
+					<h1
+						className="text-4xl font-black bg-gradient-to-t from-emerald-500 via-emerald-400
+					 to-teal-300 bg-clip-text text-transparent tracking-tight">
 						Friends Hub
 					</h1>
 				</div>
 
 				{/* NAVIGATION TABS */}
-				<div className="flex gap-6 mb-8 border-b border-white/10 pb-3 text-xl">
-					<button
-						onClick={() => setActiveTab("list")}
-						className={`pb-2 transition-all duration-300 ${activeTab === "list" ? "text-transparent bg-linear-to-b bg-clip-text from-emerald-500 via-emerald-500 to-green-button border-b-2 border-emerald-400 font-bold" : "text-stone-400 hover:text-stone-100"}`}>
-						My Friends
-					</button>
-					<button
-						onClick={() => setActiveTab("requests")}
-						className={`pb-2 transition-all duration-300 relative ${activeTab === "requests" ? "text-transparent bg-linear-to-b bg-clip-text from-emerald-500 via-emerald-500 to-green-button border-b-2 border-emerald-400 font-bold" : "text-stone-400 hover:text-stone-100"}`}>
-						Pending Requests
-						{/* NOTIFICATION RED CIRCLE */}
-						{requests.length > 0 && (
-							<span className="absolute -top-1 -right-4 size-3 rounded-full bg-red-500 animate-pulse" />
-						)}
-					</button>
-					<button
-						onClick={() => setActiveTab("add")}
-						className={`pb-2 transition-all duration-300 ${activeTab === "add" ? "text-transparent bg-linear-to-b bg-clip-text from-emerald-500 via-emerald-500 to-green-button border-b-2 border-emerald-400 font-bold" : "text-stone-400 hover:text-stone-100"}`}>
-						Add Friend
-					</button>
+				<div className="flex gap-6 mb-8 border-b border-white/5 pb-px text-lg font-medium">
+					{(["list", "requests", "add"] as const).map((tab) => {
+						const isActive = activeTab === tab;
+						const label =
+							tab === "list" ? "My Friends" : tab === "requests" ? "Pending Requests" : "Add Friend";
+						return (
+							<button
+								key={tab}
+								onClick={() => setActiveTab(tab)}
+								className={`pb-3 relative transition-all duration-200 outline-none -mb-px border-b-2 ${
+									isActive
+										? "text-emerald-400 border-emerald-400 font-bold"
+										: "text-stone-400 border-transparent hover:text-stone-200"
+								}`}>
+								{label}
+								{tab === "requests" && requests.length > 0 && (
+									<span className="absolute top-0 -right-3.5 flex size-2">
+										<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+										<span className="relative inline-flex rounded-full size-2 bg-red-500" />
+									</span>
+								)}
+							</button>
+						);
+					})}
 				</div>
 
 				{/* TAB 1: FRIENDS LIST */}
 				{activeTab === "list" && (
-					<div className="space-y-4">
+					<div className="space-y-3.5">
 						{friends.length === 0 ? (
-							<p className="text-stone-400 text-center py-10 text-xl">
-								You don't have any friends yet. Go to 'Add Friend' to find some rivals!
+							<p className="text-stone-400 text-center py-12 text-base">
+								You don't have any friends yet. Go to{" "}
+								<span className="text-emerald-400 font-medium">Add Friend</span> to find some rivals!
 							</p>
 						) : (
-							friends.map((friend, index) => {
-								return (
-									<div
-										key={index}
-										className="flex gap-5 items-center justify-between rounded-2xl border border-white/10 bg-stone-900/55 p-4 shadow-[0_12px_24px_-16px_rgba(15,23,42,0.95)] backdrop-blur-xl transition-all duration-200 hover:border-emerald-400/45 hover:bg-stone-900/70">
-										<div className="flex items-center gap-2 sm:gap-4">
-											<div className="relative h-12 w-12 rounded-full border border-white/10 bg-stone-800/80 flex items-center justify-center text-xl">
-												<img
-													className="rounded-full"
-													src={friend.avatarUrl}
-													alt="Avatar Photo"
-												/>
-												<UserStatusBadge status={friend.status} />
-											</div>
-											<div>
-												{/* Redirects to user match history */}
-												<Link
-													to={`/history/${friend.username}`}
-													className="hover:text-emerald-400 hover:underline transition-colors"
-													title={`View ${friend.username}'s Match History`}>
-													<p className="font-bold text-lg text-stone-200">
-														{friend.username}
-													</p>
-												</Link>
-												<p className="text-sm whitespace-nowrap  text-emerald-400">
-													ELO: {friend.elo}
-												</p>
-											</div>
+							friends.map((friend) => (
+								<div
+									key={friend.id}
+									className="flex gap-4 items-center justify-between rounded-2xl border border-white/5
+									 bg-stone-900/40 p-4 transition-all duration-200 hover:border-white/10 hover:bg-stone-900/60">
+									<div className="flex items-center gap-3 sm:gap-4 min-w-0">
+										<div
+											className="relative size-12 shrink-0 rounded-full border border-white/10
+										 bg-stone-800 flex items-center justify-center">
+											<img
+												className="rounded-full size-full object-cover"
+												src={friend.avatarUrl || "/placeholder-avatar.png"}
+												alt=""
+											/>
+											<UserStatusBadge status={friend.status} />
 										</div>
-										<div className="flex gap-3">
-											<button className="rounded-full border border-emerald-200/25 bg-linear-to-b from-button-green to-emerald-700 font-extrabold px-5 py-2 text-sm sm:text-base  tracking-wide text-white shadow-[0_10px_24px_-14px_rgba(16,185,129,0.95)] transition-all duration-200 hover:-translate-y-0.5 hover:from-green-button hover:via-emerald-700 hover:to-emerald-800 active:translate-y-0">
-												Play ⚔️
-											</button>
-											<button
-												onClick={() => handleRemoveFriend(friend.id, friend.username)}
-												className="rounded-full border border-stone-600/70 bg-stone-800/65 px-3 py-1.5 text-xs sm:text-sm font-medium text-stone-300 backdrop-blur-sm transition-all duration-200 hover:border-red-400/50 hover:bg-red-500/10 hover:text-red-300"
-												title="Remove Friend">
-												<span>❌</span>
-											</button>
+										<div className="min-w-0">
+											<Link
+												to={`/history/${friend.username}`}
+												className="hover:text-emerald-400 font-bold text-base text-stone-200 block 
+												truncate transition-colors"
+												title={`View ${friend.username}'s Match History`}>
+												{friend.username}
+											</Link>
+											<p className="text-xs font-mono text-emerald-400/90 mt-0.5">
+												ELO: {friend.elo ?? 1000}
+											</p>
 										</div>
 									</div>
-								);
-							})
+									<div className="flex items-center gap-2.5 shrink-0">
+										<button
+											className="rounded-xl border border-emerald-400/20 bg-emerald-600/90 font-bold
+										 px-4 py-2 text-sm text-white transition-all duration-200 hover:bg-emerald-500 active:scale-98">
+											Play ⚔️
+										</button>
+										<button
+											onClick={() => handleRemoveFriend(friend.id, friend.username)}
+											className="rounded-xl border border-white/5 bg-stone-800/80 p-2 text-sm font-medium
+											 text-stone-400 transition-all duration-200 hover:border-red-500/30 hover:bg-red-950/20 hover:text-red-400"
+											title="Remove Friend">
+											✕
+										</button>
+									</div>
+								</div>
+							))
 						)}
 					</div>
 				)}
 
 				{/* TAB 2: PENDING REQUESTS */}
 				{activeTab === "requests" && (
-					<div className="space-y-4">
+					<div className="space-y-3.5">
 						{requests.length === 0 ? (
-							<p className="text-stone-400 text-xl text-center py-10">No pending requests.</p>
+							<p className="text-stone-400 text-base text-center py-12">No pending requests.</p>
 						) : (
-							requests.map((req, index) => (
+							requests.map((req) => (
 								<div
-									key={index}
-									className="flex items-center justify-between rounded-2xl border border-white/10 bg-stone-900/55 p-4 shadow-[0_12px_24px_-16px_rgba(15,23,42,0.95)] backdrop-blur-xl">
-									<div className="flex items-center gap-4">
-										<div className="h-10 w-10 rounded-full border border-white/10 bg-stone-800/80 flex items-center justify-center">
+									key={req.id}
+									className="flex items-center justify-between rounded-2xl border border-white/5 bg-stone-900/40 p-4">
+									<div className="flex items-center gap-4 min-w-0">
+										<div className="size-10 shrink-0 rounded-full border border-white/5 bg-stone-800 flex items-center justify-center">
 											<img
-												className="rounded-full"
-												src={req.sender.avatarUrl}
-												alt="Avatar Image"
+												className="rounded-full size-full object-cover"
+												src={req.sender.avatarUrl || "/placeholder-avatar.png"}
+												alt=""
 											/>
 										</div>
-										<p className="font-bold text-stone-200 text-lg">
-											{/* Redirects to the user match history */}
+										<p className="font-bold text-stone-200 text-base truncate">
 											<Link
-												to={`/history/${req.sender.username}`}
-												className="text-emerald-400 hover:underline transition-colors"
-												title={`View ${req.sender.username}'s Match History`}>
-												<span className="text-emerald-400">{req.sender.username}</span>
+												to={`/profile/${req.sender.username}`}
+												className="text-emerald-400 hover:underline transition-colors">
+												{req.sender.username}
 											</Link>
-											<span className="text-stone-400 font-normal">
-												{" "}
-												sent you a friend request!
-											</span>
+											<span className="text-stone-400 font-normal"> sent a request!</span>
 										</p>
 									</div>
-									<div className="sm:flex flex-row gap-3">
+									<div className="flex gap-2 shrink-0">
 										<button
 											onClick={() => handleAccept(req.senderId)}
-											className="px-4 py-2 text-xl bg-emerald-500 hover:bg-emerald-400 hover:text-white text-white rounded-lg font-bold transition-all">
+											className="px-3.5 py-1.5 text-sm bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400
+											 hover:text-white rounded-xl font-bold transition-all">
 											Accept
 										</button>
 										<button
 											onClick={() => handleDecline(req.senderId)}
-											className="px-4 py-2 text-xl bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-lg font-bold transition-all">
+											className="px-3.5 py-1.5 text-sm bg-stone-800 hover:bg-red-950/40 text-stone-400 hover:text-red-400
+											 rounded-xl font-medium transition-all">
 											Decline
 										</button>
 									</div>
@@ -283,13 +325,17 @@ export function Friends() {
 
 				{/* TAB 3: ADD FRIENDS */}
 				{activeTab === "add" && (
-					<div className="max-w-md mx-auto py-8">
-						<div className="flex flex-col gap-4">
-							<label className="text-sm font-bold text-stone-400 uppercase tracking-widest">
+					<div className="max-w-md mx-auto py-6">
+						<div className="flex flex-col gap-3">
+							<label className="text-xs font-bold text-stone-400 uppercase tracking-widest">
 								Search by Username
 							</label>
-							<div className="relative flex items-center gap-2 rounded-2xl border border-white/10 bg-stone-900/55 px-2 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl transition-all focus-within:border-emerald-400/60">
-								<span className="pl-2 pr-1 text-emerald-500 text-xl">@</span>
+							<div
+								className="relative flex items-center gap-2 rounded-2xl border border-white/10 bg-stone-950/40 px-2
+							 py-1.5 transition-all focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/20">
+								<span className="pl-2 pr-0.5 text-emerald-500 text-lg font-semibold selection:bg-transparent">
+									@
+								</span>
 								<input
 									ref={inputRef}
 									type="text"
@@ -297,47 +343,59 @@ export function Friends() {
 									value={searchUsername}
 									onChange={handleUsernameChange}
 									onBlur={handleBlur}
-									className="flex-1 p-3 bg-transparent border-none focus:outline-none text-stone-100 placeholder:text-stone-500 text-base"
+									className="flex-1 p-2 bg-transparent border-none focus:outline-none text-stone-100 placeholder:text-stone-600 text-base"
 									autoComplete="off"
 								/>
 								<button
 									onClick={() => handleAddFriend(searchUsername)}
-									className="flex items-center gap-2 px-4 py-2 bg-linear-to-b from-button-green to-emerald-800 hover:from-green-button hover:via-emerald-700 hover:to-emerald-800 text-white font-bold rounded-lg text-base shadow-md transition-all disabled:opacity-50"
-									disabled={!searchUsername.trim()}
-									title="Send Friend Request">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										strokeWidth={2}
-										stroke="currentColor"
-										className="w-5 h-5">
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M12 4v16m8-8H4"
-										/>
-									</svg>
+									className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white 
+									font-bold rounded-xl text-sm transition-all disabled:opacity-40 disabled:hover:bg-emerald-600"
+									disabled={!searchUsername.trim() || isPending}>
 									Send
 								</button>
+
+								{/* Suggestions List Dropdown */}
 								{showSuggestions && suggestions.length > 0 && (
-									<ul className="absolute left-10 top-full mt-1 w-[calc(100%-2.5rem)] bg-stone-900 border border-stone-700 rounded-2xl shadow-lg z-10 max-h-56 overflow-auto">
+									<ul
+										role="listbox"
+										className="absolute left-0 top-[calc(100%+6px)] w-full bg-stone-900 border border-white/10
+										 rounded-2xl shadow-2xl z-50 max-h-56 overflow-y-auto p-1.5 space-y-0.5 backdrop-blur-xl">
 										{suggestions.map((user) => (
 											<li
 												key={user.id}
-												className="px-4 py-2 hover:bg-emerald-500/15 cursor-pointer text-stone-100 flex items-center gap-2"
+												role="option"
+												aria-selected={searchUsername === user.username}
+												className="px-3 py-2.5 hover:bg-white/5 rounded-xl cursor-pointer text-stone-100
+												 flex items-center justify-between transition-colors group"
 												onMouseDown={() => {
 													setSearchUsername(user.username);
 													setShowSuggestions(false);
 												}}>
-												{user.avatarUrl && (
-													<img
-														src={user.avatarUrl}
-														alt="avatar"
-														className="w-6 h-6 rounded-full"
-													/>
-												)}
-												<span>{user.username}</span>
+												<div className="flex items-center gap-3">
+													<div
+														className="relative size-7 shrink-0 rounded-full ring ring-emerald-400 bg-stone-800 border
+													 border-white/10 overflow-hidden">
+														{user.avatarUrl ? (
+															<img
+																src={user.avatarUrl}
+																alt=""
+																className="w-full h-full object-fit"
+															/>
+														) : (
+															<div
+																className="w-full h-full flex items-center justify-center text-[10px]
+															 text-stone-400 font-bold bg-stone-800">
+																{user.username.charAt(0).toUpperCase()}
+															</div>
+														)}
+													</div>
+													<span className="font-medium text-sm group-hover:text-emerald-400 transition-colors">
+														{user.username}
+													</span>
+												</div>
+												<span className="text-xs text-stone-500 group-hover:text-stone-400 transition-colors font-mono">
+													{user.score?.elo ? `RANK: ${user.score.elo}` : "0 ELO"}
+												</span>
 											</li>
 										))}
 									</ul>
@@ -346,6 +404,7 @@ export function Friends() {
 						</div>
 					</div>
 				)}
+
 				<ConfirmDialog
 					open={confirmDialog.open}
 					title="Remove Friend"

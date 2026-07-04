@@ -3,7 +3,9 @@ export interface PlayerData {
 	rank: number;
 	username: string;
 	avatarUrl?: string;
-	elo: number;
-	wins: number;
-	losses: number;
+	score: {
+		elo: number;
+		wins: number;
+		losses: number;
+	};
 }
