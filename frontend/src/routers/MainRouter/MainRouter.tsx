@@ -12,6 +12,7 @@ import { ChatProvider } from "../../contexts/ChatContext/ChatContext.tsx";
 import { FloatingChatContainer } from "../../components/Chat/FloatingChatContainer.tsx";
 import { NotificationProvider } from "../../contexts/NotificationContext/NotificationContext.tsx";
 import { ProfilePage } from "../../pages/Profile/ProfilePage.tsx";
+import { LiveGames } from "../../pages/LiveGames/LiveGames";
 
 type ActivateModal = "signup" | "login" | null;
 
@@ -96,6 +97,12 @@ export function MainRouter() {
 								<Route
 									path={RouterPaths.FRIENDS}
 									element={<Friends />}
+								/>
+							)}
+							{state.user && (
+								<Route
+									path={RouterPaths.LIVEGAMES}
+									element={<LiveGames />}
 								/>
 							)}
 							{state.user && (

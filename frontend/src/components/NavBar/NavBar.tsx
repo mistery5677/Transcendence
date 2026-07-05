@@ -180,6 +180,14 @@ export function NavBar({ onModal }: NavBarProps) {
 
 									<MenuItem>
 										<a
+											href="/live-games"
+											className="block px-4 py-2.5 text-sm font-medium text-stone-300 hover:bg-emerald-400/12 hover:text-stone-100 transition-colors">
+											Live Games
+										</a>
+									</MenuItem>
+
+									<MenuItem>
+										<a
 											href="/settings"
 											className="block px-4 py-2.5 text-sm font-medium text-stone-300 hover:bg-emerald-400/12 hover:text-stone-100 transition-colors">
 											Settings

@@ -302,4 +302,27 @@ export class GameGateway {
       await this.achievementsService.getUserUnlockedAchievements(userId);
     client.emit('loadAchievements', unlockedIds);
   }
+
+  //Go watch a game. Get your popcorn...
+  @SubscribeMessage('spectateGame')
+  handleSpectateGame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { gameId: string },
+  ) {
+    const game = this.gameService.getGame(data.gameId);
+    if (!game) {
+      client.emit('error', { message: 'Game not found' });
+      return;
+    }
+
+    client.join(data.gameId);
+
+    const state = this.gameService.getGameState(data.gameId);
+    if (state) {
+      client.emit('spectatorState', {
+        gameId: data.gameId,
+        ...state,
+      });
+    }
+  }
 }

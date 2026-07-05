@@ -41,6 +41,14 @@ export interface GameInstance {
   chatHistory: ChatMessage[];
 }
 
+//for use in listActiveGames()
+export interface ActiveGameSummary {
+  gameId: string;
+  playerW: string;
+  playerB: string;
+  mode: 'online' | 'bot' | 'ai';
+}
+
 @Injectable()
 export class GameService {
   private games = new Map<string, GameInstance>();
@@ -359,4 +367,23 @@ export class GameService {
       );
     }
   }
+
+  //do spectator
+  listActiveGames(): ActiveGameSummary[] {
+    const summaries: ActiveGameSummary[] = [];
+
+    for (const [gameId, game] of this.games.entries()) {
+      if (game.isFinished) continue;
+
+      summaries.push({
+        gameId,
+        playerW: game.playerW,
+        playerB: game.playerB,
+        mode: game.mode,
+      });
+    }
+
+    return summaries;
+  }
 }
+
