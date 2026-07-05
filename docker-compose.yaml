@@ -21,10 +21,16 @@ services:
     restart: always
     env_file:
       - .env
+    environment:
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: ${VAULT_ROOT_TOKEN}
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
-    depends_on: # We don't need this in inception, because we run the bash scripts directly
-      - database # Depends on the first container, telling to create the database first
+    depends_on:
+      database:
+        condition: service_started # Depends on the first container, telling to create the database first
+      vault-init:
+        condition: service_completed_successfully # never start before secrets are seeded into Vault
     networks:
       - transcendence
     # This volumes allows the "bind mount" to update the code when we are codding, no need to restart the container
