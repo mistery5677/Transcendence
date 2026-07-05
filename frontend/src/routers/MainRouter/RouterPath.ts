@@ -10,5 +10,7 @@ export const RouterPaths = {
 	ZE: "/ze",
 	LEADERBOARDS: "/leaderboards",
 	FRIENDS: "/friends",
-	RULES: "/rules"
+	RULES: "/rules",
+	PRIVACY: "/privacy",
+	TERMS: "/terms"
 };
