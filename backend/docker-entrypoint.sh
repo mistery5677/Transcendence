@@ -48,4 +48,20 @@ DB_PORT=$(json_field "$DB_JSON" port)
 DB_NAME=$(json_field "$DB_JSON" dbname)
 export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 
+# Apply pending DB migrations against the Vault-assembled DATABASE_URL before the
+# app starts, so a clean volume (docker compose down -v) yields a fully-migrated
+# schema unattended. `migrate deploy` is idempotent — on an already-migrated DB it
+# is a no-op. Wait for Postgres to accept connections first (depends_on only gates
+# on service_started, not readiness), then fail fast if migrations cannot apply.
+i=0
+until npx prisma migrate deploy; do
+  i=$((i + 1))
+  if [ "$i" -ge "$MAX_RETRIES" ]; then
+    echo "Failed to apply Prisma migrations after ${MAX_RETRIES} attempts" >&2
+    exit 1
+  fi
+  echo "prisma migrate deploy failed (attempt ${i}/${MAX_RETRIES}); retrying in 2s..." >&2
+  sleep 2
+done
+
 exec "$@"

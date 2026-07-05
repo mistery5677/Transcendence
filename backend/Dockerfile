@@ -23,6 +23,15 @@ RUN apk add --no-cache \
 # Copy the code
 COPY . .
 
+# Generate the Prisma client into the image's node_modules so a clean rebuild
+# (docker compose down -v && up --build) produces a compilable backend. The
+# backend_modules named volume is seeded from this image layer on first create,
+# so PrismaService's model accessors exist without any manual `prisma generate`.
+# A throwaway DATABASE_URL satisfies the prisma.config env resolver; `generate`
+# never connects to the DB, so the placeholder is never used at runtime (the
+# real DATABASE_URL is assembled from Vault by docker-entrypoint.sh).
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" npx prisma generate
+
 RUN git clone https://github.com/official-stockfish/Stockfish.git /tmp/stockfish \
  && make -C /tmp/stockfish/src -j$(nproc) build \
  && install -m 755 /tmp/stockfish/src/stockfish /usr/bin/stockfish
