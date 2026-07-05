@@ -51,11 +51,13 @@ export async function verifyEmail(email: string): Promise<boolean> {
 
 // Function to sign up connecting to api
 export async function signupUser(userData: Record<string, any>): Promise<boolean> {
+	
 	const response = await fetch("/api/auth/signup", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(userData),
 	});
+	console.log('Signup DTO:', userData); // Log the userData to see what is being sent
 
 	if (!response.ok) {
 		throw new Error("Failed to sign up user.");
@@ -238,7 +240,6 @@ export async function getMyNotifications(): Promise<any[]> {
 		if (!response.ok) {
 			throw new Error(`HTTP Error: ${response.status}`);
 		}
-		console.log("Good Response Notifications");
 		return await response.json();
 	} catch (error) {
 		console.error("Failed to load notifications:", error);

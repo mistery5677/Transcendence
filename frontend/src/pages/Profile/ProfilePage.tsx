@@ -10,7 +10,6 @@ import { getPublicProfile } from "../../api/users";
 import type { PublicProfile } from "../../types";
 
 export function ProfilePage() {
-	
 	const [history, setHistory] = useState<Match[]>([]);
 	const [loading, setLoading] = useState(true);
 	const { username } = useParams<{ username: string }>();
@@ -36,7 +35,6 @@ export function ProfilePage() {
 				let data;
 				if (username) {
 					data = await getHistoryByUsername(targetUserName);
-					console.log("Fetched history for user:", data);
 				} else {
 					data = await getMatchHistory();
 				}
@@ -73,26 +71,44 @@ export function ProfilePage() {
 				<div className="pointer-events-none absolute -bottom-28 left-1/4 h-80 w-80 rounded-full bg-stone-600/20 blur-3xl" />
 
 				<div className="relative mx-auto w-full lg:w-[60%] rounded-3xl border border-stone-200/20 bg-stone-200/10 p-8 shadow-[0_30px_80px_rgba(28,25,23,0.7)] backdrop-blur-2xl">
-					<ProfileHeader user={user} />
-					<ProfileTabs
-						activeTab={tab}
-						onChange={setTab}
-					/>
-					{tab === "overview" && (
-						<div>
-							<ProfileOverview
-								stats={profileStats}
-								recentMatches={history.slice(0, 3)}
+					{loading ? (
+						<div className="flex items-center justify-center h-96">
+							<div className="w-16 h-16 border-4 border-t-4 border-stone-200/20 rounded-full animate-spin border-t-stone-400/80"></div>
+						</div>
+					) : !user ? (
+						<>
+							<div className="flex items-center justify-center h-96 text-stone-400">
+								Please check the username and try again.
+								<br />
+								User not found.
+							</div>
+						</>
+					) : (
+						<>
+							<ProfileHeader user={user} />
+							<ProfileTabs
+								activeTab={tab}
+								onChange={setTab}
 							/>
-						</div>
-					)}
+							{tab === "overview" && (
+								<div>
+									<ProfileOverview
+										stats={profileStats}
+										recentMatches={history.slice(0, 3)}
+									/>
+								</div>
+							)}
+							{tab === "history" && <MatchHistory matches={history} />}
 
-					{tab === "history" && <MatchHistory matches={history} />}
-
-					{tab === "stats" && (
-						<div>
-							<ProfileStats stats={profileStats} history={history} />
-						</div>
+							{tab === "stats" && (
+								<div>
+									<ProfileStats
+										stats={profileStats}
+										history={history}
+									/>
+								</div>
+							)}
+						</>
 					)}
 				</div>
 			</main>

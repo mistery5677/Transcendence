@@ -29,8 +29,14 @@ export class StockfishService implements OnModuleDestroy {
 
     send(`setoption name Skill Level value ${safeLevel}`);
     send('isready');
+
+    console.log(`Stockfish engine started with skill level ${safeLevel}`);
   }
 
+  /// Analyze a position given its FEN string and return the best move and evaluation.
+  /// @param fen The FEN string representing the chess position.
+  /// @param level The skill level of the engine (0-20). Default is 5.
+  /// @param moveTimeMs The time in milliseconds to spend analyzing the position. Default is 400ms.
   async analyzePosition(
     fen: string,
     level = 5,
@@ -108,18 +114,18 @@ export class StockfishService implements OnModuleDestroy {
     });
   }
 
-  async getBestMove(
-    fen: string,
-    level = 5,
-    moveTimeMs = 400,
-  ): Promise<string> {
-    const analysis = await this.analyzePosition(fen, level, moveTimeMs);
-    return analysis.bestMove;
+  async getBestMove(fen: string, level = 5, moveTimeMs = 400): Promise<string> {
+    try {
+      const analysis = await this.analyzePosition(fen, level, moveTimeMs);
+      return analysis.bestMove;
+    } catch (error) {
+      console.error('Error analyzing position:', error);
+      throw error;
+    }
   }
 
   stopEngine() {
     if (this.rl) {
-      this.rl.close();
       this.rl = null;
     }
 

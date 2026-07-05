@@ -39,6 +39,7 @@ export class AuthController {
 
   @Post('/signup')
   signup(@Body() registerDto: RegisterDto) {
+
     return this.authService.signup(registerDto);
   }
 

@@ -71,7 +71,9 @@ export function Signup({ onModal }: SignupProps) {
 			setTimeout(() => {
 				onModal(null);
 			}, 1500);
-		} catch (err) {}
+		} catch (err) {
+			console.error("Failed to sign up user", err);
+		}
 	};
 
 	return (
@@ -137,7 +139,7 @@ export function Signup({ onModal }: SignupProps) {
 							onSubmit={handleSubmit}
 							className="space-y-5">
 							{/* Name */}
-							<div>
+							{/* <div>
 								<label className="text-board-text text-sm font-semibold mb-1.5 block">Name</label>
 								<div className="relative flex items-center">
 									<input
@@ -163,7 +165,7 @@ export function Signup({ onModal }: SignupProps) {
 											data-original="#000000"></path>
 									</svg>
 								</div>
-							</div>
+							</div> */}
 							{/* Username */}
 							<div>
 								<label className="text-board-text text-sm font-semibold mb-1.5 block">Username</label>
@@ -172,7 +174,8 @@ export function Signup({ onModal }: SignupProps) {
 										name="username"
 										type="text"
 										required
-										className="text-board-text bg-board-input border-2 border-board-border w-full text-sm pl-4 pr-8 py-2.5 rounded-xl focus:border-board-focus focus:outline-none placeholder-board-text-muted"
+										className="text-board-text bg-board-input border-2 border-board-border w-full
+										 text-sm pl-4 pr-8 py-2.5 rounded-xl focus:border-board-focus focus:outline-none placeholder-board-text-muted"
 										placeholder="Enter your username"
 										onBlur={checkUsername} // Triggers when we click out
 									/>
@@ -189,7 +192,8 @@ export function Signup({ onModal }: SignupProps) {
 											r="6"
 											data-original="#000000"></circle>
 										<path
-											d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
+											d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1
+											 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
 											data-original="#000000"></path>
 									</svg>
 								</div>
@@ -220,7 +224,8 @@ export function Signup({ onModal }: SignupProps) {
 										name="email"
 										type="email"
 										required
-										className="text-board-text bg-board-input border-2 border-board-border w-full text-sm pl-4 pr-8 py-2.5 rounded-xl focus:border-board-focus focus:outline-none placeholder-board-text-muted"
+										className="text-board-text bg-board-input border-2 border-board-border w-full
+										 text-sm pl-4 pr-8 py-2.5 rounded-xl focus:border-board-focus focus:outline-none placeholder-board-text-muted"
 										placeholder="Enter your email"
 										onBlur={checkEmail}
 									/>
@@ -246,10 +251,12 @@ export function Signup({ onModal }: SignupProps) {
 												fill="none"
 												strokeMiterlimit="10"
 												strokeWidth="40"
-												d="M452 444H60c-22.091 0-40-17.909-40-40v-39.446l212.127-157.782c14.17-10.54 33.576-10.54 47.746 0L492 364.554V404c0 22.091-17.909 40-40 40Z"
+												d="M452 444H60c-22.091 0-40-17.909-40-40v-39.446l212.127-157.782c14.17-10.54 33.576-10.54
+												 47.746 0L492 364.554V404c0 22.091-17.909 40-40 40Z"
 												data-original="#000000"></path>
 											<path
-												d="M472 274.9V107.999c0-11.027-8.972-20-20-20H60c-11.028 0-20 8.973-20 20V274.9L0 304.652V107.999c0-33.084 26.916-60 60-60h392c33.084 0 60 26.916 60 60v196.653Z"
+												d="M472 274.9V107.999c0-11.027-8.972-20-20-20H60c-11.028 0-20 8.973-20
+												 20V274.9L0 304.652V107.999c0-33.084 26.916-60 60-60h392c33.084 0 60 26.916 60 60v196.653Z"
 												data-original="#000000"></path>
 										</g>
 									</svg>
@@ -281,7 +288,8 @@ export function Signup({ onModal }: SignupProps) {
 										name="password"
 										type={showPassword ? "text" : "password"}
 										required
-										className="w-full text-board-text text-sm border-2 border-board-border px-4 py-3 pr-10 rounded-xl focus:border-board-focus focus:outline-none bg-board-input placeholder-board-text-muted"
+										className="w-full text-board-text text-sm border-2 border-board-border px-4 py-3 
+										pr-10 rounded-xl focus:border-board-focus focus:outline-none bg-board-input placeholder-board-text-muted"
 										placeholder="Enter your password"
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
@@ -348,7 +356,9 @@ export function Signup({ onModal }: SignupProps) {
 						{/* Submit */}
 						<button
 							type="submit"
-							className="w-full py-3 px-4 text-sm font-bold tracking-wide rounded-xl text-white bg-button-primary border-2 border-button-primary hover:bg-white hover:text-board-text focus:outline-none cursor-pointer shadow-lg transition-all mt-2"
+							className="w-full py-3 px-4 text-sm font-bold tracking-wide rounded-xl text-white
+							 bg-button-primary border-2 border-button-primary hover:bg-white hover:text-board-text
+							  focus:outline-none cursor-pointer shadow-lg transition-all mt-2"
 							disabled={ canSubmit == false } // Have to remove (password != "1") just for tests
 							style={{
 								opacity: canSubmit ? 1 : 0.5,
