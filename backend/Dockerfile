@@ -32,5 +32,11 @@ ENV STOCKFISH_PATH=/usr/bin/stockfish
 
 EXPOSE 3000
 
+# Fetches secrets from Vault and exports them before Node starts (SECRET-03).
+# Copied outside the bind-mounted /usr/src/app so the host mount never shadows it.
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
+
 # Command to start the dev server
 CMD ["npm", "run", "start:dev"]
