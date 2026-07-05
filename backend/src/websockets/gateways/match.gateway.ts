@@ -134,42 +134,4 @@ export class MatchGateway {
       client.emit(`noActiveGame`);
     }
   }
-
-  @SubscribeMessage('spectateGame')
-  handleSpectateGame(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { gameId: string },
-  ) {
-    const state = this.gameService.getGameState(data.gameId);
-
-    if (!state) {
-      client.emit('activeGameNotFound');
-      return;
-    }
-
-    client.join(data.gameId);
-
-    client.emit('gameState', {
-      gameId: data.gameId,
-      fen: state.fen,
-      currentTurn: state.turn,
-      color: null,
-      mode: state.mode,
-      opponentId: null,
-      whiteTimeLeft: state.whiteTimeLeft,
-      blackTimeLeft: state.blackTimeLeft,
-      chatHistory: state.chatHistory,
-    });
-  }
-
-  @SubscribeMessage('listActiveGames')
-  async handleListActiveGames(
-    @ConnectedSocket() client: Socket,
-  ) {
-    const games = await this.gameService.getActiveGames();
-
-    client.emit('activeGames', games);
-  }
-
-
 }

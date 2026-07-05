@@ -3,7 +3,6 @@ export const RouterPaths = {
 	SIGNUP: "/signup",
 	HOME: ["/", "/home"],
 	PLAY: "/play",
-	LIVE_GAMES: "/live-games",
 	SETTINGS: "/settings",
 	PROFILE: "/profile",
 	HISTORY: "/history",

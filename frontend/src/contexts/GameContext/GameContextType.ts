@@ -48,7 +48,6 @@ export type GameContextType = {
 	startOnlineGame: (options: MatchStartOptions) => void;
 	startBotGame: (options: MatchStartOptions) => void;
 	startAIGame: (options: MatchStartOptions) => void;
-	spectateGame: (gameId: string) => void;
 	handleDrawResponse: (accept: boolean) => void;
 	handleRematchResponse: (accept: boolean) => void;
 };

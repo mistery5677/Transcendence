@@ -118,14 +118,6 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		socket.emit("startAIGame", options);
 	};
 
-	const spectateGame = (gameId: string) => {
-		if (!socket || !hasUser) return;
-
-		console.log("[Game] Spectating game", gameId);
-
-		socket.emit("spectateGame", { gameId });
-	};
-
 	const resetGameContextToDefault = () => {
 		setGameOver(null);
 		setFen("start");
@@ -313,7 +305,6 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 				startOnlineGame,
 				startBotGame,
 				startAIGame,
-				spectateGame,
 				opponentId,
 				isSearchingMatch,
 				messages,

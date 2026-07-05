@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { RouterPaths } from "./RouterPath";
-import { Error, Home, Settings, Ze, LeaderBoards, Friends, HistoryPage, LiveGames} from "../../pages";
+import { Error, Home, Settings, Ze, LeaderBoards, Friends, HistoryPage } from "../../pages";
 import { FallBack, Login, Signup, MultiRoute, NavBar } from "../../components";
 import { useAuth } from "../../contexts/UserContext";
 import { GameProvider } from "../../contexts/GameContext/GameContext";
@@ -59,16 +59,6 @@ export function MainRouter() {
 								<Route
 									path={RouterPaths.PLAY}
 									element={<PlayRouteWithProvider />}
-								/>
-							)}
-							{state.user && (
-								<Route
-									path={RouterPaths.LIVE_GAMES}
-									element={
-										<GameProvider>
-											<LiveGames />
-										</GameProvider>
-									}
 								/>
 							)}
 							{!state.user && activeModal === "login" && (
