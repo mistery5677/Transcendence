@@ -26,6 +26,13 @@ import {
   getOpponentDto,
   getPublicProfileDto,
 } from 'src/auth/dto/getProfile.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
+import { UpdateUsernameDto } from './dto/update-username.dto';
+import {
+  UpdateBoardThemeDto,
+  UpdateBackgroundThemeDto,
+} from './dto/update-theme.dto';
 
 @Controller('/users')
 export class UsersController {
@@ -111,56 +118,57 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Patch('me/password')
-  async updatePassword(@Body() body, @Req() req) {
-    const { currentPassword, newPassword } = body;
+  async updatePassword(@Body() dto: UpdatePasswordDto, @Req() req) {
     const userId = req.user.userId;
     return await this.usersService.updatePassword(
       parseInt(userId),
-      currentPassword,
-      newPassword,
+      dto.currentPassword,
+      dto.newPassword,
     );
   }
 
   @UseGuards(AuthGuard)
   @Patch('me/board-theme')
-  async updateBoardTheme(@Body() body, @Req() req) {
+  async updateBoardTheme(@Body() dto: UpdateBoardThemeDto, @Req() req) {
     const userId = req.user.userId;
-    const { boardTheme } = body;
 
     return await this.usersService.updateBoardTheme(
       parseInt(userId),
-      parseInt(boardTheme),
+      dto.boardTheme,
     );
   }
 
   @UseGuards(AuthGuard)
   @Patch('me/background-theme')
-  async updateBackgroundTheme(@Body() body, @Req() req) {
+  async updateBackgroundTheme(
+    @Body() dto: UpdateBackgroundThemeDto,
+    @Req() req,
+  ) {
     const userId = req.user.userId;
-    const { backgroundTheme } = body;
 
     return await this.usersService.updateBackgroundTheme(
       parseInt(userId),
-      parseInt(backgroundTheme),
+      dto.backgroundTheme,
     );
   }
 
   @UseGuards(AuthGuard)
   @Patch('me/email')
-  async updateEmail(@Body() body, @Req() req) {
+  async updateEmail(@Body() dto: UpdateEmailDto, @Req() req) {
     const userId = req.user.userId;
-    const { email } = body;
 
-    return await this.usersService.updateEmail(parseInt(userId), email);
+    return await this.usersService.updateEmail(parseInt(userId), dto.email);
   }
 
   @UseGuards(AuthGuard)
   @Patch('me/username')
-  async updateUsername(@Body() body, @Req() req) {
+  async updateUsername(@Body() dto: UpdateUsernameDto, @Req() req) {
     const userId = req.user.userId;
-    const { username } = body;
 
-    return await this.usersService.updateUsername(parseInt(userId), username);
+    return await this.usersService.updateUsername(
+      parseInt(userId),
+      dto.username,
+    );
   }
 
   @Get('opponent/:id')
