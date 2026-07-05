@@ -75,6 +75,15 @@ services:
       - backend
     networks:
       - transcendence
+    # Override the image's default HEALTHCHECK (which probes HTTPS on SSL_PORT) — this
+    # phase is HTTP-only (TLS is Phase 4, 8443 intentionally not served), so probe the
+    # actual HTTP listener instead to avoid a permanently "unhealthy" container status.
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   vault:
     image: hashicorp/vault:1.21
