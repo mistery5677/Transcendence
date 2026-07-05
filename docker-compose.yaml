@@ -60,6 +60,7 @@ services:
       BACKEND: http://frontend:5173
       SERVER_NAME: localhost
       PORT: "8080"
+      NGINX_ALWAYS_TLS_REDIRECT: "on"
       MODSEC_RULE_ENGINE: "On"
       MODSEC_AUDIT_ENGINE: RelevantOnly
       BLOCKING_PARANOIA: "1"
@@ -67,6 +68,7 @@ services:
       ANOMALY_OUTBOUND: "4"
     ports:
       - "${WAF_PORT}:8080"
+      - "${WAF_SSL_PORT}:8443"
     volumes:
       - ./waf/templates/conf.d/default.conf.template:/etc/nginx/templates/conf.d/default.conf.template:ro
       - ./waf/modsecurity.d/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf:/etc/modsecurity.d/owasp-crs/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf:ro
