@@ -6,3 +6,5 @@ export { Ze } from "./Ze/Ze";
 export { LeaderBoards } from "./LeaderBoards/LeaderBoards";
 export { HistoryPage } from "./History/History";
 export { Friends } from "./Friends/Friends";
+export { Privacy } from "./Privacy/Privacy";
+export { Terms } from "./Terms/Terms";
