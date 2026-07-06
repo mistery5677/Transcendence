@@ -22,19 +22,79 @@ export class GameGateway {
     private readonly stockfishAI: StockfishService,
   ) {}
 
+  private validatePlayerAndGetGame(
+    client: Socket,
+    gameId: string,
+  ): GameInstance | null {
+    const game = this.gameService.getGame(gameId);
+    if (!game) {
+      client.emit('error', { message: 'Game not found.' });
+      return null;
+    }
+
+    const userId = client.data.user?.userId;
+    if (game.playerW !== userId && game.playerB !== userId) {
+      client.emit('error', { message: "You don't belong to this game." });
+      return null;
+    }
+
+    return game;
+  }
+
+  private async executeAiMove(gameId: string): Promise<void> {
+    const game = this.gameService.getGame(gameId);
+    if (!game || game.chess.isGameOver()) return;
+
+    const aiMove = await this.stockfishAI.getBestMove(
+      game.chess.fen(),
+      game.level,
+    );
+    const humanizedDelay = Math.floor(Math.random() * (3200 - 1000 + 1)) + 1000;
+
+    setTimeout(() => {
+      const activeGame = this.gameService.getGame(gameId);
+      if (
+        !activeGame ||
+        activeGame.chess.isGameOver() ||
+        activeGame.chess.turn() !== 'b'
+      ) {
+        return;
+      }
+
+      const validAiMove = this.gameService.makeMove(gameId, aiMove);
+      if (validAiMove) {
+        this.processGameState(gameId, validAiMove);
+      }
+    }, humanizedDelay);
+  }
+
+  private executeBotMove(gameId: string): void {
+    const humanizedDelay = Math.floor(Math.random() * (3500 - 1200 + 1)) + 1200;
+
+    setTimeout(() => {
+      const activeGame = this.gameService.getGame(gameId);
+      if (
+        !activeGame ||
+        activeGame.chess.isGameOver() ||
+        activeGame.chess.turn() !== 'b'
+      ) {
+        return;
+      }
+
+      const botMove = this.gameService.generateBotMove(gameId);
+      if (botMove) {
+        this.processGameState(gameId, botMove);
+      }
+    }, humanizedDelay);
+  }
+
   @SubscribeMessage('requestSurrender')
   handleSurrender(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { gameId: string },
-  ) {
-    const game = this.gameService.getGame(data.gameId);
+  ): void {
+    const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
-
-    const userId = client.data.user.userId;
-    if (game.playerW !== userId && game.playerB !== userId) {
-      client.emit('error', { message: "Don't belong to this game." });
-      return;
-    }
 
     const result = this.gameService.surrender(
       data.gameId,
@@ -55,14 +115,8 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { gameId: string },
   ) {
-    const game = this.gameService.getGame(data.gameId);
+    const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
-
-    const userId = client.data.user.userId;
-    if (game.playerW !== userId && game.playerB !== userId) {
-      client.emit('error', { message: "Don't belong to this game." });
-      return;
-    }
 
     client.to(data.gameId).emit('drawProposed', { from: client.id });
   }
@@ -72,14 +126,8 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { gameId: string; response: boolean },
   ) {
-    const game = this.gameService.getGame(data.gameId);
+    const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
-
-    const userId = client.data.user.userId;
-    if (game.playerW !== userId && game.playerB !== userId) {
-      client.emit('error', { message: "Don't belong to this game." });
-      return;
-    }
 
     if (data.response) {
       const result = this.gameService.forceDraw(data.gameId);
@@ -95,14 +143,8 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { gameId: string },
   ) {
-    const game = this.gameService.getGame(data.gameId);
+    const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
-
-    const userId = client.data.user.userId;
-    if (game.playerW !== userId && game.playerB !== userId) {
-      client.emit('error', { message: "Don't belong to this game." });
-      return;
-    }
 
     client
       .to(data.gameId)
@@ -114,44 +156,35 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { gameId: string; response: boolean },
   ) {
-    const game = this.gameService.getGame(data.gameId);
-    console.log(
-      'Responding to rematch proposal:',
-      data.response,
-      'for gameId:',
-      data.gameId,
-    );
+    const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
 
-    const userId = client.data.user.userId;
-    if (game.playerW !== userId && game.playerB !== userId) {
-      client.emit('error', { message: "Don't belong to this game." });
+    if (!data.response) {
+      client.to(data.gameId).emit('rematchRejected');
+      this.gameService.deleteGame(data.gameId);
       return;
     }
 
-    if (data.response) {
-      const newGameId = uuidv4();
+    const newGameId = uuidv4();
 
-      let newGame: GameInstance | undefined;
+    const isOnline = game.mode === 'online';
 
-      newGame = this.gameService.createGame(
-        newGameId,
-        game.mode,
-        game.mode === 'online' ? game.playerB : game.playerW,
-        game.mode === 'online' ? game.playerW : game.playerB,
-        game.timeStamp,
-      );
-      if (newGame) {
-        this.server
-          .to(data.gameId)
-          .emit('rematchStarted', { newGameId: newGameId });
-        this.gameService.deleteGame(data.gameId);
-      } else {
-        client.emit('error', { message: 'Could not generate rematch room' });
-      }
-    } else {
-      client.to(data.gameId).emit('rematchRejected');
+    const playerW = isOnline ? game.playerB : game.playerW;
+    const playerB = isOnline ? game.playerW : game.playerB;
+
+    const newGame = this.gameService.createGame(
+      newGameId,
+      game.mode,
+      playerW,
+      playerB,
+      game.timeStamp,
+    );
+
+    if (newGame) {
+      this.server.to(data.gameId).emit('rematchStarted', { newGameId });
       this.gameService.deleteGame(data.gameId);
+    } else {
+      client.emit('error', { message: 'Could not generate rematch room' });
     }
   }
 
@@ -160,7 +193,7 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { gameId: string; move: any },
   ) {
-    const game = this.gameService.getGame(data.gameId);
+    const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
 
     const userId = client.data.user.userId;
@@ -168,9 +201,7 @@ export class GameGateway {
     const expectedPlayerId = currentTurn === 'w' ? game.playerW : game.playerB;
 
     if (userId !== expectedPlayerId) {
-      client.emit('error', {
-        message: "Don't belong to this game or its not your turn",
-      });
+      client.emit('error', { message: "It's not your turn." });
       return;
     }
 
@@ -180,74 +211,29 @@ export class GameGateway {
       return;
     }
 
-    this.processGameState(data.gameId, validMove);
+    const isGameOver = this.processGameState(data.gameId, validMove);
+    if (isGameOver) return;
 
-    if (game.mode === 'ai' && !game.chess.isGameOver()) {
-      const aiMove = await this.stockfishAI.getBestMove(
-        game.chess.fen(),
-        game.level,
-      );
-
-      const humanizedDelay =
-        Math.floor(Math.random() * (3200 - 1000 + 1)) + 1000;
-
-      setTimeout(() => {
-        const activeGame = this.gameService.getGame(data.gameId);
-        if (
-          !activeGame ||
-          activeGame.chess.isGameOver() ||
-          activeGame.chess.turn() !== 'b'
-        ) {
-          return;
-        }
-
-        const validAiMove = this.gameService.makeMove(data.gameId, aiMove);
-        if (validAiMove) {
-          this.processGameState(data.gameId, validAiMove);
-        }
-      }, humanizedDelay);
-    } else if (game.mode === 'bot' && !game.chess.isGameOver()) {
-      const humanizedDelay =
-        Math.floor(Math.random() * (3500 - 1200 + 1)) + 1200;
-
-      setTimeout(() => {
-        const activeGame = this.gameService.getGame(data.gameId);
-        if (
-          !activeGame ||
-          activeGame.chess.isGameOver() ||
-          activeGame.chess.turn() !== 'b'
-        )
-          return;
-
-        const botMove = this.gameService.generateBotMove(data.gameId);
-        if (botMove) {
-          this.processGameState(data.gameId, botMove);
-        }
-      }, humanizedDelay);
+    if (game.mode === 'ai') {
+      await this.executeAiMove(data.gameId);
+    } else if (game.mode === 'bot') {
+      this.executeBotMove(data.gameId);
     }
   }
 
   @SubscribeMessage('timeOut')
   async handleTimeOut(
-    @MessageBody() data: { gameId: string },
     @ConnectedSocket() client: Socket,
-  ) {
-    const { gameId } = data;
-
-    // Get the game information
-    const game = this.gameService.getGame(data.gameId);
+    @MessageBody() data: { gameId: string },
+  ): Promise<void> {
+    const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
 
-    // Check who got timed out
-    const loser = client.id === game.playerW ? 'w' : 'b';
-    const winner = loser === 'w' ? 'b' : 'w';
     const result = this.gameService.handleTimeOut(
       data.gameId,
       String(client.data.user.userId),
     );
-    // await this.matchesService.saveMatchResult(game.whiteUserId, game.blackUserId, resultReason);
 
-    // Set that the game is over
     if (result) {
       this.server.to(data.gameId).emit('gameOver', { gameOver: result });
       this.checkAchievements(data.gameId, result.winnerId);
@@ -256,10 +242,11 @@ export class GameGateway {
 
   private processGameState(gameId: string, move: any): boolean {
     const game = this.gameService.getGame(gameId);
+    if (!game) return false;
 
     this.server.to(gameId).emit('move', {
       move: move,
-      fen: game?.chess.fen(),
+      fen: game.chess.fen(),
       currentTurn: game?.chess.turn(),
       whiteTimeLeft: move.whiteTimeLeft,
       blackTimeLeft: move.blackTimeLeft,
@@ -267,9 +254,7 @@ export class GameGateway {
 
     const gameOver = this.gameService.checkGameOver(gameId);
     if (gameOver) {
-      this.server.to(gameId).emit('gameOver', {
-        gameOver: gameOver,
-      });
+      this.server.to(gameId).emit('gameOver', { gameOver });
       return true;
     }
     return false;

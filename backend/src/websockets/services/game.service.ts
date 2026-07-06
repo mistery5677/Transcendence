@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
 import { MatchesService } from 'src/matches/matches.service';
-import { v4 as uuidv4 } from 'uuid';
+
 import { PresenceService } from './presence.service';
 
 interface GameOverResult {
   winnerColor: 'w' | 'b' | null;
-  winnerId?: number | null;
+  winnerId: number | null;
   reason:
     | 'CHECKMATE'
     | 'DRAW'
@@ -44,7 +44,7 @@ export interface GameInstance {
 export type GameState = {
   fen: string;
   turn: 'w' | 'b';
-  history: string[]; // Dependiendo de lo que retorne tu librería chess.history()
+  gameHistory: string[];
   mode: 'online' | 'bot' | 'ai';
   chatHistory: ChatMessage[];
   whiteTimeLeft: number;
@@ -184,7 +184,7 @@ export class GameService {
     return {
       fen: game.chess.fen(),
       turn: game.chess.turn(),
-      history: game.chess.history(),
+      gameHistory: game.chess.history(),
       mode: game.mode,
       chatHistory: game.chatHistory,
       // Send the timer info
@@ -248,7 +248,7 @@ export class GameService {
       );
     }
     this.markAsFinished(gameId);
-    return { winnerColor, reason: 'RESIGNATION' };
+    return { winnerColor, winnerId: parseInt(winnerId), reason: 'RESIGNATION' };
   }
 
   forceDraw(gameId: string): GameOverResult | null {
@@ -263,7 +263,7 @@ export class GameService {
       );
     }
     this.markAsFinished(gameId);
-    return { winnerColor: null, reason: 'DRAW' };
+    return { winnerColor: null, winnerId: null, reason: 'DRAW' };
   }
 
   handleTimeOut(gameId: string, loserPlayerId: string): GameOverResult | null {
@@ -285,7 +285,7 @@ export class GameService {
       );
     }
     this.markAsFinished(gameId);
-    return { winnerColor, reason: 'TIMEOUT' };
+    return { winnerColor, winnerId: parseInt(winnerId), reason: 'TIMEOUT' };
   }
 
   deleteGame(gameId: string) {

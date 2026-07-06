@@ -75,7 +75,6 @@ export class MatchGateway {
   ) {
     const gameId = `ai_${uuidv4()}`;
 
-
     const newGame = this.gameService.createGame(
       gameId,
       'ai',
@@ -129,6 +128,7 @@ export class MatchGateway {
         gameId: gameId,
         fen: state.fen,
         currentTurn: state.turn,
+        gameHistory: state.gameHistory,
         color: userColor,
         mode: game.mode,
         opponentId: opponentId ? String(opponentId) : 'bot',
