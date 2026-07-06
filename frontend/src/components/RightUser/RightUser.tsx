@@ -5,13 +5,15 @@ import { useGame } from "../../contexts/GameContext/GameContext";
 import { getOpponentData } from "../../api/users";
 import type { PlayerData } from "../../api/PlayerDataType";
 import magnusImg from "../../assets/magnus-carlsen.jpg";
+import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
 
 type RightUserProps = {
 	onTimeOut: (loserColor: "w" | "b") => void;
 };
 
 export function RightUser({ onTimeOut }: RightUserProps) {
-	const { currentTurn, color, opponentId, isSearchingMatch, whiteTimeLeft, blackTimeLeft } = useGame();
+	const { isSearchingMatch } = useMatchMaking();
+	const { currentTurn, color, opponentId, whiteTimeLeft, blackTimeLeft } = useGame();
 	const [opponentProfile, setOpponentProfile] = useState<PlayerData | null>(null);
 
 	// 1. Internal Engine/Bot Resolution Logic

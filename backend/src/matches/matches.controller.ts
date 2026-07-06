@@ -1,6 +1,5 @@
 import { Controller, UseGuards, Get, Req, Param } from '@nestjs/common';
 import { MatchesService } from './matches.service';
-import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { getUserMatchHistory } from './dto/getMatchHistory.dto';
 
 @Controller('matches')

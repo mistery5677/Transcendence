@@ -1,45 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
 import { MatchesService } from 'src/matches/matches.service';
-import { v4 as uuidv4 } from 'uuid';
+
 import { PresenceService } from './presence.service';
-
-interface GameOverResult {
-  winnerColor: 'w' | 'b' | null;
-  winnerId?: number | null;
-  reason:
-    | 'CHECKMATE'
-    | 'DRAW'
-    | 'STALEMATE'
-    | 'THREEFOLD_REPETITION'
-    | 'RESIGNATION'
-    | 'DISCONNECTION_TIMEOUT'
-    | 'TIMEOUT';
-}
-
-interface ChatMessage {
-  from: string;
-  avatarUrl?: string;
-  message: string;
-  timeStamp: string;
-}
-
-export interface GameInstance {
-  chess: Chess;
-  mode: 'online' | 'bot' | 'ai';
-  level: number | undefined;
-  playerW: string;
-  playerB: string;
-  isFinished?: boolean;
-  disconnectTimeout?: NodeJS.Timeout;
-
-  // Timer variables
-  timeStamp: '3 min' | '5 min' | '10 min'; // Time when the game started
-  whiteTimeLeft: number;
-  blackTimeLeft: number;
-  lastMoveTimestamp: number; // Time of the last move
-  chatHistory: ChatMessage[];
-}
+import {
+  ChessMoveDetails,
+  GameInstance,
+  GameOverResult,
+  GameState,
+  MoveResult,
+} from '../interfaces/gameLogic.interface';
 
 @Injectable()
 export class GameService {
@@ -92,7 +62,7 @@ export class GameService {
     return this.games.get(gameId);
   }
 
-  makeMove(gameId: string, move: any) {
+  makeMove(gameId: string, move: any): MoveResult | null {
     const game = this.games.get(gameId);
     if (!game) return null;
 
@@ -118,7 +88,7 @@ export class GameService {
       }
 
       return {
-        result,
+        moveDetails: result as ChessMoveDetails,
         fen: game.chess.fen(),
         currentTurn: game.chess.turn(),
         whiteTimeLeft: game.whiteTimeLeft,
@@ -129,7 +99,7 @@ export class GameService {
     }
   }
 
-  generateBotMove(gameId: string) {
+  generateBotMove(gameId: string): MoveResult | null {
     const game = this.games.get(gameId);
     if (!game || game.chess.isGameOver()) return null;
 
@@ -141,20 +111,21 @@ export class GameService {
       possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
 
     game.blackTimeLeft = Math.max(0, game.blackTimeLeft - elapsedSeconds);
-    game.chess.move(randomMove);
+
+    const moveResult = game.chess.move(randomMove);
 
     game.lastMoveTimestamp = Date.now();
 
     return {
-      randomMove,
+      moveDetails: moveResult as ChessMoveDetails,
       fen: game.chess.fen(),
-      currentTurn: game.chess.turn(),
+      currentTurn: game.chess.turn() as 'w' | 'b',
       whiteTimeLeft: game.whiteTimeLeft,
       blackTimeLeft: game.blackTimeLeft,
     };
   }
 
-  getGameState(gameId: string) {
+  getGameState(gameId: string): GameState | null {
     const game = this.games.get(gameId);
     if (!game) return null;
 
@@ -174,7 +145,7 @@ export class GameService {
     return {
       fen: game.chess.fen(),
       turn: game.chess.turn(),
-      history: game.chess.history(),
+      gameHistory: game.chess.history(),
       mode: game.mode,
       chatHistory: game.chatHistory,
       // Send the timer info
@@ -238,7 +209,7 @@ export class GameService {
       );
     }
     this.markAsFinished(gameId);
-    return { winnerColor, reason: 'RESIGNATION' };
+    return { winnerColor, winnerId: parseInt(winnerId), reason: 'RESIGNATION' };
   }
 
   forceDraw(gameId: string): GameOverResult | null {
@@ -253,7 +224,7 @@ export class GameService {
       );
     }
     this.markAsFinished(gameId);
-    return { winnerColor: null, reason: 'DRAW' };
+    return { winnerColor: null, winnerId: null, reason: 'DRAW' };
   }
 
   handleTimeOut(gameId: string, loserPlayerId: string): GameOverResult | null {
@@ -269,13 +240,13 @@ export class GameService {
     // Save the match history
     if (game.mode === 'online') {
       this.matchesService.saveMatchResult(
-        parseInt(game.playerB),
         parseInt(game.playerW),
+        parseInt(game.playerB),
         parseInt(winnerId),
       );
     }
     this.markAsFinished(gameId);
-    return { winnerColor, reason: 'TIMEOUT' };
+    return { winnerColor, winnerId: parseInt(winnerId), reason: 'TIMEOUT' };
   }
 
   deleteGame(gameId: string) {

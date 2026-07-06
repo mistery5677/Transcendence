@@ -5,6 +5,7 @@ import penguinSensei from "../../assets/penguin-sensei.gif";
 import { useGame } from "../../contexts/GameContext/GameContext";
 import { toastWrapper } from "../../adapters/toastWrapper";
 import { PlayOptionsCard, type PlayMode, type PlayOptionCardContent } from "./PlayOptionsCard";
+import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
 
 type ModeVisual = {
 	imageSrc: string;
@@ -59,8 +60,8 @@ export function PlayOptions() {
 		(window as { Tenor?: { Embed?: { load?: () => void } } }).Tenor?.Embed?.load?.();
 	}, []);
 
-	const { startOnlineGame, startBotGame, startAIGame, gameId, surrender } = useGame();
-
+	const { gameId, surrender } = useGame();
+	const { startOnlineGame, startBotGame, startAIGame } = useMatchMaking();
 	useEffect(() => {
 		if (!pendingStart || gameId) return;
 
