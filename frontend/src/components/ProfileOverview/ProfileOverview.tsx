@@ -113,10 +113,9 @@ export function ProfileOverview({ stats, recentMatches = [] }: Props) {
 				{recentMatches.length === 0 ? (
 					<p className="px-6 py-8 text-sm text-stone-400 font-medium">No matches recorded yet.</p>
 				) : (
-					<div className="divide-y divide-white/[0.06]">
+					<div className="divide-y divide-white/6">
 						{recentMatches.slice(0, 3).map((match, i) => {
 							const matchResult = match.result as "WIN" | "LOSS" | "DRAW";
-							console.log("Rendering match:", match, "with result:", match.result);
 							return (
 								<div
 									key={match.gameId}

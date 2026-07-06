@@ -60,7 +60,7 @@ export function Home() {
 						</h1>
 
 						<p className="text-lg sm:text-xl text-stone-400 font-medium max-w-lg leading-relaxed">
-							Whether you're a just learning how the knight moves or grandmaster who owns the table,
+							Whether you're just learning how the knight moves or grandmaster who owns the table,
 							there's a seat at the board waiting for you.
 						</p>
 

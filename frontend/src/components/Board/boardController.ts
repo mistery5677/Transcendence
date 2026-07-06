@@ -47,8 +47,6 @@ export function useBoardController({
 
 	const { socket, gameId, color, fen, currentTurn, gameOver } = useGame();
 
-	
-
 	const [chessPosition, setChessPosition] = useState(() => {
 		if (fen && fen != "start") return fen;
 		return chessGame.fen();
@@ -77,6 +75,7 @@ export function useBoardController({
 
 	const isMyLocalTurn = Boolean(enableHelperMode && gameId && color && chessGame.turn() === color);
 
+	/// Analyze the current position using Stockfish when it's the player's turn and helper mode is enabled.
 	useEffect(() => {
 		if (!enableHelperMode) return;
 		if (!isMyLocalTurn) return;
@@ -114,6 +113,7 @@ export function useBoardController({
 		return () => controller.abort();
 	}, [enableHelperMode, learnLevel, chessPosition, gameId, color, chessGame]);
 
+	/// Reset the helper state when it's not the player's turn or when helper mode is disabled.
 	useEffect(() => {
 		if (!enableHelperMode) return;
 		if (isMyLocalTurn) return;
@@ -130,6 +130,7 @@ export function useBoardController({
 		playMoveEffect.current = loadMoveEffect();
 	}, []);
 
+	/// Update the chess position when the FEN changes, and notify the parent component of turn changes.
 	useEffect(() => {
 		if (!fen) return;
 
@@ -150,6 +151,7 @@ export function useBoardController({
 		onTurnChange?.(currentTurn);
 	}, [fen, currentTurn, chessGame, onTurnChange]);
 
+	/// Check if a move is a promotion move.
 	const isPromotionMove = useCallback(
 		(sourceSquare: string, targetSquare: string) => {
 			try {
@@ -165,9 +167,10 @@ export function useBoardController({
 		[chessGame],
 	);
 
+	/// Submit a move to the server and update the local chess position.
 	const submitMove = useCallback(
 		(from: string, to: string, promotion?: PromotionPiece) => {
-			if (!gameId || !socket || currentTurn !== color || gameOver ) return false;
+			if (!gameId || !socket || currentTurn !== color || gameOver) return false;
 			if (chessGame.turn() !== color || chessGame.isGameOver()) return false;
 
 			const moveData = promotion ? { from, to, promotion } : { from, to };
@@ -190,6 +193,7 @@ export function useBoardController({
 		[socket, gameId, color, currentTurn, chessGame],
 	);
 
+	/// Handle piece drop events on the chessboard, including promotion handling.
 	const onPieceDrop = useCallback(
 		({ sourceSquare, targetSquare }: PieceDropHandlerArgs) => {
 			if (!gameId || !socket || currentTurn !== color || gameOver) return false;
@@ -213,6 +217,7 @@ export function useBoardController({
 		[socket, gameId, color, currentTurn, chessGame, isPromotionMove, submitMove],
 	);
 
+	/// Handle promotion selection by submitting the move with the selected promotion piece.
 	const onPromotionSelect = useCallback(
 		(piece: PromotionPiece) => {
 			if (!pendingPromotion) return;

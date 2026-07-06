@@ -5,8 +5,6 @@ import { getWinRate } from "../utils/getWinRate";
 export function userToProfileStats(user: PublicProfile | null): ProfileStatsVM {
 	const score = user?.score;
 
-	console.log("userToProfileStats: User score:", score);
-
 	if (!score) {
 		return {
 			userId: 0,

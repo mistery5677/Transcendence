@@ -83,131 +83,143 @@ const ENDGAME_CONDITIONS = [
 ];
 
 export function Rules() {
-	const [isPlaying, setIsPlaying] = useState(false); //
+	const [isPlaying, setIsPlaying] = useState(false);
 
 	return (
-		<div className="relative min-h-screen overflow-hidden bg-stone-900 pt-24 pb-12 px-4 sm:px-6 lg:px-8 text-stone-200">
-			{/* Background blobs */}
-			<div className="pointer-events-none absolute -top-28 -left-20 h-80 w-80 rounded-full bg-stone-400/20 blur-3xl" />
-			<div className="pointer-events-none absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-amber-200/10 blur-3xl" />
-			<div className="pointer-events-none absolute -bottom-28 left-1/4 h-80 w-80 rounded-full bg-stone-600/20 blur-3xl" />
+		<div className="relative min-h-screen overflow-hidden bg-stone-900 pt-24 pb-16 px-4 sm:px-6 lg:px-8 text-stone-200">
+			{/* Decorative background ambient flares */}
+			<div className="pointer-events-none absolute -top-28 -left-20 h-80 w-80 rounded-full bg-stone-400/10 blur-3xl" />
+			<div className="pointer-events-none absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-amber-200/5 blur-3xl" />
+			<div className="pointer-events-none absolute -bottom-28 left-1/4 h-80 w-80 rounded-full bg-stone-600/10 blur-3xl" />
 
 			<div className="relative max-w-4xl mx-auto">
-				<div className="bg-stone-900/70 backdrop-blur-md p-6 sm:p-10 rounded-3xl border border-stone-700 shadow-2xl">
-					<h1 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-teal-500 mb-8 text-center drop-shadow-sm">
-						Chess Rules
+				<div className="bg-stone-900/50 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/10 shadow-2xl">
+					{/* main component title (H1) */}
+					<h1 className="text-4xl sm:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 mb-12 text-center drop-shadow-sm">
+						Chess Rules & Strategies
 					</h1>
 
-					{/* 1. Objective */}
-					<section className="mb-10">
-						<h2 className="text-2xl font-bold text-stone-100 mb-4 border-b border-stone-700 pb-2">
+					{/* 1. OBJECTIVE */}
+					<section className="mb-12">
+						<h2 className="text-xl sm:text-2xl font-extrabold text-stone-100 mb-4 border-b border-white/5 pb-2.5 tracking-tight">
 							1. The Objective of the Game
 						</h2>
-						<p className="text-stone-400 leading-relaxed">{GAME_OBJECTIVE}</p>
+						<p className="text-stone-400 text-base sm:text-lg leading-relaxed font-normal">
+							{GAME_OBJECTIVE}
+						</p>
 					</section>
 
-					{/* 2. Peaces */}
-					<section className="mb-10">
-						<h2 className="text-2xl font-bold text-stone-100 mb-4 border-b border-stone-700 pb-2">
+					{/* 2. PIECES */}
+					<section className="mb-12">
+						<h2 className="text-xl sm:text-2xl font-extrabold text-stone-100 mb-6 border-b border-white/5 pb-2.5 tracking-tight">
 							2. How the Pieces Move
 						</h2>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							{PIECES.map((piece) => (
 								<div
 									key={piece.name}
-									className="bg-stone-800/50 p-4 rounded-xl border border-stone-700/50 hover:border-emerald-500/30 transition-colors">
-									<h3 className="text-emerald-400 font-bold text-lg mb-2 flex items-center gap-2">
-										{piece.icon} {piece.name}
+									className="bg-stone-950/30 p-5 rounded-2xl border border-white/5 hover:border-emerald-500/20 transition-all duration-200 group">
+									<h3 className="text-emerald-400 font-bold text-base sm:text-md mb-2 flex items-center gap-2 group-hover:text-emerald-300 transition-colors">
+										<span className="text-xl sm:text-2xl select-none">{piece.icon}</span>
+										<span>{piece.name}</span>
 									</h3>
-									<p className="text-stone-400 text-sm">{piece.description}</p>
+									<p className="text-stone-400 text-xs sm:text-sm leading-relaxed font-light">
+										{piece.description}
+									</p>
 								</div>
 							))}
 						</div>
 					</section>
 
-					{/* 3. Special Rules */}
-					<section className="mb-10">
-						<h2 className="text-2xl font-bold text-stone-100 mb-4 border-b border-stone-700 pb-2">
+					{/* 3. SPECIAL RULES */}
+					<section className="mb-12">
+						<h2 className="text-xl sm:text-2xl font-extrabold text-stone-100 mb-5 border-b border-white/5 pb-2.5 tracking-tight">
 							3. Special Rules
 						</h2>
-						<ul className="space-y-4 text-stone-400">
+						<ul className="space-y-4 text-stone-400 text-sm sm:text-base font-light">
 							{SPECIAL_RULES.map((rule) => (
 								<li
 									key={rule.name}
-									className="flex gap-3">
-									<span className="text-emerald-500 font-black">»</span>
-									<div>
-										<strong className="text-stone-200">{rule.name}:</strong> {rule.description}
+									className="flex gap-3 items-start">
+									<span className="text-emerald-500 font-bold text-lg leading-none mt-0.5 select-none">
+										»
+									</span>
+									<div className="leading-relaxed">
+										<strong className="text-stone-200 font-semibold">{rule.name}:</strong>{" "}
+										{rule.description}
 									</div>
 								</li>
 							))}
 						</ul>
 					</section>
 
-					{/* 4. End game*/}
-					<section>
-						<h2 className="text-2xl font-bold text-stone-100 mb-4 border-b border-stone-700 pb-2">
+					{/* 4. ENDGAME CONDITIONS */}
+					<section className="mb-12">
+						<h2 className="text-xl sm:text-2xl font-extrabold text-stone-100 mb-5 border-b border-white/5 pb-2.5 tracking-tight">
 							4. Endgame Conditions
 						</h2>
-						<div className="overflow-x-auto">
-							<table className="w-full text-left border-collapse">
-								<thead>
-									<tr className="bg-stone-800 text-stone-300">
-										<th className="p-3 border border-stone-700 rounded-tl-lg">Result</th>
-										<th className="p-3 border border-stone-700 rounded-tr-lg">Description</th>
-									</tr>
-								</thead>
-								<tbody className="text-stone-400 text-sm">
-									{ENDGAME_CONDITIONS.map((condition, index) => (
-										<tr
-											key={index}
-											className={condition.bgClass}>
-											<td className={`p-3 border border-stone-700 font-bold ${condition.color}`}>
-												{condition.result}
-											</td>
-											<td className="p-3 border border-stone-700">{condition.description}</td>
+						<div className="overflow-hidden rounded-2xl border border-white/5 bg-stone-950/20 shadow-xs">
+							<div className="overflow-x-auto">
+								<table className="w-full text-left border-collapse text-xs sm:text-sm">
+									<thead>
+										<tr className="bg-stone-900 border-b border-white/5 text-stone-300 font-medium">
+											<th className="p-4 font-semibold tracking-wide">Result</th>
+											<th className="p-4 font-semibold tracking-wide">Description</th>
 										</tr>
-									))}
-								</tbody>
-							</table>
+									</thead>
+									<tbody className="text-stone-400 divide-y divide-white/[0.03] font-light">
+										{ENDGAME_CONDITIONS.map((condition, index) => (
+											<tr
+												key={index}
+												className={`${condition.bgClass} hover:bg-white/[0.01] transition-colors`}>
+												<td
+													className={`p-4 font-bold whitespace-nowrap tracking-wide ${condition.color}`}>
+													{condition.result}
+												</td>
+												<td className="p-4 leading-relaxed text-stone-300">
+													{condition.description}
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</section>
 
-					{/* 5. Learning video*/}
+					{/* 5. LEARNING VIDEO */}
 					<section>
-						<br />
-						<h2 className="text-2xl font-bold text-stone-100 mb-4 border-b border-stone-700 pb-2">
-							5. Learning video
+						<h2 className="text-xl sm:text-2xl font-extrabold text-stone-100 mb-5 border-b border-white/5 pb-2.5 tracking-tight">
+							5. Video Tutorial
 						</h2>
 
-						{/* Video container */}
-						<div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-stone-700 shadow-xl bg-stone-900">
+						{/* Video Container Aspect Frame */}
+						<div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-stone-950 group">
 							{!isPlaying ? (
 								<div
-									className="absolute inset-0 cursor-pointer group"
+									className="absolute inset-0 cursor-pointer"
 									onClick={() => setIsPlaying(true)}>
 									<img
 										src="https://img.youtube.com/vi/ej_fnsdsksA/maxresdefault.jpg"
-										alt="Capa do vídeo"
-										className="w-full h-full object-cover"
+										alt="Video Thumbnail"
+										className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
 									/>
 
-									{/* Custom button */}
-									<div className="absolute inset-0 bg-stone-950/40 flex items-center justify-center group-hover:bg-stone-950/20 transition-all duration-300">
-										<div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
-											{/* Ícone de Play */}
-											<span className="text-white text-3xl ml-2">▶</span>
+									{/* Custom Interactive Hover Play Overlays */}
+									<div className="absolute inset-0 bg-stone-950/40 flex items-center justify-center transition-colors duration-300 group-hover:bg-stone-950/20">
+										<div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:bg-emerald-400">
+											<span className="text-2xl sm:text-3xl ml-1.5 select-none">▶</span>
 										</div>
 									</div>
 								</div>
 							) : (
-								/* Youtube video frame */
 								<iframe
 									className="w-full h-full"
 									src="https://www.youtube.com/embed/ej_fnsdsksA?autoplay=1"
-									title="YouTube video player"
+									title="YouTube chess tutorial player"
 									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-									allowFullScreen></iframe>
+									allowFullScreen
+								/>
 							)}
 						</div>
 					</section>
