@@ -60,6 +60,7 @@ export class MatchGateway {
       opponentId: 'bot',
       fen: newGame.chess.fen(),
       currentTurn: newGame.chess.turn(),
+      gameHistory: newGame.chess.history(),
       mode: 'bot',
       whiteTimeLeft: newGame.whiteTimeLeft,
       blackTimeLeft: newGame.blackTimeLeft,
@@ -92,6 +93,7 @@ export class MatchGateway {
       currentTurn: newGame.chess.turn(),
       mode: 'ai',
       level: payload.level ?? 5,
+      gameHistory: newGame.chess.history(),
       whiteTimeLeft: newGame.whiteTimeLeft,
       blackTimeLeft: newGame.blackTimeLeft,
     });

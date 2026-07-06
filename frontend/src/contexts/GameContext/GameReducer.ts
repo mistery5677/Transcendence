@@ -5,6 +5,7 @@ export const initialState = {
 	color: "w" as "w" | "b" | null,
 	fen: "start",
 	currentTurn: "w" as "w" | "b",
+	gameHistory: [] as string[],
 	gameOver: null as GameOverState,
 	messages: [] as MessageType[],
 	drawProposal: false,
@@ -37,6 +38,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 				fen: action.payload.fen,
 				currentTurn: action.payload.currentTurn,
 				opponentId: action.payload.opponentId,
+				gameHistory: action.payload.gameHistory ?? [],
 				messages: action.payload.chatHistory ?? [],
 				whiteTimeLeft: action.payload.whiteTimeLeft ?? 10,
 				blackTimeLeft: action.payload.blackTimeLeft ?? 10,
@@ -48,6 +50,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 				...state,
 				fen: action.payload.fen,
 				currentTurn: action.payload.currentTurn,
+				gameHistory: action.payload.gameHistory ?? state.gameHistory,
 				whiteTimeLeft: action.payload.whiteTimeLeft ?? state.whiteTimeLeft,
 				blackTimeLeft: action.payload.blackTimeLeft ?? state.blackTimeLeft,
 			};

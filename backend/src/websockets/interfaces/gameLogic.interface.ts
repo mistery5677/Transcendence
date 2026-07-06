@@ -43,6 +43,7 @@ export type GameState = {
   gameHistory: string[];
   mode: 'online' | 'bot' | 'ai';
   chatHistory: ChatRoomMessage[];
+
   whiteTimeLeft: number;
   blackTimeLeft: number;
 };

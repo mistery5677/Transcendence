@@ -25,6 +25,7 @@ export type GameState = {
 	currentTurn: "w" | "b";
 	gameOver: GameOverState;
 	messages: MessageType[];
+	gameHistory: string[];
 	drawProposal: boolean;
 	rematchProposal: boolean;
 	opponentId: string | null;

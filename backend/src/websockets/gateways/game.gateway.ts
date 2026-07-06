@@ -259,6 +259,7 @@ export class GameGateway {
       whiteTimeLeft: moveData.whiteTimeLeft,
       blackTimeLeft: moveData.blackTimeLeft,
     });
+    console.log(game.chess.history());
     const gameOver = this.gameService.checkGameOver(gameId);
     if (gameOver) {
       this.server.to(gameId).emit('gameOver', { gameOver });
