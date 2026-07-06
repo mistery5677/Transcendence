@@ -21,6 +21,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	const [opponentId, setOpponentId] = useState<string | null>(null);
 	const [lastFinishedGameId, setLastFinishedGameId] = useState<string | null>(null);
 	const [isSearchingMatch, setIsSearchingMatch] = useState<boolean>(false);
+	const [isSpectator, setIsSpectator] = useState<boolean>(false);
 
 	const gameIdRef = React.useRef<string | null>(null);
 	const hasUser = !!authState.user;
@@ -118,6 +119,11 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		socket.emit("startAIGame", options);
 	};
 
+	const spectateGame = (targetGameId: string) => {
+		if (!socket) return;
+		socket.emit("spectateGame", { gameId: targetGameId });
+	};
+
 	const resetGameContextToDefault = () => {
 		setGameOver(null);
 		setFen("start");
@@ -164,6 +170,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		socket.emit("checkActiveGame");
 
 		const onGameState = (data: any) => {
+			setIsSpectator(false);
 			setIsSearchingMatch(false);
 			setGameId(data.gameId);
 			gameIdRef.current = data.gameId;
@@ -221,7 +228,21 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 			toastWrapper.success("Opponent has reconnected, ready to play");
 		};
 
+		const onSpectatorState = (data: any) => {
+			setIsSpectator(true);
+			setGameId(data.gameId);
+			gameIdRef.current = data.gameId;
+			setFen(data.fen);
+			setCurrentTurn(data.turn);
+			if (data.chatHistory) {
+				setMessages(data.chatHistory);
+			}
+			setWhiteTimeLeft(data.whiteTimeLeft ?? 10);
+			setBlackTimeLeft(data.blackTimeLeft ?? 10);
+		};
+
 		socket.on("gameState", onGameState);
+		socket.on("spectatorState", onSpectatorState);
 		socket.on("noActiveGame", onNoActiveGame);
 		socket.on("move", onMove);
 		socket.on("gameOver", onGameOver);
@@ -234,6 +255,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 			console.log("[Game] Exiting of game board. Removing all listeners");
 			socket.off("noActiveGame", onNoActiveGame);
 			socket.off("gameState", onGameState);
+			socket.off("spectatorState", onSpectatorState);
 			socket.off("move", onMove);
 			socket.off("gameOver", onGameOver);
 			socket.off("activeGameNotFound", onActiveGameNotFound);
@@ -311,6 +333,8 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 				setMessages,
 				resetGameContextToDefault,
 				inviteToPlay,
+				isSpectator,
+				spectateGame,
 				// Timer variables
 				whiteTimeLeft,
 				blackTimeLeft,

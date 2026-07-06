@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { RouterPaths } from "./RouterPath";
 import { Error, Home, Settings, Ze, LeaderBoards, Friends, HistoryPage } from "../../pages";
 import { FallBack, Login, Signup, MultiRoute, NavBar } from "../../components";
@@ -16,10 +16,10 @@ import { LiveGames } from "../../pages/LiveGames/LiveGames";
 
 type ActivateModal = "signup" | "login" | null;
 
-function PlayRouteWithProvider() {
+function GameProviderLayout() {
 	return (
 		<GameProvider>
-			<Play />
+			<Outlet />
 		</GameProvider>
 	);
 }
@@ -57,10 +57,10 @@ export function MainRouter() {
 								element={<Ze />}
 							/>
 							{state.user && (
-								<Route
-									path={RouterPaths.PLAY}
-									element={<PlayRouteWithProvider />}
-								/>
+								<Route element={<GameProviderLayout />}>
+									<Route path={RouterPaths.PLAY} element={<Play />} />
+									<Route path={RouterPaths.LIVEGAMES} element={<LiveGames />} />
+								</Route>
 							)}
 							{!state.user && activeModal === "login" && (
 								<Route
@@ -97,12 +97,6 @@ export function MainRouter() {
 								<Route
 									path={RouterPaths.FRIENDS}
 									element={<Friends />}
-								/>
-							)}
-							{state.user && (
-								<Route
-									path={RouterPaths.LIVEGAMES}
-									element={<LiveGames />}
 								/>
 							)}
 							{state.user && (

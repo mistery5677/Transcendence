@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGlobalSocket } from "../../contexts/GlobalSocketContext/GlobalSocketContext";
+import { useGame } from "../../contexts/GameContext/GameContext";
 
 type ActiveGame = {
 	gameId: string;
@@ -10,6 +12,8 @@ type ActiveGame = {
 
 export function LiveGames() {
 	const { socket } = useGlobalSocket();
+	const { spectateGame } = useGame();
+	const navigate = useNavigate();
 	const [games, setGames] = useState<ActiveGame[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 
@@ -66,10 +70,12 @@ export function LiveGames() {
 										Player {game.playerW} vs {game.playerB || "Bot"}{" "}
 										<span className="text-stone-400 text-sm">({game.mode})</span>
 									</div>
-									{/* Botão ainda sem ação — ligado no Passo 4 */}
 									<button
-										disabled
-										className="px-5 py-2 rounded-xl bg-emerald-900/30 text-emerald-300/50 border border-emerald-700/30 cursor-not-allowed font-semibold">
+										onClick={() => {
+											spectateGame(game.gameId);
+											navigate("/play");
+										}}
+										className="px-5 py-2 rounded-xl bg-emerald-900/30 text-emerald-300 border border-emerald-700/30 hover:bg-emerald-800/40 cursor-pointer font-semibold transition-colors">
 										Watch
 									</button>
 								</div>

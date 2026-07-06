@@ -27,6 +27,8 @@ export type GameContextType = {
 	currentTurn: "w" | "b";
 	opponentId: string | null;
 	isSearchingMatch: boolean;
+	isSpectator: boolean;
+	spectateGame: (gameId: string) => void;
 	gameOver: GameOverState;
 	drawProposal: boolean;
 	rematchProposal: boolean;
