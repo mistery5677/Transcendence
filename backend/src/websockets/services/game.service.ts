@@ -3,53 +3,13 @@ import { Chess } from 'chess.js';
 import { MatchesService } from 'src/matches/matches.service';
 
 import { PresenceService } from './presence.service';
-
-interface GameOverResult {
-  winnerColor: 'w' | 'b' | null;
-  winnerId: number | null;
-  reason:
-    | 'CHECKMATE'
-    | 'DRAW'
-    | 'STALEMATE'
-    | 'THREEFOLD_REPETITION'
-    | 'RESIGNATION'
-    | 'DISCONNECTION_TIMEOUT'
-    | 'TIMEOUT';
-}
-
-interface ChatMessage {
-  from: string;
-  avatarUrl?: string;
-  message: string;
-  timeStamp: string;
-}
-
-export interface GameInstance {
-  chess: Chess;
-  mode: 'online' | 'bot' | 'ai';
-  level: number | undefined;
-  playerW: string;
-  playerB: string;
-  isFinished?: boolean;
-  disconnectTimeout?: NodeJS.Timeout;
-
-  // Timer variables
-  timeStamp: '3 min' | '5 min' | '10 min'; // Time when the game started
-  whiteTimeLeft: number;
-  blackTimeLeft: number;
-  lastMoveTimestamp: number; // Time of the last move
-  chatHistory: ChatMessage[];
-}
-
-export type GameState = {
-  fen: string;
-  turn: 'w' | 'b';
-  gameHistory: string[];
-  mode: 'online' | 'bot' | 'ai';
-  chatHistory: ChatMessage[];
-  whiteTimeLeft: number;
-  blackTimeLeft: number;
-};
+import {
+  ChessMoveDetails,
+  GameInstance,
+  GameOverResult,
+  GameState,
+  MoveResult,
+} from '../interfaces/gameLogic.interface';
 
 @Injectable()
 export class GameService {
@@ -102,7 +62,7 @@ export class GameService {
     return this.games.get(gameId);
   }
 
-  makeMove(gameId: string, move: any) {
+  makeMove(gameId: string, move: any): MoveResult | null {
     const game = this.games.get(gameId);
     if (!game) return null;
 
@@ -128,7 +88,7 @@ export class GameService {
       }
 
       return {
-        result,
+        result: result as ChessMoveDetails,
         fen: game.chess.fen(),
         currentTurn: game.chess.turn(),
         whiteTimeLeft: game.whiteTimeLeft,
@@ -139,7 +99,7 @@ export class GameService {
     }
   }
 
-  generateBotMove(gameId: string) {
+  generateBotMove(gameId: string): MoveResult | null {
     const game = this.games.get(gameId);
     if (!game || game.chess.isGameOver()) return null;
 
@@ -151,14 +111,15 @@ export class GameService {
       possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
 
     game.blackTimeLeft = Math.max(0, game.blackTimeLeft - elapsedSeconds);
-    game.chess.move(randomMove);
+
+    const moveResult = game.chess.move(randomMove);
 
     game.lastMoveTimestamp = Date.now();
 
     return {
-      randomMove,
+      result: moveResult as ChessMoveDetails,
       fen: game.chess.fen(),
-      currentTurn: game.chess.turn(),
+      currentTurn: game.chess.turn() as 'w' | 'b',
       whiteTimeLeft: game.whiteTimeLeft,
       blackTimeLeft: game.blackTimeLeft,
     };

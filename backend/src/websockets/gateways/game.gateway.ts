@@ -6,15 +6,23 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { GameInstance, GameService } from '../services/game.service';
+import { GameService } from '../services/game.service';
 import { v4 as uuidv4 } from 'uuid';
 import { StockfishService } from 'src/stockfish/stockfish.service';
 import { AchievementsService } from 'src/achievements/achievements.service';
+import { GameInstance, MoveResult } from '../interfaces/gameLogic.interface';
+import {
+  GameIdDto,
+  MoveDto,
+  RespondDrawDto,
+  RespondRematchDto,
+  ServerToClientEvents,
+} from '../dtos/gameEvents.dtos';
 
 @WebSocketGateway({ cors: true })
 export class GameGateway {
   @WebSocketServer()
-  server!: Server;
+  server!: Server<any, ServerToClientEvents>;
 
   constructor(
     private readonly gameService: GameService,
@@ -91,7 +99,7 @@ export class GameGateway {
   @SubscribeMessage('requestSurrender')
   handleSurrender(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { gameId: string },
+    @MessageBody() data: GameIdDto,
   ): void {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
@@ -113,7 +121,7 @@ export class GameGateway {
   @SubscribeMessage('proposeDraw')
   handleDrawPropose(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { gameId: string },
+    @MessageBody() data: GameIdDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
@@ -124,7 +132,7 @@ export class GameGateway {
   @SubscribeMessage('respondDraw')
   handleRespondDraw(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { gameId: string; response: boolean },
+    @MessageBody() data: RespondDrawDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
@@ -141,7 +149,7 @@ export class GameGateway {
   @SubscribeMessage('proposeRematch')
   handleRematchPropose(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { gameId: string },
+    @MessageBody() data: GameIdDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
@@ -154,7 +162,7 @@ export class GameGateway {
   @SubscribeMessage('respondRematch')
   handleRespondRematch(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { gameId: string; response: boolean },
+    @MessageBody() data: RespondRematchDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
@@ -191,7 +199,7 @@ export class GameGateway {
   @SubscribeMessage('move')
   async handleMove(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { gameId: string; move: any },
+    @MessageBody() data: MoveDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
@@ -224,7 +232,7 @@ export class GameGateway {
   @SubscribeMessage('timeOut')
   async handleTimeOut(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { gameId: string },
+    @MessageBody() data: GameIdDto,
   ): Promise<void> {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
     if (!game) return;
@@ -240,18 +248,17 @@ export class GameGateway {
     }
   }
 
-  private processGameState(gameId: string, move: any): boolean {
+  private processGameState(gameId: string, moveData: MoveResult): boolean {
     const game = this.gameService.getGame(gameId);
     if (!game) return false;
-
     this.server.to(gameId).emit('move', {
-      move: move,
+      move: moveData.result,
       fen: game.chess.fen(),
-      currentTurn: game?.chess.turn(),
-      whiteTimeLeft: move.whiteTimeLeft,
-      blackTimeLeft: move.blackTimeLeft,
+      currentTurn: game.chess.turn() as 'w' | 'b',
+      gameHistory: game.chess.history(),
+      whiteTimeLeft: moveData.whiteTimeLeft,
+      blackTimeLeft: moveData.blackTimeLeft,
     });
-
     const gameOver = this.gameService.checkGameOver(gameId);
     if (gameOver) {
       this.server.to(gameId).emit('gameOver', { gameOver });

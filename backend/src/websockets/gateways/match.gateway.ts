@@ -9,7 +9,6 @@ import { MatchMakingService } from '../services/matchmaking.service';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { GameService } from '../services/game.service';
-import { UsersService } from 'src/users/users.service';
 
 interface QueuePayload {
   time?: string;
@@ -28,7 +27,6 @@ export class MatchGateway {
   constructor(
     private readonly matchMakingService: MatchMakingService,
     private readonly gameService: GameService,
-    private readonly userService: UsersService,
   ) {}
 
   @SubscribeMessage('joinQueue')
