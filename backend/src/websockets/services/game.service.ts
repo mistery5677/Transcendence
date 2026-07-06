@@ -88,7 +88,7 @@ export class GameService {
       }
 
       return {
-        result: result as ChessMoveDetails,
+        moveDetails: result as ChessMoveDetails,
         fen: game.chess.fen(),
         currentTurn: game.chess.turn(),
         whiteTimeLeft: game.whiteTimeLeft,
@@ -117,7 +117,7 @@ export class GameService {
     game.lastMoveTimestamp = Date.now();
 
     return {
-      result: moveResult as ChessMoveDetails,
+      moveDetails: moveResult as ChessMoveDetails,
       fen: game.chess.fen(),
       currentTurn: game.chess.turn() as 'w' | 'b',
       whiteTimeLeft: game.whiteTimeLeft,
@@ -240,8 +240,8 @@ export class GameService {
     // Save the match history
     if (game.mode === 'online') {
       this.matchesService.saveMatchResult(
-        parseInt(game.playerB),
         parseInt(game.playerW),
+        parseInt(game.playerB),
         parseInt(winnerId),
       );
     }

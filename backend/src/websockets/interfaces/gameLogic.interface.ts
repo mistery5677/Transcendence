@@ -1,4 +1,4 @@
-import { Chess } from "chess.js";
+import { Chess } from 'chess.js';
 
 export interface GameOverResult {
   winnerColor: 'w' | 'b' | null;
@@ -58,7 +58,7 @@ export interface ChessMoveDetails {
 }
 
 export interface MoveResult {
-  result: ChessMoveDetails;
+  moveDetails: ChessMoveDetails;
   fen: string;
   currentTurn: 'w' | 'b';
   whiteTimeLeft: number;

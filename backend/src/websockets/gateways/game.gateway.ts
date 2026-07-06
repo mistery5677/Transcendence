@@ -252,7 +252,7 @@ export class GameGateway {
     const game = this.gameService.getGame(gameId);
     if (!game) return false;
     this.server.to(gameId).emit('move', {
-      move: moveData.result,
+      move: moveData.moveDetails,
       fen: game.chess.fen(),
       currentTurn: game.chess.turn() as 'w' | 'b',
       gameHistory: game.chess.history(),
