@@ -1,5 +1,5 @@
 import { DiscreteSlider } from "../DiscreteSlider/DiscreteSlider";
-import { MatchSidebarButton } from "../MatchSidebarButton/MatchSidebarButton";
+import { MatchSidebarButton } from "../MatchSidebar/MatchSidebarButton/MatchSidebarButton";
 
 type MatchOptionsProps = {
 	selectedTime: string;

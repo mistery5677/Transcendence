@@ -20,7 +20,7 @@ export type GameAction =
 	| { type: "START_GAME"; payload: any }
 	| { type: "MOVE"; payload: any }
 	| { type: "GAME_OVER"; payload: any; lastGameId: string | null }
-	| { type: "SET_DRAW_PROPOSAL"; payload: boolean }
+	| { type: "SET_DRAW_PROPOSAL"; payload: boolean } 
 	| { type: "SET_REMATCH_PROPOSAL"; payload: boolean }
 	| { type: "SET_MESSAGES"; payload: MessageType[] }
 	| { type: "TICK_CLOCK"; payload: { turn: "w" | "b" } }

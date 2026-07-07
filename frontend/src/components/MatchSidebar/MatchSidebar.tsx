@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Chat } from "../Chat/Chat";
-import { MatchSidebarButton } from "../MatchSidebarButton/MatchSidebarButton";
+import { MatchSidebarButton } from "./MatchSidebarButton/MatchSidebarButton";
 import { GameSettings } from "./GameSettings/GameSettings";
-import { PlayOptions } from "../PlayOptions/PlayOptions";
+import { PlayOptions } from "./PlayOptions/PlayOptions";
+import { Actions } from "./Actions/Actions";
 
 type currentTabOpt = "chat" | "actions" | "settings" | "playOptions" | null;
 
@@ -56,6 +57,12 @@ export function MatchSidebar() {
 				</div>
 				{menu.currentTab === "settings" && <GameSettings />}
 				{menu.currentTab === "playOptions" && <PlayOptions />}
+				<div className={menu.currentTab === "actions" ? "block h-full flex-1" : "hidden"}>
+					<div className="flex flex-col gap-4 p-4">
+						<p className="text-sm sm:text-base md:text-lg text-stone-400">Actions</p>
+						<Actions />
+					</div>
+				</div>
 			</section>
 
 			<section className="mt-auto w-full p-5 sm:p-6 bg-stone-900 border-t border-stone-700 shrink-0">

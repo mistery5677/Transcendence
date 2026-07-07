@@ -3,7 +3,7 @@ import type { PublicProfile } from "../types";
 import type { PlayerData } from "./PlayerDataType";
 
 // Change the password
-export async function updatePassword(currentPassword: string, newPassword: string) {
+export async function updatePassword(currentPassword: string, newPassword: string) : Promise<void> {
 	const res = await fetch("/api/users/me/password", {
 		method: "PATCH",
 		credentials: "include",
@@ -14,7 +14,7 @@ export async function updatePassword(currentPassword: string, newPassword: strin
 }
 
 // Updates the profile image
-export async function updateAvatar(picture: File) {
+export async function updateAvatar(picture: File) : Promise<void> {
 	const formData = new FormData();
 	formData.append("file", picture);
 

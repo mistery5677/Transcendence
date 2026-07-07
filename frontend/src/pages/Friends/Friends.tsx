@@ -25,9 +25,13 @@ type FriendSuggestion = {
 	};
 };
 
-export function Friends() {
+type FriendsProps = {
+	activeTab?: FriendsTab;
+};
+
+export function Friends({ activeTab: initialTab }: FriendsProps) {
 	const { state } = useAuth();
-	const [activeTab, setActiveTab] = useState<FriendsTab>("list");
+	const [activeTab, setActiveTab] = useState<FriendsTab>(initialTab || "list");
 
 	// Data States
 	const [friends, setFriends] = useState<any[]>([]);
@@ -224,7 +228,12 @@ export function Friends() {
 						{friends.length === 0 ? (
 							<p className="text-stone-400 text-center py-12 text-base">
 								You don't have any friends yet. Go to{" "}
-								<span className="text-emerald-400 font-medium">Add Friend</span> to find some rivals!
+								<button
+									onClick={() => setActiveTab("add")}
+									className="text-emerald-400 font-medium hover:underline">
+									Add Friend
+								</button>{" "}
+								to find some rivals!
 							</p>
 						) : (
 							friends.map((friend) => (
@@ -237,7 +246,7 @@ export function Friends() {
 											className="relative size-12 shrink-0 rounded-full border border-white/10
 										 bg-stone-800 flex items-center justify-center">
 											<img
-												className="rounded-full size-full object-cover"
+												className="rounded-full size-full object-fit"
 												src={friend.avatarUrl || "/placeholder-avatar.png"}
 												alt=""
 											/>
@@ -289,7 +298,7 @@ export function Friends() {
 									<div className="flex items-center gap-4 min-w-0">
 										<div className="size-10 shrink-0 rounded-full border border-white/5 bg-stone-800 flex items-center justify-center">
 											<img
-												className="rounded-full size-full object-cover"
+												className="rounded-full size-full object-fit"
 												src={req.sender.avatarUrl || "/placeholder-avatar.png"}
 												alt=""
 											/>

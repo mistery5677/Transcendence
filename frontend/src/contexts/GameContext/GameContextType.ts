@@ -40,6 +40,7 @@ export type GameContextType = {
 	color: "w" | "b" | null;
 	isConnected: boolean;
 	fen: string;
+	gameHistory: string[];
 	currentTurn: "w" | "b";
 	opponentId: string | null;
 	gameOver: GameOverState;

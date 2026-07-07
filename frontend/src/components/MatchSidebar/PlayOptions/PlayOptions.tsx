@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import penguinBot from "../../assets/penguin-pudgy.gif";
-import penguinPlayer from "../../assets/penguin-player.gif";
-import penguinSensei from "../../assets/penguin-sensei.gif";
-import { useGame } from "../../contexts/GameContext/GameContext";
-import { toastWrapper } from "../../adapters/toastWrapper";
+import penguinBot from "../../../assets/penguin-pudgy.gif";
+import penguinPlayer from "../../../assets/penguin-player.gif";
+import penguinMaster from "../../../assets/penguin-master.gif";
+import { useGame } from "../../../contexts/GameContext/GameContext";
+import { toastWrapper } from "../../../adapters/toastWrapper";
 import { PlayOptionsCard, type PlayMode, type PlayOptionCardContent } from "./PlayOptionsCard";
-import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
+import { useMatchMaking } from "../../../contexts/MatchMakingContext/MatchMakingContext";
 
 type ModeVisual = {
 	imageSrc: string;
@@ -37,7 +37,7 @@ const CARD_CONTENT: Record<PlayMode, PlayOptionCardContent> = {
 const CARD_VISUALS: Record<PlayMode, ModeVisual> = {
 	bot: { imageSrc: penguinBot, imageAlt: "Penguin bot" },
 	player: { imageSrc: penguinPlayer, imageAlt: "Player versus player" },
-	AI: { imageSrc: penguinSensei, imageAlt: "Penguin sensei" },
+	AI: { imageSrc: penguinMaster, imageAlt: "Penguin master" },
 };
 
 const PLAY_MODES: PlayMode[] = ["bot", "player", "AI"];

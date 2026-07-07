@@ -1,4 +1,6 @@
-export async function handleGameOver(playerAId: number, playerBId: number, matchResult: string) {
+import type { Match } from "../types/match";
+
+export async function handleGameOver(playerAId: number, playerBId: number, matchResult: string): Promise<void> {
 	try {
 		const response = await fetch("/api/matches/end", {
 			method: "POST",
@@ -18,7 +20,7 @@ export async function handleGameOver(playerAId: number, playerBId: number, match
 	}
 }
 
-export async function getMatchHistory() {
+export async function getMatchHistory(): Promise<Match[]> {
 	try {
 		// The local storage get the user token
 		const token = localStorage.getItem("token");
@@ -44,7 +46,7 @@ export async function getMatchHistory() {
 }
 
 // Used to find the match history of the username
-export async function getHistoryByUsername(username: string) {
+export async function getHistoryByUsername(username: string): Promise<Match[]> {
 	try {
 		const token = localStorage.getItem("token");
 		const response = await fetch(`/api/matches/player/${username}`, {
@@ -66,3 +68,5 @@ export async function getHistoryByUsername(username: string) {
 		return [];
 	}
 }
+
+
