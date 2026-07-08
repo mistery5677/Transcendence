@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 export type NotificationType = 'matchInvite' | 'system' | 'friendRequest';
 
-interface NotificationPayload {
+export interface NotificationPayload {
   title: string;
   message: string;
   type: NotificationType;

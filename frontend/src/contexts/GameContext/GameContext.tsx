@@ -65,6 +65,10 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	};
 
 	useEffect(() => {
+		console.log("GameContext state changed:", state.gameHistory);
+	}, [state.gameHistory]);
+
+	useEffect(() => {
 		if (!state.gameId || state.gameOver || !state.color) return;
 
 		const interval = setInterval(() => {

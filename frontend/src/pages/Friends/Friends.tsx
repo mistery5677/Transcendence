@@ -13,6 +13,7 @@ import { toastWrapper } from "../../adapters/toastWrapper";
 import { getUsers } from "../../api/users";
 import { Link } from "react-router-dom";
 import { UserStatusBadge } from "../../components/UserStatusBandage/UserStatusBandage";
+import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
 
 type FriendsTab = "list" | "requests" | "add";
 
@@ -47,6 +48,7 @@ export function Friends({ activeTab: initialTab }: FriendsProps) {
 		friendId?: number;
 		username?: string;
 	}>({ open: false });
+	const { inviteToPlay } = useMatchMaking();
 
 	const inputRef = useRef<HTMLInputElement>(null);
 	const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -267,6 +269,7 @@ export function Friends({ activeTab: initialTab }: FriendsProps) {
 									</div>
 									<div className="flex items-center gap-2.5 shrink-0">
 										<button
+											onClick={() => inviteToPlay(friend.id)}
 											className="rounded-xl border border-emerald-400/20 bg-emerald-600/90 font-bold
 										 px-4 py-2 text-sm text-white transition-all duration-200 hover:bg-emerald-500 active:scale-98">
 											Play ⚔️
