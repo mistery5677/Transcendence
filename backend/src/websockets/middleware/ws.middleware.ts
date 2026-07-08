@@ -17,14 +17,13 @@ export const WsMiddleware = (
         throw new Error('Unauthorized');
       }
       const payload = await jwtService.verifyAsync(token);
-      //   socket.data.user = { userId: payload.userId, username: payload.username };
 
       const user = await userService.findOneById(payload.userId);
 
       socket.data.user = {
         userId: payload.userId,
         username: payload.username,
-        avatarUrl: user?.avatarUrl || null, // 👈 Guardado en RAM del socket
+        avatarUrl: user?.avatarUrl || null,
       };
       next();
     } catch (err: any) {

@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
 import { MatchesService } from 'src/matches/matches.service';
-
+import { v4 as uuidv4 } from 'uuid';
 import { PresenceService } from './presence.service';
 import {
   ChessMoveDetails,
+  CreateGameDto,
   GameInstance,
   GameOverResult,
   GameState,
   MoveResult,
 } from '../interfaces/gameLogic.interface';
+import { GameStateEmitPayload } from '../dtos/gameEvents.dtos';
 
 @Injectable()
 export class GameService {
@@ -30,32 +32,66 @@ export class GameService {
     return timeMap[timeControl] ?? 300;
   }
 
-  createGame(
+  buildGameStatePayload(
     gameId: string,
-    mode: 'online' | 'bot' | 'ai',
-    playerWId: string,
-    playerBId: string = 'bot',
-    timeControl: string = '5 min',
-    level?: number,
-  ) {
+    game: GameInstance,
+    userId: string,
+  ): GameStateEmitPayload {
+    const userColor: 'w' | 'b' = userId === game.playerW ? 'w' : 'b';
+
+    let opponentId = userId === game.playerW ? game.playerB : game.playerW;
+
+    const liveState = this.getGameState(gameId);
+
+    return {
+      gameId: gameId,
+      color: userColor,
+      opponentId: String(opponentId),
+      fen: liveState?.fen ?? game.chess.fen(),
+      currentTurn: (liveState?.turn ?? game.chess.turn()) as 'w' | 'b',
+      gameHistory: liveState?.gameHistory ?? game.chess.history(),
+      mode: game.mode,
+      whiteTimeLeft: liveState?.whiteTimeLeft ?? game.whiteTimeLeft,
+      blackTimeLeft: liveState?.blackTimeLeft ?? game.blackTimeLeft,
+      chatHistory: liveState?.chatHistory ?? game.chatHistory ?? [],
+    };
+  }
+
+  createGame(dto: CreateGameDto): { gameId: string; game: GameInstance } {
+    const { mode, playerWId, level } = dto;
+
+    const timeControl = dto.timeStamp ?? '5 min';
+    let playerBId = dto.playerBId;
+    let gameId = uuidv4();
+
+    if (mode === 'bot') {
+      playerBId = 'bot';
+      gameId = `bot_${gameId}`;
+    } else if (mode === 'ai') {
+      playerBId = 'stockfish';
+      gameId = `ai_${gameId}`;
+    } else {
+      playerBId = playerBId ?? 'unknown_player';
+    }
+
     const newGame: GameInstance = {
       chess: new Chess(),
       mode: mode,
       level: level,
       playerW: playerWId,
       playerB: playerBId,
-
-      // Start the timer
       timeStamp: timeControl as '3 min' | '5 min' | '10 min',
       whiteTimeLeft: this.getTimeControlInSeconds(timeControl),
       blackTimeLeft: this.getTimeControlInSeconds(timeControl),
       lastMoveTimestamp: Date.now(),
       chatHistory: [],
     };
+
     this.presenceService.updateStatus(playerBId, 'playing');
     this.presenceService.updateStatus(playerWId, 'playing');
     this.games.set(gameId, newGame);
-    return newGame;
+
+    return { gameId, game: newGame };
   }
 
   getGame(gameId: string): GameInstance | undefined {
@@ -90,7 +126,7 @@ export class GameService {
       return {
         moveDetails: result as ChessMoveDetails,
         fen: game.chess.fen(),
-        currentTurn: game.chess.turn(),
+        currentTurn: game.chess.turn() as 'w' | 'b',
         whiteTimeLeft: game.whiteTimeLeft,
         blackTimeLeft: game.blackTimeLeft,
       };
@@ -136,7 +172,7 @@ export class GameService {
     let currentWTime = game.whiteTimeLeft;
     let currentBTime = game.blackTimeLeft;
 
-    if (game.chess.turn() === 'w') {
+    if ((game.chess.turn() as 'w' | 'b') === 'w') {
       currentWTime = Math.max(0, currentWTime - elapsedSeconds);
     } else {
       currentBTime = Math.max(0, currentBTime - elapsedSeconds);

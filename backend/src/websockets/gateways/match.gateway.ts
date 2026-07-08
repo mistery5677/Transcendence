@@ -7,15 +7,15 @@ import {
 } from '@nestjs/websockets';
 import { MatchMakingService } from '../services/matchmaking.service';
 import { Server, Socket } from 'socket.io';
-import { v4 as uuidv4 } from 'uuid';
 import { GameService } from '../services/game.service';
+import { TimeControl } from '../interfaces/gameLogic.interface';
 
 interface QueuePayload {
-  time?: string;
+  time: TimeControl;
 }
 
 interface BotGamePayload {
-  time: string;
+  time: TimeControl;
   level?: number;
 }
 
@@ -42,29 +42,21 @@ export class MatchGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: BotGamePayload,
   ) {
-    const gameId = `bot_${uuidv4()}`;
-
-    const newGame = this.gameService.createGame(
-      gameId,
-      'bot',
-      client.data.user.userId,
-      '',
-      payload.time,
-    );
+    const userId = client.data.user.userId;
+    const { gameId, game } = this.gameService.createGame({
+      mode: 'bot',
+      playerWId: userId,
+      timeStamp: payload.time,
+    });
 
     client.join(gameId);
 
-    client.emit('gameState', {
-      gameId: gameId,
-      color: 'w',
-      opponentId: 'bot',
-      fen: newGame.chess.fen(),
-      currentTurn: newGame.chess.turn(),
-      gameHistory: newGame.chess.history(),
-      mode: 'bot',
-      whiteTimeLeft: newGame.whiteTimeLeft,
-      blackTimeLeft: newGame.blackTimeLeft,
-    });
+    const gameState = this.gameService.buildGameStatePayload(
+      gameId,
+      game,
+      userId,
+    );
+    client.emit('gameState', gameState);
   }
 
   @SubscribeMessage('startAIGame')
@@ -72,31 +64,25 @@ export class MatchGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: BotGamePayload,
   ) {
-    const gameId = `ai_${uuidv4()}`;
+    const userId = client.data.user.userId;
+    const level = payload.level ?? 5;
 
-    const newGame = this.gameService.createGame(
-      gameId,
-      'ai',
-      client.data.user.userId,
-      'stockfish',
-      payload.time ?? '5 min',
-      payload.level ?? 5,
-    );
+    const { gameId, game } = this.gameService.createGame({
+      mode: 'ai',
+      playerWId: userId,
+      timeStamp: payload.time,
+      level: level,
+    });
 
     client.join(gameId);
 
-    client.emit('gameState', {
-      gameId: gameId,
-      color: 'w',
-      opponentId: 'Uncle Carlsen (AI)',
-      fen: newGame.chess.fen(),
-      currentTurn: newGame.chess.turn(),
-      mode: 'ai',
-      level: payload.level ?? 5,
-      gameHistory: newGame.chess.history(),
-      whiteTimeLeft: newGame.whiteTimeLeft,
-      blackTimeLeft: newGame.blackTimeLeft,
-    });
+    const gameState = this.gameService.buildGameStatePayload(
+      gameId,
+      game,
+      userId,
+    );
+
+    client.emit('gameState', gameState);
   }
 
   @SubscribeMessage('checkActiveGame')
@@ -116,28 +102,15 @@ export class MatchGateway {
     }
 
     const { gameId, game } = activeMatch;
-    console.log(`[Reconnection] User ${userId} have a active game ${gameId}`);
+    console.log(`[Reconnection] User ${userId} has an active game ${gameId}`);
     client.join(gameId);
 
-    const state = this.gameService.getGameState(gameId);
-    if (state) {
-      const userColor = userId === game.playerW ? 'w' : 'b';
-      const opponentId = userId === game.playerW ? game.playerB : game.playerW;
+    const gameState = this.gameService.buildGameStatePayload(
+      gameId,
+      game,
+      userId,
+    );
 
-      client.emit('gameState', {
-        gameId: gameId,
-        fen: state.fen,
-        currentTurn: state.turn,
-        gameHistory: state.gameHistory,
-        color: userColor,
-        mode: game.mode,
-        opponentId: opponentId ? String(opponentId) : 'bot',
-        whiteTimeLeft: state.whiteTimeLeft,
-        blackTimeLeft: state.blackTimeLeft,
-        chatHistory: state.chatHistory,
-      });
-    } else {
-      client.emit('activeGameNotFound');
-    }
+    client.emit('gameState', gameState);
   }
 }

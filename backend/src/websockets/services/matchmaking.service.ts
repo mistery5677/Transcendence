@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
-import { v4 as uuidv4 } from 'uuid';
 import { GameService } from './game.service';
+import { TimeControl } from '../interfaces/gameLogic.interface';
 
 type QueuePayload = {
-  time?: string;
+  time?: TimeControl;
 };
 
 type QueueEntry = {
   client: Socket;
-  time: string;
+  time: TimeControl;
 };
 
 @Injectable()
@@ -21,7 +21,7 @@ export class MatchMakingService {
 
   addToQueue(client: Socket, server: Server, payload?: QueuePayload) {
     const userId = client.data.user.userId;
-    const selectedTime = payload?.time ?? '5 min';
+    const selectedTime: TimeControl = payload?.time ?? '5 min';
 
     this.queue = this.queue.filter(
       (entry) => entry.client.data.user.userId !== userId,
@@ -52,53 +52,35 @@ export class MatchMakingService {
     const player2 = this.queue.splice(secondIndex - 1, 1)[0];
     if (!player2) return;
 
-    this.createMatch(server, player1, player2);
+    this.createMatch(player1, player2);
   }
 
-  private createMatch(
-    server: Server,
-    player1: QueueEntry,
-    player2: QueueEntry,
-  ) {
-    const gameId = uuidv4();
+  private createMatch(player1: QueueEntry, player2: QueueEntry) {
     const selectedTime = player1.time;
 
-    this.gameService.createGame(
-      gameId,
-      'online',
-      player1.client.data.user.userId,
-      player2.client.data.user.userId,
-      selectedTime,
-    );
+    const { gameId, game } = this.gameService.createGame({
+      mode: 'online',
+      playerWId: player1.client.data.user.userId,
+      playerBId: player2.client.data.user.userId,
+      timeStamp: selectedTime,
+    });
 
     player1.client.join(gameId);
     player2.client.join(gameId);
 
-    const game = this.gameService.getGame(gameId);
-    if (!game) return;
-
-    const commonData = {
+    const payloadP1 = this.gameService.buildGameStatePayload(
       gameId,
-      fen: game.chess.fen(),
-      currentTurn: game.chess.turn(),
-      mode: 'online',
-    };
+      game,
+      player1.client.data.user.userId,
+    );
+    const payloadP2 = this.gameService.buildGameStatePayload(
+      gameId,
+      game,
+      player2.client.data.user.userId,
+    );
 
-    player1.client.emit('gameState', {
-      ...commonData,
-      color: 'w',
-      opponentId: player2.client.data.user.userId,
-      whiteTimeLeft: game.whiteTimeLeft,
-      blackTimeLeft: game.blackTimeLeft,
-    });
-
-    player2.client.emit('gameState', {
-      ...commonData,
-      color: 'b',
-      opponentId: player1.client.data.user.userId,
-      whiteTimeLeft: game.whiteTimeLeft,
-      blackTimeLeft: game.blackTimeLeft,
-    });
+    player1.client.emit('gameState', payloadP1);
+    player2.client.emit('gameState', payloadP2);
 
     this.logger.log(
       `Match created: ${gameId} | Players: ${player1.client.data.user.username} vs ${player2.client.data.user.username}`,

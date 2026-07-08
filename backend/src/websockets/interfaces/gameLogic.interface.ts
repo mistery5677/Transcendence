@@ -1,5 +1,7 @@
 import { Chess } from 'chess.js';
 
+export type TimeControl = '3 min' | '5 min' | '10 min';
+
 export interface GameOverResult {
   winnerColor: 'w' | 'b' | null;
   winnerId: number | null;
@@ -20,6 +22,14 @@ export interface ChatRoomMessage {
   timeStamp: string;
 }
 
+export interface CreateGameDto {
+  mode: 'online' | 'bot' | 'ai';
+  playerWId: string;
+  playerBId?: string;
+  timeStamp: TimeControl;
+  level?: number;
+}
+
 export interface GameInstance {
   chess: Chess;
   mode: 'online' | 'bot' | 'ai';
@@ -30,7 +40,7 @@ export interface GameInstance {
   disconnectTimeout?: NodeJS.Timeout;
 
   // Timer variables
-  timeStamp: '3 min' | '5 min' | '10 min'; // Time when the game started
+  timeStamp: TimeControl; // Time when the game started
   whiteTimeLeft: number;
   blackTimeLeft: number;
   lastMoveTimestamp: number; // Time of the last move

@@ -1,4 +1,7 @@
-import { ChessMoveDetails } from '../interfaces/gameLogic.interface';
+import {
+  ChatRoomMessage,
+  ChessMoveDetails,
+} from '../interfaces/gameLogic.interface';
 
 export interface ServerToClientEvents {
   move: (payload: MoveEventPayload) => void;
@@ -45,4 +48,17 @@ export interface MoveEventPayload {
   gameHistory: string[];
   whiteTimeLeft: number;
   blackTimeLeft: number;
+}
+
+export interface GameStateEmitPayload {
+  gameId: string;
+  color: 'w' | 'b';
+  opponentId: string;
+  fen: string;
+  currentTurn: 'w' | 'b';
+  gameHistory: string[];
+  mode: 'online' | 'bot' | 'ai';
+  whiteTimeLeft: number;
+  blackTimeLeft: number;
+  chatHistory?: ChatRoomMessage[];
 }
