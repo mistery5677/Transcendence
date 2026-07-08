@@ -7,7 +7,6 @@ import {
 } from '@nestjs/websockets';
 import { MatchMakingService } from '../services/matchmaking.service';
 import { Server, Socket } from 'socket.io';
-import { v4 as uuidv4 } from 'uuid';
 import { GameService } from '../services/game.service';
 import { ParseIntPipe } from '@nestjs/common';
 import {
@@ -16,13 +15,14 @@ import {
 } from '../services/notification.service';
 import { subscribe } from 'diagnostics_channel';
 import { SocketType } from 'dgram';
+import { TimeControl } from '../interfaces/gameLogic.interface';
 
 interface QueuePayload {
-  time?: string;
+  time: TimeControl;
 }
 
 interface BotGamePayload {
-  time: string;
+  time: TimeControl;
   level?: number;
 }
 
@@ -56,7 +56,7 @@ export class MatchGateway {
       message: `invited you to play`,
       type: 'matchInvite',
       payload: {
-        hostId: senderId,
+        senderId: senderId,
         senderUsername: senderName,
         senderAvatarUrl: senderAvatarUrl,
         action: 'PENDING',
@@ -87,56 +87,51 @@ export class MatchGateway {
     );
 
     if (notificationId) {
-      await this.notificationService.markAsRead(receiverId, notificationId); //! or deleted after clicked
+      await this.notificationService.markAsRead(receiverId, notificationId);
     }
 
     if (!accept) {
       this.server.to(`user_${hostId}`).emit('inviteRejected', {
-        message: `${receiver.username} reject you game Invitacion .`,
+        message: `${receiver.username} reject your game invitation.`,
       });
       return { success: true, status: 'REJECTED' };
     }
+
     try {
-      // AQUÍ DEBES CONECTARLO CON TU LOGICA DE INICIAR JUEGOS. Por ejemplo:
-      // Supongamos que tienes un gameService o matchService que crea una partida 'online' entre dos IDs:
-      const newGame = await this.gameService.createGame({
-        whiteId: hostId, // Puedes decidir al azar quién es blanco o negro
-        blackId: receiverId,
-        mode: "online",
-      });
-
-      // 5. Emitir el evento de inicio de juego a AMBOS jugadores
-      // Al reutilizar la lógica que ya tienes configurada en tu MatchGateway (START_GAME):
-      const gameStartPayload = {
-        gameId: newGame.id,
-        fen: newGame.chess.fen(),
-        currentTurn: newGame.chess.turn(),
-        gameHistory: newGame.chess.history(),
+      const { gameId, game } = this.gameService.createGame({
         mode: 'online',
-        whiteTimeLeft: newGame.whiteTimeLeft,
-        blackTimeLeft: newGame.blackTimeLeft,
-      };
-
-      // Avisarle al Host que empiece
-      this.server.to(`user_${hostId}`).emit('gameState', {
-        ...gameStartPayload,
-        color: 'w', // El host juega con blancas
-        opponentId: receiverId,
+        playerWId: String(hostId),
+        playerBId: String(receiverId),
+        timeStamp: '5 min',
       });
 
-      // Avisarle al Invitado (quien aceptó) que empiece
-      this.server.to(`user_${receiverId}`).emit('gameState', {
-        ...gameStartPayload,
-        color: 'b', // El invitado juega con negras
-        opponentId: hostId,
-      });
+      client.join(gameId);
+      console.log('Game by invitacion created', gameId);
+      this.server.in(`user_${hostId}`).socketsJoin(gameId);
 
-      return { success: true, status: 'STARTED', gameId: newGame.id };
+      const payloadHost = this.gameService.buildGameStatePayload(
+        gameId,
+        game,
+        String(hostId),
+      );
+
+      const payloadReceiver = this.gameService.buildGameStatePayload(
+        gameId,
+        game,
+        String(receiverId),
+      );
+
+      // Emitimos el estado a cada uno a través de sus salas privadas de usuario
+      this.server.to(`user_${hostId}`).emit('gameState', payloadHost);
+      this.server.to(`user_${receiverId}`).emit('gameState', payloadReceiver);
+
+      return { success: true, status: 'STARTED', gameId };
     } catch (error) {
       console.error('Error al iniciar partida por invitación:', error);
       return { error: 'No se pudo iniciar la partida.' };
     }
   }
+
   @SubscribeMessage('joinQueue')
   handleJoinQueue(
     @ConnectedSocket() client: Socket,
@@ -150,29 +145,21 @@ export class MatchGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: BotGamePayload,
   ) {
-    const gameId = `bot_${uuidv4()}`;
-
-    const newGame = this.gameService.createGame(
-      gameId,
-      'bot',
-      client.data.user.userId,
-      '',
-      payload.time,
-    );
+    const userId = client.data.user.userId;
+    const { gameId, game } = this.gameService.createGame({
+      mode: 'bot',
+      playerWId: userId,
+      timeStamp: payload.time,
+    });
 
     client.join(gameId);
 
-    client.emit('gameState', {
-      gameId: gameId,
-      color: 'w',
-      opponentId: 'bot',
-      fen: newGame.chess.fen(),
-      currentTurn: newGame.chess.turn(),
-      gameHistory: newGame.chess.history(),
-      mode: 'bot',
-      whiteTimeLeft: newGame.whiteTimeLeft,
-      blackTimeLeft: newGame.blackTimeLeft,
-    });
+    const gameState = this.gameService.buildGameStatePayload(
+      gameId,
+      game,
+      userId,
+    );
+    client.emit('gameState', gameState);
   }
 
   @SubscribeMessage('startAIGame')
@@ -180,31 +167,25 @@ export class MatchGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: BotGamePayload,
   ) {
-    const gameId = `ai_${uuidv4()}`;
+    const userId = client.data.user.userId;
+    const level = payload.level ?? 5;
 
-    const newGame = this.gameService.createGame(
-      gameId,
-      'ai',
-      client.data.user.userId,
-      'stockfish',
-      payload.time ?? '5 min',
-      payload.level ?? 5,
-    );
+    const { gameId, game } = this.gameService.createGame({
+      mode: 'ai',
+      playerWId: userId,
+      timeStamp: payload.time,
+      level: level,
+    });
 
     client.join(gameId);
 
-    client.emit('gameState', {
-      gameId: gameId,
-      color: 'w',
-      opponentId: 'Uncle Carlsen (AI)',
-      fen: newGame.chess.fen(),
-      currentTurn: newGame.chess.turn(),
-      mode: 'ai',
-      level: payload.level ?? 5,
-      gameHistory: newGame.chess.history(),
-      whiteTimeLeft: newGame.whiteTimeLeft,
-      blackTimeLeft: newGame.blackTimeLeft,
-    });
+    const gameState = this.gameService.buildGameStatePayload(
+      gameId,
+      game,
+      userId,
+    );
+
+    client.emit('gameState', gameState);
   }
 
   @SubscribeMessage('checkActiveGame')
@@ -224,28 +205,15 @@ export class MatchGateway {
     }
 
     const { gameId, game } = activeMatch;
-    console.log(`[Reconnection] User ${userId} have a active game ${gameId}`);
+    console.log(`[Reconnection] User ${userId} has an active game ${gameId}`);
     client.join(gameId);
 
-    const state = this.gameService.getGameState(gameId);
-    if (state) {
-      const userColor = userId === game.playerW ? 'w' : 'b';
-      const opponentId = userId === game.playerW ? game.playerB : game.playerW;
+    const gameState = this.gameService.buildGameStatePayload(
+      gameId,
+      game,
+      userId,
+    );
 
-      client.emit('gameState', {
-        gameId: gameId,
-        fen: state.fen,
-        currentTurn: state.turn,
-        gameHistory: state.gameHistory,
-        color: userColor,
-        mode: game.mode,
-        opponentId: opponentId ? String(opponentId) : 'bot',
-        whiteTimeLeft: state.whiteTimeLeft,
-        blackTimeLeft: state.blackTimeLeft,
-        chatHistory: state.chatHistory,
-      });
-    } else {
-      client.emit('activeGameNotFound');
-    }
+    client.emit('gameState', gameState);
   }
 }

@@ -20,6 +20,18 @@ export const MatchMakingProvider = ({ children }: { children: React.ReactNode })
 		}
 	};
 
+	const respondToGameInvite = (hostId: number, accept: boolean, notificationId: string) => {
+		if (!socket || !hasUser) return;
+
+		console.log(`[Matchmaking] Responding to invite from ${hostId}: ${accept ? "ACCEPT" : "REJECT"}`);
+
+		socket.emit("respondToGameInvite", {
+			hostId,
+			accept,
+			notificationId,
+		});
+	};
+
 	const startOnlineGame = (options: MatchStartOptions) => {
 		if (!socket || !hasUser) return;
 		console.log("[Matchmaking] Joining the Queue", options);
@@ -42,7 +54,15 @@ export const MatchMakingProvider = ({ children }: { children: React.ReactNode })
 
 	return (
 		<MatchMakingContext.Provider
-			value={{ isSearchingMatch, setIsSearchingMatch, startOnlineGame, startBotGame, startAIGame, inviteToPlay }}>
+			value={{
+				isSearchingMatch,
+				setIsSearchingMatch,
+				startOnlineGame,
+				startBotGame,
+				startAIGame,
+				inviteToPlay,
+				respondToGameInvite,
+			}}>
 			{children}
 		</MatchMakingContext.Provider>
 	);

@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNotifications } from "../../contexts/NotificationContext/NotificationContext";
 import { BellIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
+import type { NotificationType } from "../../contexts/NotificationContext/notificationTypes";
 
 export function NotificationBell() {
+	const { respondToGameInvite } = useMatchMaking();
 	const { unreadCount, notifications, markOneAsRead, markAllAsRead } = useNotifications();
 	const [isOpen, setIsOpen] = useState<boolean>(false);
 	const navigate = useNavigate();
@@ -18,7 +21,7 @@ export function NotificationBell() {
 		setIsOpen(false);
 	};
 
-	const handleNotificationClick = async (notification: any) => {
+	const handleNotificationClick = async (notification: NotificationType) => {
 		if (!notification.read) {
 			await markOneAsRead(notification.id);
 		}
@@ -26,9 +29,23 @@ export function NotificationBell() {
 		if (notification.type === "friendRequest") {
 			navigate("/friends");
 			handleCloseDropdown();
-		} else if (notification.type === "system") {
-		} else if (notification.type === "matchInvite") {
 		}
+	};
+
+	const handleInviteAction = async (notification: NotificationType, accept: boolean, e: React.MouseEvent) => {
+		e.stopPropagation();
+		const hostId = notification.payload?.senderId;
+		const notificationId = notification.id;
+		if (hostId) {
+			respondToGameInvite(Number(hostId), accept, notificationId);
+			console.log("aqui");
+		}
+
+		if (!notification.read) {
+			await markOneAsRead(notificationId);
+		}
+
+		handleCloseDropdown();
 	};
 
 	useEffect(() => {
@@ -109,25 +126,56 @@ export function NotificationBell() {
 											key={notification.id}
 											onClick={() => handleNotificationClick(notification)}
 											className={`p-2 rounded-lg transition-colors duration-150 border-l-2 ${
+												notification.type === "matchInvite"
+													? "cursor-default"
+													: "cursor-pointer"
+											} ${
 												notification.read
 													? "bg-stone-800/20 hover:bg-stone-800/50 border-stone-700"
 													: "bg-stone-800/70 hover:bg-stone-800/90 border-emerald-500"
 											}`}>
 											<p className="text-xs font-medium text-stone-200">{notification.title}</p>
-											<div className="flex items-center gap-2 mt-1">
-												<div className="ring ring-emerald-500 rounded-full w-6 h-6 flex items-center justify-center overflow-hidden cursor-pointer">
+
+											<div className="flex items-start gap-2 mt-1">
+												<div className="ring ring-emerald-500 rounded-full w-6 h-6 flex items-center justify-center overflow-hidden cursor-pointer shrink-0 mt-0.5">
 													<img
 														src={notification.payload?.senderAvatarUrl}
 														alt="Sender Avatar"
-														className="w-6 h-6 rounded-full mt-1"
+														className="w-6 h-6 rounded-full"
 													/>
-												</div>{" "}
-												<p className="text-[11px] text-stone-400 mt-0.5 flex gap-1">
-													<p className="text-emerald-500 font-bold hover:underline cursor-pointer">
-														{notification.payload?.senderUsername}
-													</p>
-													{notification.message}
-												</p>
+												</div>
+
+												{/* Contenedor de contenido de texto y acciones */}
+												<div className="flex-1 min-w-0">
+													<div className="text-[11px] text-stone-400 leading-normal">
+														<span className="text-emerald-500 font-bold hover:underline cursor-pointer mr-1">
+															{notification.payload?.senderUsername}
+														</span>
+														{notification.message}
+													</div>
+
+													{/* 🌟 Botones alineados de forma limpia abajo del texto */}
+													{notification.type === "matchInvite" && (
+														<div className="flex gap-2 mt-2">
+															<button
+																type="button"
+																onClick={(e) =>
+																	handleInviteAction(notification, true, e)
+																}
+																className="bg-emerald-600 hover:bg-emerald-500 text-stone-100 text-[10px] font-semibold px-2.5 py-1 rounded transition-colors shadow-sm focus:outline-none">
+																Accept
+															</button>
+															<button
+																type="button"
+																onClick={(e) =>
+																	handleInviteAction(notification, false, e)
+																}
+																className="bg-stone-700 hover:bg-stone-600 text-stone-300 text-[10px] font-semibold px-2.5 py-1 rounded transition-colors shadow-sm focus:outline-none">
+																Reject
+															</button>
+														</div>
+													)}
+												</div>
 											</div>
 										</div>
 									))

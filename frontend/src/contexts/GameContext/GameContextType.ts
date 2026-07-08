@@ -1,5 +1,7 @@
 import type { Socket } from "socket.io-client";
 
+type GameModes = "online" | "bot" | "ai";
+
 export type GameOverState = {
 	winnerColor: "w" | "b" | null;
 	reason: string;
@@ -23,6 +25,7 @@ export type GameState = {
 	color: "w" | "b" | null;
 	fen: string;
 	currentTurn: "w" | "b";
+	mode: GameModes;
 	gameOver: GameOverState;
 	messages: MessageType[];
 	gameHistory: string[];
@@ -39,6 +42,7 @@ export type GameContextType = {
 	gameId: string | null;
 	color: "w" | "b" | null;
 	isConnected: boolean;
+	mode: GameModes;
 	fen: string;
 	gameHistory: string[];
 	currentTurn: "w" | "b";

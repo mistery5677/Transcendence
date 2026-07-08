@@ -174,22 +174,21 @@ export class GameGateway {
     }
 
     const newGameId = uuidv4();
-
     const isOnline = game.mode === 'online';
 
     const playerW = isOnline ? game.playerB : game.playerW;
     const playerB = isOnline ? game.playerW : game.playerB;
 
-    const newGame = this.gameService.createGame(
-      newGameId,
-      game.mode,
-      playerW,
-      playerB,
-      game.timeStamp,
-    );
+    const { gameId, game: newGame } = this.gameService.createGame({
+      mode: game.mode,
+      playerWId: playerW,
+      playerBId: playerB,
+      timeStamp: game.timeStamp ?? '5 min',
+      level: game.level,
+    });
 
     if (newGame) {
-      this.server.to(data.gameId).emit('rematchStarted', { newGameId });
+      this.server.to(data.gameId).emit('rematchStarted', { newGameId: gameId });
       this.gameService.deleteGame(data.gameId);
     } else {
       client.emit('error', { message: 'Could not generate rematch room' });
@@ -205,7 +204,7 @@ export class GameGateway {
     if (!game) return;
 
     const userId = client.data.user.userId;
-    const currentTurn = game.chess.turn();
+    const currentTurn = game.chess.turn() as 'w' | 'b';
     const expectedPlayerId = currentTurn === 'w' ? game.playerW : game.playerB;
 
     if (userId !== expectedPlayerId) {
@@ -259,7 +258,6 @@ export class GameGateway {
       whiteTimeLeft: moveData.whiteTimeLeft,
       blackTimeLeft: moveData.blackTimeLeft,
     });
-    console.log(game.chess.history());
     const gameOver = this.gameService.checkGameOver(gameId);
     if (gameOver) {
       this.server.to(gameId).emit('gameOver', { gameOver });

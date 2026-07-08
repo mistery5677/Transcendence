@@ -1,6 +1,7 @@
+import { act } from "react";
 import type { GameOverState, GameState, MessageType } from "./GameContextType";
 
-export const initialState = {
+export const initialState: GameState = {
 	gameId: null as string | null,
 	color: "w" as "w" | "b" | null,
 	fen: "start",
@@ -8,6 +9,7 @@ export const initialState = {
 	gameHistory: [] as string[],
 	gameOver: null as GameOverState,
 	messages: [] as MessageType[],
+	mode: "bot",
 	drawProposal: false,
 	rematchProposal: false,
 	opponentId: null as string | null,
@@ -20,7 +22,7 @@ export type GameAction =
 	| { type: "START_GAME"; payload: any }
 	| { type: "MOVE"; payload: any }
 	| { type: "GAME_OVER"; payload: any; lastGameId: string | null }
-	| { type: "SET_DRAW_PROPOSAL"; payload: boolean } 
+	| { type: "SET_DRAW_PROPOSAL"; payload: boolean }
 	| { type: "SET_REMATCH_PROPOSAL"; payload: boolean }
 	| { type: "SET_MESSAGES"; payload: MessageType[] }
 	| { type: "TICK_CLOCK"; payload: { turn: "w" | "b" } }
@@ -35,6 +37,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 				gameId: action.payload.gameId,
 				lastFinishedGameId: null,
 				color: action.payload.color,
+				mode: action.payload.mode,
 				fen: action.payload.fen,
 				currentTurn: action.payload.currentTurn,
 				opponentId: action.payload.opponentId,
