@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
+import { TimeControl } from './interfaces/gameLogic.interface';
 import { GameService } from './game.service';
-import { TimeControl } from '../interfaces/gameLogic.interface';
 
 type QueuePayload = {
   time?: TimeControl;

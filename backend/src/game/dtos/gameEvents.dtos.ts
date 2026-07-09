@@ -1,7 +1,7 @@
 import {
   ChatRoomMessage,
   ChessMoveDetails,
-} from '../interfaces/gameLogic.interface';
+} from '../../game/interfaces/gameLogic.interface';
 
 export interface ServerToClientEvents {
   move: (payload: MoveEventPayload) => void;
