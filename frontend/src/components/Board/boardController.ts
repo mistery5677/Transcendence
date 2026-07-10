@@ -45,7 +45,7 @@ export function useBoardController({
 
 	const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
 
-	const { socket, gameId, color, fen, currentTurn, gameOver } = useGame();
+	const { socket, gameId, color, fen, currentTurn, gameOver, isSpectator } = useGame();
 
 	const [chessPosition, setChessPosition] = useState(() => {
 		if (fen && fen != "start") return fen;
@@ -54,7 +54,8 @@ export function useBoardController({
 
 	const canDragPiece = useCallback(
 		(args: any) => {
-			if (currentTurn !== color || gameOver) return false;
+			if (isSpectator || currentTurn !== color || gameOver) return false;
+
 
 			const pieceString = args?.piece?.pieceType;
 
@@ -62,7 +63,7 @@ export function useBoardController({
 
 			return pieceString.startsWith(color || "");
 		},
-		[color, currentTurn],
+		[color, currentTurn, isSpectator, gameOver],
 	);
 
 	const [helper, setHelper] = useState({
