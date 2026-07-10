@@ -1,12 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { stringify } from 'querystring';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AchievementsService } from '../achievements/achievements.service';
 import { getUserMatchHistory } from './dto/getMatchHistory.dto';
+import { Prisma } from '@prisma/client';
+import { UsersService } from 'src/users/users.service';
+
+//* Prisma Features to declare types
+type MatchWithPlayers = Prisma.MatchHistoryGetPayload<{
+  include: {
+    playerA: { select: { username: true } };
+    playerB: { select: { username: true } };
+  };
+}>;
 
 @Injectable()
 export class MatchesService {
   constructor(
+    private usersService: UsersService,
     private prisma: PrismaService,
     private achievementsService: AchievementsService,
   ) {}
@@ -143,8 +153,8 @@ export class MatchesService {
       this.achievementsService.checkGrandMaster(winnerId, elo),
     ]);
   }
-
   //*
+
   // Get the information of the match
   async getUserMatchHistory(userId: number) {
     return await this.prisma.matchHistory.findMany({
@@ -167,9 +177,7 @@ export class MatchesService {
   async getUserMatchHistoryByUsername(
     username: string,
   ): Promise<getUserMatchHistory[] | null> {
-    const user = await this.prisma.user.findUnique({
-      where: { username: username },
-    });
+    const user = await this.usersService.findOneByUsername(username);
 
     if (!user) {
       throw new NotFoundException("User doesn't exist");
@@ -177,36 +185,37 @@ export class MatchesService {
 
     const rawMatches = await this.getUserMatchHistory(user.id);
 
-    return rawMatches.map((match) => {
-      const isPlayerA = match.playerAId === user.id;
-      const opponent = isPlayerA
-        ? match.playerB.username
-        : match.playerA.username;
+    return rawMatches.map((match) => this.formatMatchData(match, user.id));
+  }
 
-      let result: 'WIN' | 'LOSS' | 'DRAW';
+  private formatMatchData(
+    match: MatchWithPlayers,
+    userId: number,
+  ): getUserMatchHistory {
+    const isPlayerA = match.playerAId === userId;
+    const opponent = isPlayerA
+      ? match.playerB.username
+      : match.playerA.username;
+    const playedAs: 'WHITE' | 'BLACK' = isPlayerA ? 'WHITE' : 'BLACK';
 
-      const playedAs: 'WHITE' | 'BLACK' = isPlayerA ? 'WHITE' : 'BLACK';
+    let result: 'WIN' | 'LOSS' | 'DRAW';
 
-      if (match.result === 'DRAW') {
-        result = 'DRAW';
-      } else {
-        // Parseamos la cadena "WINNER_ID_15" para extraer solo el número 15
-        const extractedWinnerId = parseInt(
-          match.result.replace('WINNER_ID_', ''),
-          10,
-        );
+    if (match.result === 'DRAW') {
+      result = 'DRAW';
+    } else {
+      const extractedWinnerId = parseInt(
+        match.result.replace('WINNER_ID_', ''),
+        10,
+      );
+      result = extractedWinnerId === userId ? 'WIN' : 'LOSS';
+    }
 
-        // Si el ID extraído es igual al ID de este usuario, ganó. Si no, perdió.
-        result = extractedWinnerId === user.id ? 'WIN' : 'LOSS';
-      }
-
-      return {
-        gameId: match.id,
-        createdAt: match.createdAt,
-        opponent: opponent,
-        result: result,
-        playedAs: playedAs,
-      };
-    });
+    return {
+      gameId: match.id,
+      createdAt: match.createdAt,
+      opponent,
+      result,
+      playedAs,
+    };
   }
 }

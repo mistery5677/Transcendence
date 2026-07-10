@@ -115,7 +115,7 @@ export function NotificationBell() {
 											}`}>
 											<p className="text-xs font-medium text-stone-200">{notification.title}</p>
 											<div className="flex items-center gap-2 mt-1">
-												<div className="ring ring-emerald-500 rounded-full w-6 h-6 flex items-center justify-center overflow-hidden">
+												<div className="ring ring-emerald-500 rounded-full w-6 h-6 flex items-center justify-center overflow-hidden cursor-pointer">
 													<img
 														src={notification.payload?.senderAvatarUrl}
 														alt="Sender Avatar"
@@ -123,7 +123,7 @@ export function NotificationBell() {
 													/>
 												</div>{" "}
 												<p className="text-[11px] text-stone-400 mt-0.5 flex gap-1">
-													<p className="text-emerald-500 font-bold">
+													<p className="text-emerald-500 font-bold hover:underline cursor-pointer">
 														{notification.payload?.senderUsername}
 													</p>
 													{notification.message}

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Chat } from "../Chat/Chat";
-import { MatchSidebarButton } from "../MatchSidebarButton/MatchSidebarButton";
+import { MatchSidebarButton } from "./MatchSidebarButton/MatchSidebarButton";
 import { GameSettings } from "./GameSettings/GameSettings";
-import { PlayOptions } from "../PlayOptions/PlayOptions";
+import { PlayOptions } from "./PlayOptions/PlayOptions";
+import { Actions } from "./Actions/Actions";
 
 type currentTabOpt = "chat" | "actions" | "settings" | "playOptions" | null;
 
@@ -23,46 +24,56 @@ export function MatchSidebar() {
 	};
 
 	return (
-		<div className="flex flex-col bg-sidebar-bg text-stone-200 rounded-xl shadow-md border border-stone-700 overflow-hidden h-full min-h-140 sm:min-h-155">
-			<header className="w-full p-5 sm:p-6 bg-stone-800 border-b border-stone-700">
+		<div
+			className="flex flex-col bg-sidebar-bg text-stone-200 rounded-xl shadow-md border
+		 border-stone-700 overflow-hidden h-full min-h-100 sm:min-h-125 xl:min-h-0 w-full">
+			<header className="w-full p-5 sm:p-6 bg-stone-800 border-b border-stone-700 shrink-0">
 				<p className="mb-3 text-xs font-semibold tracking-[0.18em] uppercase text-stone-400">Match controls</p>
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-2 sm:gap-3 overflow-x-auto">
 					<MatchSidebarButton
 						onClick={() => toggleMenu("chat")}
-						className="flex-1 text-base sm:text-lg">
+						className="flex-1 text-sm sm:text-base md:text-lg">
 						Chat
 					</MatchSidebarButton>
-					<MatchSidebarButton className="flex-1 text-base sm:text-lg">Actions</MatchSidebarButton>
+					<MatchSidebarButton
+						onClick={() => toggleMenu("actions")}
+						className="flex-1 text-sm sm:text-base md:text-lg">
+						Actions
+					</MatchSidebarButton>
 					<MatchSidebarButton
 						variant="playNow"
-						className="text-base sm:text-lg"
+						className="text-sm sm:text-base md:text-lg whitespace-nowrap"
 						onClick={() => toggleMenu("playOptions")}>
 						PLAY NOW
 					</MatchSidebarButton>
 				</div>
 			</header>
+
 			{/* Middle Section */}
-			<section className={`flex-1 flex flex-col min-h-0 overflow-y-auto scroll ${menu.isOpen ? "flex" : "hidden"}`}>
+			<section
+				className={`flex-1 flex flex-col min-h-0 overflow-y-auto scroll ${menu.isOpen ? "flex" : "hidden"}`}>
 				<div className={menu.currentTab === "chat" ? "block h-full flex-1" : "hidden"}>
 					<Chat classname="h-full flex-1" />
 				</div>
 				{menu.currentTab === "settings" && <GameSettings />}
 				{menu.currentTab === "playOptions" && <PlayOptions />}
-			</section>
-			{
-				<section className="mt-auto w-full p-5 sm:p-6 bg-stone-900 border-t border-stone-700">
-					<div className="rounded-lg bg-stone-800 border border-stone-700 p-4 sm:p-5">
-						{/* <p className="mb-3 text-[11px] font-semibold tracking-[0.15em] uppercase text-stone-400">
-						Quick settings
-					</p> */}
-						<MatchSidebarButton
-							onClick={() => toggleMenu("settings")}
-							className="w-full justify-center bg-stone-700 hover:bg-stone-600 text-base sm:text-lg">
-							⚙️ Settings
-						</MatchSidebarButton>
+				<div className={menu.currentTab === "actions" ? "block h-full flex-1" : "hidden"}>
+					<div className="flex flex-col gap-4 p-4">
+						<p className="text-sm sm:text-base md:text-lg text-stone-400">Actions</p>
+						<Actions />
 					</div>
-				</section>
-			}
+				</div>
+			</section>
+
+			<section className="mt-auto w-full p-5 sm:p-6 bg-stone-900 border-t border-stone-700 shrink-0">
+				<div className="rounded-lg bg-stone-800 border border-stone-700 p-4 sm:p-5">
+					<MatchSidebarButton
+						onClick={() => toggleMenu("settings")}
+						className="w-full justify-center bg-stone-700 hover:bg-stone-600 text-base sm:text-lg">
+						⚙️ Settings
+					</MatchSidebarButton>
+				</div>
+			</section>
 		</div>
 	);
 }

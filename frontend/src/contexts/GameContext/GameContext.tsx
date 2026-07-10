@@ -1,122 +1,62 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import type { GameContextType, GameOverState, MatchStartOptions, MessageType } from "./GameContextType";
+import React, { createContext, useContext, useEffect, useReducer, useState } from "react";
+import type { GameContextType } from "./GameContextType";
 import { useAuth } from "../UserContext";
 import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
 import { toastWrapper } from "../../adapters/toastWrapper";
+import { useMatchMaking } from "../MatchMakingContext/MatchMakingContext";
+import { gameReducer, initialState } from "./GameReducer";
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	const { socket } = useGlobalSocket();
 	const { state: authState } = useAuth();
-
-	const [gameId, setGameId] = useState<string | null>(null);
-	const [color, setColor] = useState<"w" | "b" | null>("w");
-	const [fen, setFen] = useState("start");
-	const [currentTurn, setCurrentTurn] = useState<"w" | "b">("w");
-	const [gameOver, setGameOver] = useState<GameOverState>(null);
-	const [messages, setMessages] = useState<MessageType[]>([]);
-	const [drawProposal, setDrawProposal] = useState<boolean>(false);
-	const [rematchProposal, setRematchProposal] = useState<boolean>(false);
-	const [opponentId, setOpponentId] = useState<string | null>(null);
-	const [lastFinishedGameId, setLastFinishedGameId] = useState<string | null>(null);
-	const [isSearchingMatch, setIsSearchingMatch] = useState<boolean>(false);
+	const { setIsSearchingMatch } = useMatchMaking();
+	const [state, dispatch] = useReducer(gameReducer, initialState);
 	const [isSpectator, setIsSpectator] = useState<boolean>(false);
 
 	const gameIdRef = React.useRef<string | null>(null);
+	gameIdRef.current = state.gameId;
 	const hasUser = !!authState.user;
-	//Timer variables
-	//TODO: Make the timer choose by the room mode created
-	const [whiteTimeLeft, setWhiteTimeLeft] = useState<number>(10);
-	const [blackTimeLeft, setBlackTimeLeft] = useState<number>(10);
-
-	if (!authState.user) return null;
-
-	const inviteToPlay = (friendId: number) => {
-		if (socket) {
-			socket.emit("inviteToPlay", { friendId });
-			console.log("invite to Play");
-		}
-	};
 
 	const surrender = () => {
-		if (socket && gameId) {
-			socket.emit("requestSurrender", { gameId });
-		}
+		if (socket && state.gameId) socket.emit("requestSurrender", { gameId: state.gameId });
 	};
 
 	const proposeDraw = () => {
-		if (socket && gameId) {
-			socket.emit("proposeDraw", { gameId });
-		}
+		if (socket && state.gameId) socket.emit("proposeDraw", { gameId: state.gameId });
 	};
 	const proposeRematch = () => {
-		const targetGameId = gameId ?? lastFinishedGameId;
-		if (socket && targetGameId) {
-			socket.emit("proposeRematch", { gameId: targetGameId });
-		}
+		const targetGameId = state.gameId ?? state.lastFinishedGameId;
+		if (socket && targetGameId) socket.emit("proposeRematch", { gameId: targetGameId });
 	};
 
 	const handleDrawResponse = (accept: boolean) => {
-		if (socket && gameId) {
+		if (socket && state.gameId) {
 			socket.emit("respondDraw", {
-				gameId: gameId,
+				gameId: state.gameId,
 				response: accept,
 			});
 		}
-		setDrawProposal(false);
+		dispatch({ type: "SET_DRAW_PROPOSAL", payload: false });
 	};
 
 	const handleRematchResponse = (accept: boolean) => {
-		const targetGameId = gameId ?? lastFinishedGameId;
+		const targetGameId = state.gameId ?? state.lastFinishedGameId;
 		if (socket && targetGameId) {
 			socket.emit("respondRematch", {
 				gameId: targetGameId,
 				response: accept,
 			});
-			setRematchProposal(false);
+			dispatch({ type: "SET_REMATCH_PROPOSAL", payload: false });
 		}
 	};
 
 	const handleTimeOut = () => {
-		if (socket && gameId) {
+		if (socket && state.gameId) {
 			console.log("Time is over");
-			socket.emit("timeOut", { gameId });
+			socket.emit("timeOut", { gameId: state.gameId });
 		}
-	};
-
-	const startOnlineGame = (options: MatchStartOptions) => {
-		if (!socket || !hasUser) return;
-
-		console.log("[Game] Joining the Queue", options);
-		setIsSearchingMatch(true);
-		setGameOver(null);
-		setGameId(null);
-		setOpponentId(null);
-		setMessages([]);
-		socket.emit("joinQueue", options);
-	};
-
-	const startBotGame = (options: MatchStartOptions) => {
-		if (!socket || !hasUser) return;
-
-		console.log("[Game] Starting game with bot", options);
-		setIsSearchingMatch(false);
-		setGameOver(null);
-		setGameId(null);
-		setOpponentId(null);
-		setMessages([]);
-		socket.emit("startBotGame", options);
-	};
-
-	const startAIGame = (options: MatchStartOptions) => {
-		if (!socket || !hasUser) return;
-
-		setIsSearchingMatch(false);
-		setGameOver(null);
-		setGameId(null);
-		setOpponentId(null);
-		socket.emit("startAIGame", options);
 	};
 
 	const spectateGame = (targetGameId: string) => {
@@ -125,43 +65,26 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	};
 
 	const resetGameContextToDefault = () => {
-		setGameOver(null);
-		setFen("start");
-		setCurrentTurn("w");
-		setGameId(null);
-		gameIdRef.current = null;
-		setOpponentId(null);
-		setWhiteTimeLeft(10);
-		setBlackTimeLeft(10);
+		dispatch({ type: "RESET_CONTEXT" });
+		setIsSearchingMatch(false);
 	};
 
 	useEffect(() => {
-		if (!gameId || gameOver || !color) return;
+		if (!state.gameId || state.gameOver || !state.color) return;
 
 		const interval = setInterval(() => {
-			if (currentTurn === "w") {
-				setWhiteTimeLeft((prev) => {
-					if (prev <= 1) {
-						clearInterval(interval);
-						if (color === "w") handleTimeOut();
-						return 0;
-					}
-					return prev - 1;
-				});
+			const currentLeft = state.currentTurn === "w" ? state.whiteTimeLeft : state.blackTimeLeft;
+
+			if (currentLeft <= 1) {
+				clearInterval(interval);
+				if (state.currentTurn === state.color) handleTimeOut();
 			} else {
-				setBlackTimeLeft((prev) => {
-					if (prev <= 1) {
-						clearInterval(interval);
-						if (color === "b") handleTimeOut();
-						return 0;
-					}
-					return prev - 1;
-				});
+				dispatch({ type: "TICK_CLOCK", payload: { turn: state.currentTurn } });
 			}
 		}, 1000);
 
 		return () => clearInterval(interval);
-	}, [gameId, currentTurn, color, gameOver]);
+	}, [state.gameId, state.currentTurn, state.color, state.gameOver, state.whiteTimeLeft, state.blackTimeLeft]);
 
 	useEffect(() => {
 		if (!socket || !hasUser) return;
@@ -172,47 +95,24 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		const onGameState = (data: any) => {
 			setIsSpectator(false);
 			setIsSearchingMatch(false);
-			setGameId(data.gameId);
-			gameIdRef.current = data.gameId;
-			setLastFinishedGameId(null);
-			setColor(data.color);
-			setFen(data.fen);
-			setCurrentTurn(data.currentTurn);
-			setOpponentId(data.opponentId);
-
-			if (data.chatHistory) {
-				setMessages(data.chatHistory);
-			}
-
-			// Read the timer came from the server
-			setWhiteTimeLeft(data.whiteTimeLeft ?? 10);
-			setBlackTimeLeft(data.blackTimeLeft ?? 10);
+			dispatch({ type: "START_GAME", payload: data });
 		};
 
 		const onNoActiveGame = () => {
 			console.log("There is no active Game, you can start on lateral buttons");
 		};
 
-		const onMove = (data: any) => {
-			setFen(data.fen);
-			setCurrentTurn(data.currentTurn);
-			setWhiteTimeLeft(data.whiteTimeLeft ?? whiteTimeLeft);
-			setBlackTimeLeft(data.blackTimeLeft ?? blackTimeLeft);
-		};
+		const onMove = (data: any) => dispatch({ type: "MOVE", payload: data });
 
 		const onGameOver = (data: any) => {
-			setLastFinishedGameId(gameIdRef.current);
 			setIsSearchingMatch(false);
-			setGameOver(data.gameOver);
-			setWhiteTimeLeft(data.gameOver.whiteTimeLeft ?? 10);
-			setBlackTimeLeft(data.gameOver.blackTimeLeft ?? 10);
+			dispatch({ type: "GAME_OVER", payload: data, lastGameId: gameIdRef.current });
 		};
 
 		const onActiveGameNotFound = () => {
 			alert("Your match finish on unexpected way");
 			setIsSearchingMatch(false);
-			setGameId(null);
-			gameIdRef.current = null;
+			dispatch({ type: "UNEXPECTED_DISCONNECT" });
 		};
 
 		const onError = (data: any) => {
@@ -221,24 +121,14 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 				alert("The match doesn't exist anymore");
 			}
 		};
-		const onOpponentDisconnected = () => {
-			toastWrapper.warn("Player has left, have 1 Minute to come back");
-		};
-		const onOpponentReconnected = () => {
-			toastWrapper.success("Opponent has reconnected, ready to play");
-		};
+		const onOpponentDisconnected = () => toastWrapper.warn("Player has left, have 1 Minute to come back");
+
+		const onOpponentReconnected = () => toastWrapper.success("Opponent has reconnected, ready to play");
 
 		const onSpectatorState = (data: any) => {
 			setIsSpectator(true);
-			setGameId(data.gameId);
 			gameIdRef.current = data.gameId;
-			setFen(data.fen);
-			setCurrentTurn(data.turn);
-			if (data.chatHistory) {
-				setMessages(data.chatHistory);
-			}
-			setWhiteTimeLeft(data.whiteTimeLeft ?? 10);
-			setBlackTimeLeft(data.blackTimeLeft ?? 10);
+			dispatch({ type: "SPECTATE", payload: data });
 		};
 
 		socket.on("gameState", onGameState);
@@ -270,22 +160,15 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 			return;
 		}
 
-		const onDrawProposed = () => setDrawProposal(true);
-		const onRematchProposed = () => setRematchProposal(true);
-		const onDrawRejected = () => {
-			toastWrapper.warn("The draw proposal was rejected.");
-		};
+		const onDrawProposed = () => dispatch({ type: "SET_DRAW_PROPOSAL", payload: true });
+		const onRematchProposed = () => dispatch({ type: "SET_REMATCH_PROPOSAL", payload: true });
+		const onDrawRejected = () => toastWrapper.warn("The draw proposal was rejected.");
 
-		const onRematchRejected = () => {
-			toastWrapper.error("The Rematch proposal was rejected.");
-		};
+		const onRematchRejected = () => toastWrapper.error("The Rematch proposal was rejected.");
+
 		const onRematchStarted = (data: { newGameId: string }) => {
 			toastWrapper.success("Rematch started! Good luck.");
-			setGameOver(null);
-			setDrawProposal(false);
-			setRematchProposal(false);
-			setLastFinishedGameId(null);
-			setGameId(data.newGameId);
+			dispatch({ type: "RESET_CONTEXT" });
 			gameIdRef.current = data.newGameId;
 
 			socket.emit("checkActiveGame");
@@ -310,34 +193,18 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	return (
 		<GameContext.Provider
 			value={{
+				...state,
 				socket,
-				gameId,
-				color,
 				isConnected: !!socket?.connected,
-				fen,
-				currentTurn,
-				gameOver,
 				surrender,
-				drawProposal,
-				rematchProposal,
 				handleDrawResponse,
 				handleRematchResponse,
 				proposeDraw,
 				proposeRematch,
-				startOnlineGame,
-				startBotGame,
-				startAIGame,
-				opponentId,
-				isSearchingMatch,
-				messages,
-				setMessages,
+				setMessages: (action) => dispatch({ type: "SET_MESSAGES", payload: action as any }),
 				resetGameContextToDefault,
-				inviteToPlay,
 				isSpectator,
 				spectateGame,
-				// Timer variables
-				whiteTimeLeft,
-				blackTimeLeft,
 				handleTimeOut,
 			}}>
 			{children}

@@ -1,4 +1,4 @@
-import { MatchOptions } from "../MatchOptions/MatchOptions";
+import { MatchOptions } from "../../MatchOptions/MatchOptions";
 
 export type PlayMode = "player" | "bot" | "AI";
 

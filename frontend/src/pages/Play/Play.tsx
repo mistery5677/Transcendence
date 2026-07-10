@@ -64,11 +64,11 @@ export function Play() {
 					</div>
 				</div>
 
-				{/* Right column: sidebar */}
-				<div className="w-full  xl:w-100 2xl:w-[30%] xl:shrink-0">
-					<div className="flex min-h-0 flex-col xl:h-[calc(100dvh-7rem)] xl:max-h-[calc(100dvh-7rem)]">
+				{/* Right column: Sidebar panel restricted to a max limits of 30% width on widescreen */}
+				<div className="w-full  min-w-[20%] xl:max-w-105 xl:shrink-0">
+					<div className="flex min-h-0 flex-col gap-3 xl:h-[calc(100dvh-7rem)] xl:max-h-[calc(100dvh-7rem)] w-full ">
 						<MatchSidebar />
-						<div className="flex items-center justify-center">
+						<div className="flex items-center justify-center shrink-0">
 							<GameActions />
 						</div>
 					</div>

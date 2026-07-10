@@ -48,8 +48,8 @@ export function GameOverModal() {
 	const getMatchMessage = () => {
 		if (isDraw) return "A tough battle with no clear winner.";
 
-		const isAi = opponentId === "bot" || opponentId === "ai";
-
+		const isAi = opponentId === "bot" || opponentId === "stockfish" || opponentId === "Uncle Carlsen (AI)";
+		console.log(isAi, opponentId);
 		if (isWinner) {
 			return isAi ? "Good job! You win against the AI." : "You crushed the opponent! +8 ELO";
 		}
