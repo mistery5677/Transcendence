@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGlobalSocket } from "../../contexts/GlobalSocketContext/GlobalSocketContext";
 import { useGame } from "../../contexts/GameContext/GameContext";
+import { useAuth } from "../../contexts/UserContext";
 import magnusImg from "../../assets/magnus-carlsen.jpg";
 
 type ActiveGame = {
@@ -17,10 +18,12 @@ type ActiveGame = {
 
 export function LiveGames() {
 	const { socket } = useGlobalSocket();
+	const { state: authState } = useAuth();
 	const { spectateGame } = useGame();
 	const navigate = useNavigate();
 	const [games, setGames] = useState<ActiveGame[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	
 
 	useEffect(() => {
 		if (!socket) return;
@@ -67,37 +70,49 @@ export function LiveGames() {
 						<p className="text-center py-8 text-stone-500">No games currently in progress.</p>
 					) : (
 						<div className="space-y-4">
-							{games.map((game) => (
-								<div
-									key={game.gameId}
-									className="flex items-center justify-between bg-stone-800/40 rounded-2xl border border-stone-700 p-4">
-									<div className="flex items-center gap-3">
-										<img
-											src={game.playerWAvatar ?? "/assets/avatars/default1.png"}
-											alt={game.playerWName ?? "Player"}
-											className="w-8 h-8 rounded-full object-cover border border-stone-600"
-										/>
-										<span className="text-stone-200 font-semibold">
-											{game.playerWName ?? game.playerW}
-											{" vs "}
-											{game.mode === "online" ? (game.playerBName ?? game.playerB) : `Uncle Carlsen (${game.mode})`}
-										</span>
-										<img
-											src={game.mode === "online" ? (game.playerBAvatar ?? "/assets/avatars/default1.png") : magnusImg}
-											alt={game.mode === "online" ? (game.playerBName ?? "Player") : "Uncle Carlsen"}
-											className="w-8 h-8 rounded-full object-cover border border-stone-600"
-										/>
+							{games.map((game) => {
+								const isOwnGame = authState.user
+									? String(game.playerW) === String(authState.user.id) || String(game.playerB) === String(authState.user.id)
+									: false;
+
+								return (
+									<div
+										key={game.gameId}
+										className="flex items-center justify-between bg-stone-800/40 rounded-2xl border border-stone-700 p-4">
+										<div className="flex items-center gap-3">
+											<img
+												src={game.playerWAvatar ?? "/assets/avatars/default1.png"}
+												alt={game.playerWName ?? "Player"}
+												className="w-8 h-8 rounded-full object-cover border border-stone-600"
+											/>
+											<span className="text-stone-200 font-semibold">
+												{game.playerWName ?? game.playerW}
+												{" vs "}
+												{game.mode === "online" ? (game.playerBName ?? game.playerB) : `Uncle Carlsen (${game.mode})`}
+											</span>
+											<img
+												src={game.mode === "online" ? (game.playerBAvatar ?? "/assets/avatars/default1.png") : magnusImg}
+												alt={game.mode === "online" ? (game.playerBName ?? "Player") : "Uncle Carlsen"}
+												className="w-8 h-8 rounded-full object-cover border border-stone-600"
+											/>
+										</div>
+										<button
+											onClick={() => {
+												if (isOwnGame) return;
+												spectateGame(game.gameId);
+												navigate("/play");
+											}}
+											disabled={isOwnGame}
+											className={
+												isOwnGame
+													? "px-5 py-2 rounded-xl bg-stone-800/40 text-stone-500 border border-stone-700 cursor-not-allowed font-semibold"
+													: "px-5 py-2 rounded-xl bg-emerald-900/30 text-emerald-300 border border-emerald-700/30 hover:bg-emerald-800/40 cursor-pointer font-semibold transition-colors"
+											}>
+											{isOwnGame ? "Your game" : "Watch"}
+										</button>
 									</div>
-									<button
-										onClick={() => {
-											spectateGame(game.gameId);
-											navigate("/play");
-										}}
-										className="px-5 py-2 rounded-xl bg-emerald-900/30 text-emerald-300 border border-emerald-700/30 hover:bg-emerald-800/40 cursor-pointer font-semibold transition-colors">
-										Watch
-									</button>
-								</div>
-							))}
+								);
+							})}
 						</div>
 					)}
 				</div>
