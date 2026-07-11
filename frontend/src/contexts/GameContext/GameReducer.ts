@@ -14,6 +14,12 @@ export const initialState = {
 	lastFinishedGameId: null as string | null,
 	whiteTimeLeft: 10,
 	blackTimeLeft: 10,
+	spectatorPlayerWId: null as string | null,
+	spectatorPlayerBId: null as string | null,
+	spectatorPlayerWName: null as string | null,
+	spectatorPlayerBName: null as string | null,
+	spectatorPlayerWAvatar: null as string | null,
+	spectatorPlayerBAvatar: null as string | null,
 };
 
 export type GameAction =
@@ -101,6 +107,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 				whiteTimeLeft: action.payload.whiteTimeLeft ?? 10,
 				blackTimeLeft: action.payload.blackTimeLeft ?? 10,
 				gameOver: null,
+				spectatorPlayerWId: action.payload.playerW != null ? String(action.payload.playerW) : null,
+				spectatorPlayerBId: action.payload.playerB != null ? String(action.payload.playerB) : null,
+				spectatorPlayerWName: action.payload.playerWName ?? null,
+				spectatorPlayerBName: action.payload.playerBName ?? null,
+				spectatorPlayerWAvatar: action.payload.playerWAvatar ?? null,
+				spectatorPlayerBAvatar: action.payload.playerBAvatar ?? null,
 			};
 
 		default:

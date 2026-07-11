@@ -297,7 +297,7 @@ export class GameGateway {
 
   //Go watch a game. Get your popcorn...
   @SubscribeMessage('spectateGame')
-  handleSpectateGame(
+  async handleSpectateGame(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { gameId: string },
   ) {
@@ -309,11 +309,11 @@ export class GameGateway {
 
     client.join(data.gameId);
 
-    const state = this.gameService.getGameState(data.gameId);
-    if (state) {
+    const payload = await this.gameService.buildSpectatorPayload(data.gameId);
+    if (payload) {
       client.emit('spectatorState', {
         gameId: data.gameId,
-        ...state,
+        ...payload,
       });
     }
   }

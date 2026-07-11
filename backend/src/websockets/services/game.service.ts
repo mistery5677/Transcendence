@@ -420,5 +420,35 @@ export class GameService {
       return summary;
     });
   }
+
+  async buildSpectatorPayload(gameId: string) {
+    const game = this.getGame(gameId);
+    if (!game) return null;
+
+    const state = this.getGameState(gameId);
+    if (!state) return null;
+
+    const idsToResolve = new Set<number>();
+    idsToResolve.add(parseInt(String(game.playerW)));
+    if (game.mode === 'online') {
+      idsToResolve.add(parseInt(String(game.playerB)));
+    }
+
+    const users: { id: number; username: string; avatarUrl: string | null }[] = await this.usersService.findByIds([...idsToResolve]);
+    const userById = new Map(users.map((u) => [u.id, u]));
+
+    const w = userById.get(parseInt(String(game.playerW)));
+    const b = game.mode === 'online' ? userById.get(parseInt(String(game.playerB))) : undefined;
+
+    return {
+      ...state,
+      playerW: game.playerW,
+      playerB: game.playerB,
+      playerWName: w?.username,
+      playerWAvatar: w?.avatarUrl ?? undefined,
+      playerBName: b?.username,
+      playerBAvatar: b?.avatarUrl ?? undefined,
+    };
+  }
 }
 

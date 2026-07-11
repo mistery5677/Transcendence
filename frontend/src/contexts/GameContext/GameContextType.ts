@@ -32,6 +32,12 @@ export type GameState = {
 	lastFinishedGameId: string | null;
 	whiteTimeLeft: number;
 	blackTimeLeft: number;
+	spectatorPlayerWId: string | null;
+	spectatorPlayerBId: string | null;
+	spectatorPlayerWName: string | null;
+	spectatorPlayerBName: string | null;
+	spectatorPlayerWAvatar: string | null;
+	spectatorPlayerBAvatar: string | null;
 };
 
 export type GameContextType = {
@@ -48,6 +54,13 @@ export type GameContextType = {
 	gameOver: GameOverState;
 	drawProposal: boolean;
 	rematchProposal: boolean;
+
+	spectatorPlayerWId: string | null;
+	spectatorPlayerBId: string | null;
+	spectatorPlayerWName: string | null;
+	spectatorPlayerBName: string | null;
+	spectatorPlayerWAvatar: string | null;
+	spectatorPlayerBAvatar: string | null;
 
 	// Timer variables
 	whiteTimeLeft: number;
