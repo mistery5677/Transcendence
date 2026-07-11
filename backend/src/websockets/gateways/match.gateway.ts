@@ -116,8 +116,8 @@ export class MatchGateway {
 
   //do spectator
   @SubscribeMessage('listActiveGames')
-  handleListActiveGames(@ConnectedSocket() client: Socket) {
-    const activeGames = this.gameService.listActiveGames();
+  async handleListActiveGames(@ConnectedSocket() client: Socket) {
+    const activeGames = await this.gameService.listActiveGames();
     client.emit('activeGames', activeGames);
   }
 }

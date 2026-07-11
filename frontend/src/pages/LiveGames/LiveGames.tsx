@@ -2,12 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGlobalSocket } from "../../contexts/GlobalSocketContext/GlobalSocketContext";
 import { useGame } from "../../contexts/GameContext/GameContext";
+import magnusImg from "../../assets/magnus-carlsen.jpg";
 
 type ActiveGame = {
 	gameId: string;
 	playerW: string;
 	playerB: string;
 	mode: "online" | "bot" | "ai";
+	playerWName?: string;
+	playerBName?: string;
+	playerWAvatar?: string;
+	playerBAvatar?: string;
 };
 
 export function LiveGames() {
@@ -66,9 +71,22 @@ export function LiveGames() {
 								<div
 									key={game.gameId}
 									className="flex items-center justify-between bg-stone-800/40 rounded-2xl border border-stone-700 p-4">
-									<div className="text-stone-200 font-semibold">
-										Player {game.playerW} vs {game.playerB || "Bot"}{" "}
-										<span className="text-stone-400 text-sm">({game.mode})</span>
+									<div className="flex items-center gap-3">
+										<img
+											src={game.playerWAvatar ?? "/assets/avatars/default1.png"}
+											alt={game.playerWName ?? "Player"}
+											className="w-8 h-8 rounded-full object-cover border border-stone-600"
+										/>
+										<span className="text-stone-200 font-semibold">
+											{game.playerWName ?? game.playerW}
+											{" vs "}
+											{game.mode === "online" ? (game.playerBName ?? game.playerB) : `Uncle Carlsen (${game.mode})`}
+										</span>
+										<img
+											src={game.mode === "online" ? (game.playerBAvatar ?? "/assets/avatars/default1.png") : magnusImg}
+											alt={game.mode === "online" ? (game.playerBName ?? "Player") : "Uncle Carlsen"}
+											className="w-8 h-8 rounded-full object-cover border border-stone-600"
+										/>
 									</div>
 									<button
 										onClick={() => {
