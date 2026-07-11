@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
 import { MatchesService } from 'src/matches/matches.service';
 import { v4 as uuidv4 } from 'uuid';
-import { PresenceService } from './presence.service';
+import { PresenceService } from '../presence/presence.service';
 import {
   ChessMoveDetails,
   CreateGameDto,
@@ -10,8 +10,8 @@ import {
   GameOverResult,
   GameState,
   MoveResult,
-} from '../interfaces/gameLogic.interface';
-import { GameStateEmitPayload } from '../dtos/gameEvents.dtos';
+} from './interfaces/gameLogic.interface';
+import { GameStateEmitPayload } from './dtos/gameEvents.dtos';
 
 @Injectable()
 export class GameService {

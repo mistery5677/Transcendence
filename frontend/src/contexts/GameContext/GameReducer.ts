@@ -21,6 +21,7 @@ export const initialState: GameState = {
 export type GameAction =
 	| { type: "START_GAME"; payload: any }
 	| { type: "MOVE"; payload: any }
+	| { type: "ADD_MESSAGE"; payload: MessageType }
 	| { type: "GAME_OVER"; payload: any; lastGameId: string | null }
 	| { type: "SET_DRAW_PROPOSAL"; payload: boolean }
 	| { type: "SET_REMATCH_PROPOSAL"; payload: boolean }
@@ -57,7 +58,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 				whiteTimeLeft: action.payload.whiteTimeLeft ?? state.whiteTimeLeft,
 				blackTimeLeft: action.payload.blackTimeLeft ?? state.blackTimeLeft,
 			};
-
+		case "ADD_MESSAGE":
+			return { ...state, messages: [...state.messages, action.payload] };
 		case "GAME_OVER":
 			return {
 				...state,

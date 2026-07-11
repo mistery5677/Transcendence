@@ -20,7 +20,6 @@ export function MatchSidebar() {
 			currentTab: value,
 			isOpen: prev.currentTab !== value ? true : !prev.isOpen,
 		}));
-		console.log(menu.currentTab);
 	};
 
 	return (

@@ -5,17 +5,14 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { MatchMakingService } from '../services/matchmaking.service';
 import { Server, Socket } from 'socket.io';
-import { GameService } from '../services/game.service';
-import { ParseIntPipe } from '@nestjs/common';
+import { MatchMakingService } from './matchmaking.service';
+import { GameService } from './game.service';
 import {
   NotificationPayload,
   NotificationService,
-} from '../services/notification.service';
-import { subscribe } from 'diagnostics_channel';
-import { SocketType } from 'dgram';
-import { TimeControl } from '../interfaces/gameLogic.interface';
+} from '../notification/notification.service';
+import { TimeControl } from './interfaces/gameLogic.interface';
 
 interface QueuePayload {
   time: TimeControl;
@@ -121,7 +118,6 @@ export class MatchGateway {
         String(receiverId),
       );
 
-      // Emitimos el estado a cada uno a través de sus salas privadas de usuario
       this.server.to(`user_${hostId}`).emit('gameState', payloadHost);
       this.server.to(`user_${receiverId}`).emit('gameState', payloadReceiver);
 

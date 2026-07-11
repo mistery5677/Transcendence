@@ -6,18 +6,18 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { GameService } from '../services/game.service';
+import { GameService } from './game.service';
 import { v4 as uuidv4 } from 'uuid';
 import { StockfishService } from 'src/stockfish/stockfish.service';
 import { AchievementsService } from 'src/achievements/achievements.service';
-import { GameInstance, MoveResult } from '../interfaces/gameLogic.interface';
+import { GameInstance, MoveResult } from './interfaces/gameLogic.interface';
 import {
   GameIdDto,
   MoveDto,
   RespondDrawDto,
   RespondRematchDto,
   ServerToClientEvents,
-} from '../dtos/gameEvents.dtos';
+} from './dtos/gameEvents.dtos';
 
 @WebSocketGateway({ cors: true })
 export class GameGateway {
@@ -258,6 +258,7 @@ export class GameGateway {
       whiteTimeLeft: moveData.whiteTimeLeft,
       blackTimeLeft: moveData.blackTimeLeft,
     });
+	
     const gameOver = this.gameService.checkGameOver(gameId);
     if (gameOver) {
       this.server.to(gameId).emit('gameOver', { gameOver });
