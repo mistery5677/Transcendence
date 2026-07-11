@@ -70,7 +70,7 @@ export type GameContextType = {
 	//Messages
 	messages: MessageType[];
 	setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
-
+	addMessage: (msg: MessageType) => void;
 	surrender: () => void;
 	proposeDraw: () => void;
 	proposeRematch: () => void;

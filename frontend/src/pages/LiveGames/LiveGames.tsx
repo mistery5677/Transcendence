@@ -79,22 +79,32 @@ export function LiveGames() {
 									<div
 										key={game.gameId}
 										className="flex items-center justify-between bg-stone-800/40 rounded-2xl border border-stone-700 p-4">
-										<div className="flex items-center gap-3">
-											<img
-												src={game.playerWAvatar ?? "/assets/avatars/default1.png"}
-												alt={game.playerWName ?? "Player"}
-												className="w-8 h-8 rounded-full object-cover border border-stone-600"
-											/>
-											<span className="text-stone-200 font-semibold">
-												{game.playerWName ?? game.playerW}
-												{" vs "}
-												{game.mode === "online" ? (game.playerBName ?? game.playerB) : `Uncle Carlsen (${game.mode})`}
+										<div className="flex items-center gap-3 min-w-0">
+											<div className="flex items-center gap-2 min-w-0">
+												<img
+													src={game.playerWAvatar ?? "/assets/avatars/default1.png"}
+													alt={game.playerWName ?? "Player"}
+													className="w-9 h-9 rounded-full object-cover border-2 border-stone-600 shrink-0"
+												/>
+												<span className="text-stone-100 font-bold tracking-wide truncate max-w-[9ch] sm:max-w-[14ch]">
+													{game.playerWName ?? game.playerW}
+												</span>
+											</div>
+
+											<span className="shrink-0 text-[10px] font-mono font-bold tracking-[0.2em] text-emerald-400/80 bg-emerald-500/10 border border-emerald-700/30 rounded-full px-2 py-1">
+												VS
 											</span>
-											<img
-												src={game.mode === "online" ? (game.playerBAvatar ?? "/assets/avatars/default1.png") : magnusImg}
-												alt={game.mode === "online" ? (game.playerBName ?? "Player") : "Uncle Carlsen"}
-												className="w-8 h-8 rounded-full object-cover border border-stone-600"
-											/>
+
+											<div className="flex items-center gap-2 min-w-0">
+												<span className="text-stone-100 font-bold tracking-wide truncate max-w-[9ch] sm:max-w-[14ch]">
+													{game.mode === "online" ? (game.playerBName ?? game.playerB) : `Uncle Carlsen (${game.mode})`}
+												</span>
+												<img
+													src={game.mode === "online" ? (game.playerBAvatar ?? "/assets/avatars/default1.png") : magnusImg}
+													alt={game.mode === "online" ? (game.playerBName ?? "Player") : "Uncle Carlsen"}
+													className="w-9 h-9 rounded-full object-cover border-2 border-stone-600 shrink-0"
+												/>
+											</div>
 										</div>
 										<button
 											onClick={() => {

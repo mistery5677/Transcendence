@@ -6,13 +6,13 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { PresenceService } from '../services/presence.service';
+import { PresenceService } from './presence.service';
 import { JwtService } from '@nestjs/jwt';
-import { WsMiddleware } from '../middleware/ws.middleware';
-import { MatchMakingService } from '../services/matchmaking.service';
-import { GameService } from '../services/game.service';
+import { WsMiddleware } from '../auth/middleware/ws.middleware';
+import { GameService } from '../game/game.service';
 import { UsersService } from 'src/users/users.service';
-import { NotificationService } from '../services/notification.service';
+import { NotificationService } from '../notification/notification.service';
+import { MatchMakingService } from 'src/game/matchmaking.service';
 
 @WebSocketGateway({ cors: true })
 export class PresenceGateway

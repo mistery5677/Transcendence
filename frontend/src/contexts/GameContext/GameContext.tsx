@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useReducer, useState } from "react";
-import type { GameContextType } from "./GameContextType";
+import type { GameContextType, MessageType } from "./GameContextType";
 import { useAuth } from "../UserContext";
 import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
 import { toastWrapper } from "../../adapters/toastWrapper";
@@ -198,6 +198,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 				isConnected: !!socket?.connected,
 				surrender,
 				handleDrawResponse,
+				addMessage: (msg: MessageType) => dispatch({ type: "ADD_MESSAGE", payload: msg }),
 				handleRematchResponse,
 				proposeDraw,
 				proposeRematch,

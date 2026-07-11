@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { IncomingMessage } from 'http';
-import { from, timestamp } from 'rxjs';
+import { PresenceService } from 'src/presence/presence.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { PresenceService } from './presence.service';
 
 @Injectable()
 export class ChatService {

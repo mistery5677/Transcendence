@@ -8,8 +8,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { NotificationService } from '../services/notification.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { NotificationService } from './notification.service';
 
 @Controller('notification')
 @UseGuards(AuthGuard)

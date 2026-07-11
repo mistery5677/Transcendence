@@ -1,6 +1,6 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
-import { PresenceService } from '../services/presence.service';
 import { UsersService } from 'src/users/users.service';
+import { PresenceService } from './presence.service';
 
 @Controller('presence')
 export class PresenceController {

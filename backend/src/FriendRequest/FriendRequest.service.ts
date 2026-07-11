@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AchievementsService } from 'src/achievements/achievements.service';
-import { PresenceService } from 'src/websockets/services/presence.service';
-import { NotificationService } from 'src/websockets/services/notification.service';
+import { PresenceService } from 'src/presence/presence.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class FriendRequestService {

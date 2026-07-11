@@ -7,7 +7,7 @@ interface ChatProps {
 }
 
 export function Chat({ classname = "" }: ChatProps) {
-	const { socket, gameId, messages, setMessages } = useGame();
+	const { socket, gameId, messages, addMessage } = useGame();
 	const messageContainerRef = useRef<HTMLDivElement | null>(null);
 
 	// const [messages, setMessages] = useState<{ from: string; message: string; timeStamp: string }[]>([]);
@@ -16,17 +16,16 @@ export function Chat({ classname = "" }: ChatProps) {
 
 	useEffect(() => {
 		socket?.on("receiveRoomMessage", (msg) => {
-			setMessages((prev) => {
-				if (!isAtBottom) {
-					setPendingNewMessages(true);
-				}
-				return [...prev, msg];
-			});
+			if (!isAtBottom) {
+				setPendingNewMessages(true);
+			}
+			addMessage(msg);
 		});
+
 		return () => {
 			socket?.off("receiveRoomMessage");
 		};
-	}, [socket, isAtBottom, setMessages]);
+	}, [socket, isAtBottom, addMessage]);
 
 	useEffect(() => {
 		const container = messageContainerRef.current;

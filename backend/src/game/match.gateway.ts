@@ -5,10 +5,11 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { MatchMakingService } from '../services/matchmaking.service';
 import { Server, Socket } from 'socket.io';
-import { GameService } from '../services/game.service';
-import { TimeControl } from '../interfaces/gameLogic.interface';
+import { MatchMakingService } from './matchmaking.service';
+import { GameService } from './game.service';
+import { NotificationService } from '../notification/notification.service';
+import { TimeControl } from './interfaces/gameLogic.interface';
 
 interface QueuePayload {
   time: TimeControl;
