@@ -23,7 +23,7 @@ services:
       - .env
     environment:
       VAULT_ADDR: http://vault:8200
-      VAULT_TOKEN: ${VAULT_ROOT_TOKEN}
+      VAULT_TOKEN: ${VAULT_BACKEND_TOKEN} # least-privilege read-only token (not root); minted by vault-init
     depends_on:
       database:
         condition: service_started # Depends on the first container, telling to create the database first
@@ -115,7 +115,8 @@ services:
         condition: service_healthy
     environment:
       VAULT_ADDR: http://vault:8200
-      VAULT_TOKEN: ${VAULT_ROOT_TOKEN}
+      VAULT_TOKEN: ${VAULT_ROOT_TOKEN} # vault-init needs root to write policies and mint tokens
+      VAULT_BACKEND_TOKEN: ${VAULT_BACKEND_TOKEN} # fixed ID for the least-privilege backend token
       JWT_SECRET: ${JWT_SECRET}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
