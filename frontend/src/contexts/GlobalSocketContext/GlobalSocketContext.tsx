@@ -41,8 +41,8 @@ export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }
 
 		socketInstance.on("haveActiveGame", onHaveActiveGame);
 
-		//! Can add here catch notifications ?? Or Other events
 		socketInstance.connect();
+		(window as any).debugSocket = socketInstance;//to remove
 		setSocket(socketInstance);
 		return () => {
 			console.log("Disconnected Global Socket by logout or close Browser");

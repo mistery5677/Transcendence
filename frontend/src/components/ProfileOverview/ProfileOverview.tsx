@@ -41,7 +41,9 @@ export function ProfileOverview({ stats, recentMatches = [] }: Props) {
 						<p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">
 							Recent Form
 							{stats.currentStreak ? (
-								<span className="ml-2 font-mono text-stone-300 bg-white/5 px-1.5 py-0.5 rounded text-[9px] tracking-normal border border-white/5">
+								<span
+									className="ml-2 font-mono text-stone-300 bg-white/5 px-1.5 py-0.5
+								 rounded text-[9px] tracking-normal border border-white/5">
 									{stats.currentStreak} STRK
 								</span>
 							) : null}
@@ -100,7 +102,9 @@ export function ProfileOverview({ stats, recentMatches = [] }: Props) {
 				<div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
 					<div className="flex items-center gap-2">
 						<h2 className="text-sm font-bold tracking-wider text-zinc-200 uppercase">Recent Matches</h2>
-						<span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-white/5 rounded text-stone-400 border border-white/5">
+						<span
+							className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-white/5 rounded
+						 text-stone-400 border border-white/5">
 							LOG
 						</span>
 					</div>
@@ -143,7 +147,18 @@ export function ProfileOverview({ stats, recentMatches = [] }: Props) {
 
 									<div className="flex-1 min-w-0 pl-1">
 										<p className="text-sm font-semibold text-white tracking-wide truncate">
-											vs {match.opponent ?? "Unknown"}
+											vs{" "}
+											{match.opponent ? (
+												<button
+													className=" hover:underline"
+													onClick={() =>
+														(window.location.href = `/profile/${match.opponent}`)
+													}>
+													{match.opponent ?? "Unknown"}
+												</button>
+											) : (
+												"Unknown"
+											)}
 										</p>
 										<p className="text-xs text-stone-400 font-medium mt-0.5">
 											{new Date(match.createdAt).toLocaleDateString()}

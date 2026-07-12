@@ -140,7 +140,13 @@ export function HistoryPage() {
 													key={match.gameId || index}
 													className="group cursor-pointer border-t border-stone-800 bg-sidebar-bg transition-colors hover:bg-stone-800/20">
 													<td className="p-4 font-bold sm:text-2xl text-[15px] text-stone-200">
-														{match.opponent}
+														<button
+															className=" hover:underline"
+															onClick={() =>
+																(window.location.href = `/profile/${match.opponent}`)
+															}>
+															{match.opponent}
+														</button>
 													</td>
 
 													<td className="p-4 text-stone-400 sm:text-2xl text-[15px]">

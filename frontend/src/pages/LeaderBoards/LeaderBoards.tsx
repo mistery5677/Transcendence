@@ -137,7 +137,7 @@ export function LeaderBoards() {
 														<img
 															src={player.avatarUrl}
 															alt="avatar"
-															className="size-10 rounded-xl object-cover border border-stone-700"
+															className="size-10 object-fit border rounded-full border-stone-700"
 														/>
 													) : (
 														<div className="flex items-center justify-center size-10 rounded-xl bg-stone-800 border border-stone-700"></div>
@@ -145,7 +145,7 @@ export function LeaderBoards() {
 													<span className="font-semibold text-stone-200 text-lg">
 														{/* With link, you can change the page without the fliker */}
 														<Link
-															to={`/history/${player.username}`}
+															to={`/profile/${player.username}`}
 															className="text-emerald-400 hover:underline">
 															{player.username}
 														</Link>

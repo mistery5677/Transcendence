@@ -9,13 +9,26 @@ type LeftUserProps = {
 };
 
 export function LeftUser({ state, onTimeOut }: LeftUserProps) {
-	const { currentTurn, color, whiteTimeLeft, blackTimeLeft } = useGame();
+	const {
+		currentTurn,
+		color,
+		whiteTimeLeft,
+		blackTimeLeft,
+		isSpectator,
+		spectatorPlayerWName,
+		spectatorPlayerWAvatar,
+	} = useGame();
 
 	// Internal values based on game context
-	const isActiveTurn = color != null && currentTurn === color;
+	const isActiveTurn = isSpectator ? currentTurn === "w" : color != null && currentTurn === color;
 	const myTimeLeft = color === "w" ? whiteTimeLeft : blackTimeLeft;
 
-	const username = state.user ? state.user.username : "Player 1";
+	const username = isSpectator
+		? (spectatorPlayerWName ?? "Player")
+		: state.user
+			? state.user.username
+			: "Player 1";
+	const avatarSrc = isSpectator ? (spectatorPlayerWAvatar ?? undefined) : state.user?.avatarUrl;
 	const eloRating = state.user?.score?.elo;
 
 	return (
@@ -45,7 +58,7 @@ export function LeftUser({ state, onTimeOut }: LeftUserProps) {
 			<div className="relative shrink-0 w-[34%] md:w-[22%] aspect-square flex items-center justify-center p-1.5">
 				{/* The Circular photo */}
 				<img
-					src={state.user?.avatarUrl}
+					src={avatarSrc}
 					alt="User Avatar"
 					className={`w-full h-full object-fit rounded-full ring-2 transition-all duration-500
                         ${isActiveTurn ? "ring-emerald-400 shadow-lg shadow-emerald-500/20" : "ring-stone-700"}`}
@@ -98,7 +111,7 @@ export function LeftUser({ state, onTimeOut }: LeftUserProps) {
 					<span
 						className={`text-[10px] font-bold tracking-wider mt-1 transition-colors duration-500 opacity-80
                         ${isActiveTurn ? "text-emerald-300/70" : "text-stone-500"}`}>
-						{state.user ? displayElo(state.user.score?.elo as number) : "NO RANK"}
+						{isSpectator ? "" : state.user ? displayElo(state.user.score?.elo as number) : "NO RANK"}
 					</span>
 				</div>
 
@@ -106,7 +119,7 @@ export function LeftUser({ state, onTimeOut }: LeftUserProps) {
 				<div
 					className={`shrink-0 mt-2 md:mt-0 transition-opacity duration-500 ${isActiveTurn ? "opacity-100" : "opacity-60"}`}>
 					<Timer
-						timeLeftInSeconds={myTimeLeft}
+						timeLeftInSeconds={isSpectator ? whiteTimeLeft : myTimeLeft}
 						isRunning={isActiveTurn}
 						onTimeUp={() => {
 							if (color) onTimeOut(color);

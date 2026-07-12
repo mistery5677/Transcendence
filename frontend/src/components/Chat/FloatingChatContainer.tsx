@@ -25,7 +25,7 @@ function ChatListItem({ avatarUrl, username, status, onClick, children }: ChatLi
 				<img
 					src={avatarUrl}
 					alt={username}
-					className="w-6 h-6 rounded-full object-cover bg-stone-600 shrink-0"
+					className="w-6 h-6 rounded-full object-fit bg-stone-600 shrink-0"
 				/>
 				<UserStatusBadge
 					status={status}

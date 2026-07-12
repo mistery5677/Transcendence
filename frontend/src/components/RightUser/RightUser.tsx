@@ -5,13 +5,24 @@ import { useGame } from "../../contexts/GameContext/GameContext";
 import { getOpponentData } from "../../api/users";
 import type { PlayerData } from "../../api/PlayerDataType";
 import magnusImg from "../../assets/magnus-carlsen.jpg";
+import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
 
 type RightUserProps = {
 	onTimeOut: (loserColor: "w" | "b") => void;
 };
 
 export function RightUser({ onTimeOut }: RightUserProps) {
-	const { currentTurn, color, opponentId, isSearchingMatch, whiteTimeLeft, blackTimeLeft } = useGame();
+	const { isSearchingMatch } = useMatchMaking();
+	const {
+		currentTurn,
+		color,
+		opponentId,
+		whiteTimeLeft,
+		blackTimeLeft,
+		isSpectator,
+		spectatorPlayerBName,
+		spectatorPlayerBAvatar,
+	} = useGame();
 	const [opponentProfile, setOpponentProfile] = useState<PlayerData | null>(null);
 
 	// 1. Internal Engine/Bot Resolution Logic
@@ -22,6 +33,7 @@ export function RightUser({ onTimeOut }: RightUserProps) {
 
 	// 2. Data Sourcing Lifecycle
 	useEffect(() => {
+		if (isSpectator) return;
 		if (!opponentId || isEngineOpponent) {
 			setOpponentProfile(null);
 			return;
@@ -39,18 +51,29 @@ export function RightUser({ onTimeOut }: RightUserProps) {
 		return () => {
 			cancelled = true;
 		};
-	}, [opponentId, isEngineOpponent]);
+	}, [opponentId, isEngineOpponent, isSpectator]);
 
 	// 3. Computed Status States
-	const isActiveTurn = !isSearchingMatch && color != null && currentTurn !== color;
-	const opponentTimeLeft = color === "w" ? blackTimeLeft : whiteTimeLeft;
+	const isActiveTurn = isSpectator
+		? !isSearchingMatch && currentTurn === "b"
+		: !isSearchingMatch && color != null && currentTurn !== color;
+	const opponentTimeLeft = isSpectator ? blackTimeLeft : color === "w" ? blackTimeLeft : whiteTimeLeft;
 
 	// 4. Dynamic Identity Assets Assignments
 	let username = "Opponent";
 	let opponentAvatarUrl: string | undefined = undefined;
 	let eloRating: number | null = null;
 
-	if (isSearchingMatch) {
+	if (isSpectator) {
+		if (spectatorPlayerBName) {
+			username = spectatorPlayerBName;
+			opponentAvatarUrl = spectatorPlayerBAvatar ?? undefined;
+		} else {
+			username = "Uncle Carlsen (bot/AI)";
+			opponentAvatarUrl = magnusImg;
+			eloRating = 2850;
+		}
+	} else if (isSearchingMatch) {
 		username = "Searching...";
 	} else if (isEngineOpponent) {
 		username = isBotOpponent ? "Uncle Carlsen (bot)" : "Uncle Carlsen (AI)";
@@ -61,7 +84,6 @@ export function RightUser({ onTimeOut }: RightUserProps) {
 		opponentAvatarUrl = opponentProfile?.avatarUrl ?? undefined;
 		eloRating = opponentProfile?.score?.elo ?? null;
 	}
-
 	return (
 		<div
 			className={`relative flex w-full min-w-0 items-center justify-end gap-[4%] p-[3%] 

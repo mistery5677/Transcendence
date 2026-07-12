@@ -2,43 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
 import { MatchesService } from 'src/matches/matches.service';
 import { v4 as uuidv4 } from 'uuid';
-import { PresenceService } from './presence.service';
+import { PresenceService } from '../presence/presence.service';
+import {
+  ChessMoveDetails,
+  CreateGameDto,
+  GameInstance,
+  GameOverResult,
+  GameState,
+  MoveResult,
+} from './interfaces/gameLogic.interface';
+import { GameStateEmitPayload } from './dtos/gameEvents.dtos';
+import { UsersService } from 'src/users/users.service';
 
-interface GameOverResult {
-  winnerColor: 'w' | 'b' | null;
-  winnerId?: number | null;
-  reason:
-    | 'CHECKMATE'
-    | 'DRAW'
-    | 'STALEMATE'
-    | 'THREEFOLD_REPETITION'
-    | 'RESIGNATION'
-    | 'DISCONNECTION_TIMEOUT'
-    | 'TIMEOUT';
-}
-
-interface ChatMessage {
-  from: string;
-  avatarUrl?: string;
-  message: string;
-  timeStamp: string;
-}
-
-export interface GameInstance {
-  chess: Chess;
-  mode: 'online' | 'bot' | 'ai';
-  level: number | undefined;
+//for use in listActiveGames()
+export interface ActiveGameSummary {
+  gameId: string;
   playerW: string;
   playerB: string;
-  isFinished?: boolean;
-  disconnectTimeout?: NodeJS.Timeout;
-
-  // Timer variables
-  timeStamp: '3 min' | '5 min' | '10 min'; // Time when the game started
-  whiteTimeLeft: number;
-  blackTimeLeft: number;
-  lastMoveTimestamp: number; // Time of the last move
-  chatHistory: ChatMessage[];
+  mode: 'online' | 'bot' | 'ai';
+  playerWName?: string;
+  playerBName?: string;
+  playerWAvatar?: string;
+  playerBAvatar?: string;
 }
 
 @Injectable()
@@ -48,6 +33,7 @@ export class GameService {
   constructor(
     private readonly matchesService: MatchesService,
     private readonly presenceService: PresenceService,
+    private readonly usersService: UsersService,
   ) {}
 
   private getTimeControlInSeconds(timeControl: string): number {
@@ -60,39 +46,73 @@ export class GameService {
     return timeMap[timeControl] ?? 300;
   }
 
-  createGame(
+  buildGameStatePayload(
     gameId: string,
-    mode: 'online' | 'bot' | 'ai',
-    playerWId: string,
-    playerBId: string = 'bot',
-    timeControl: string = '5 min',
-    level?: number,
-  ) {
+    game: GameInstance,
+    userId: string,
+  ): GameStateEmitPayload {
+    const userColor: 'w' | 'b' = userId === game.playerW ? 'w' : 'b';
+
+    let opponentId = userId === game.playerW ? game.playerB : game.playerW;
+
+    const liveState = this.getGameState(gameId);
+
+    return {
+      gameId: gameId,
+      color: userColor,
+      opponentId: String(opponentId),
+      fen: liveState?.fen ?? game.chess.fen(),
+      currentTurn: (liveState?.turn ?? game.chess.turn()) as 'w' | 'b',
+      gameHistory: liveState?.gameHistory ?? game.chess.history(),
+      mode: game.mode,
+      whiteTimeLeft: liveState?.whiteTimeLeft ?? game.whiteTimeLeft,
+      blackTimeLeft: liveState?.blackTimeLeft ?? game.blackTimeLeft,
+      chatHistory: liveState?.chatHistory ?? game.chatHistory ?? [],
+    };
+  }
+
+  createGame(dto: CreateGameDto): { gameId: string; game: GameInstance } {
+    const { mode, playerWId, level } = dto;
+
+    const timeControl = dto.timeStamp ?? '5 min';
+    let playerBId = dto.playerBId;
+    let gameId = uuidv4();
+
+    if (mode === 'bot') {
+      playerBId = 'bot';
+      gameId = `bot_${gameId}`;
+    } else if (mode === 'ai') {
+      playerBId = 'stockfish';
+      gameId = `ai_${gameId}`;
+    } else {
+      playerBId = playerBId ?? 'unknown_player';
+    }
+
     const newGame: GameInstance = {
       chess: new Chess(),
       mode: mode,
       level: level,
       playerW: playerWId,
       playerB: playerBId,
-
-      // Start the timer
       timeStamp: timeControl as '3 min' | '5 min' | '10 min',
       whiteTimeLeft: this.getTimeControlInSeconds(timeControl),
       blackTimeLeft: this.getTimeControlInSeconds(timeControl),
       lastMoveTimestamp: Date.now(),
       chatHistory: [],
     };
+
     this.presenceService.updateStatus(playerBId, 'playing');
     this.presenceService.updateStatus(playerWId, 'playing');
     this.games.set(gameId, newGame);
-    return newGame;
+
+    return { gameId, game: newGame };
   }
 
   getGame(gameId: string): GameInstance | undefined {
     return this.games.get(gameId);
   }
 
-  makeMove(gameId: string, move: any) {
+  makeMove(gameId: string, move: any): MoveResult | null {
     const game = this.games.get(gameId);
     if (!game) return null;
 
@@ -118,9 +138,9 @@ export class GameService {
       }
 
       return {
-        result,
+        moveDetails: result as ChessMoveDetails,
         fen: game.chess.fen(),
-        currentTurn: game.chess.turn(),
+        currentTurn: game.chess.turn() as 'w' | 'b',
         whiteTimeLeft: game.whiteTimeLeft,
         blackTimeLeft: game.blackTimeLeft,
       };
@@ -129,7 +149,7 @@ export class GameService {
     }
   }
 
-  generateBotMove(gameId: string) {
+  generateBotMove(gameId: string): MoveResult | null {
     const game = this.games.get(gameId);
     if (!game || game.chess.isGameOver()) return null;
 
@@ -141,20 +161,21 @@ export class GameService {
       possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
 
     game.blackTimeLeft = Math.max(0, game.blackTimeLeft - elapsedSeconds);
-    game.chess.move(randomMove);
+
+    const moveResult = game.chess.move(randomMove);
 
     game.lastMoveTimestamp = Date.now();
 
     return {
-      randomMove,
+      moveDetails: moveResult as ChessMoveDetails,
       fen: game.chess.fen(),
-      currentTurn: game.chess.turn(),
+      currentTurn: game.chess.turn() as 'w' | 'b',
       whiteTimeLeft: game.whiteTimeLeft,
       blackTimeLeft: game.blackTimeLeft,
     };
   }
 
-  getGameState(gameId: string) {
+  getGameState(gameId: string): GameState | null {
     const game = this.games.get(gameId);
     if (!game) return null;
 
@@ -165,7 +186,7 @@ export class GameService {
     let currentWTime = game.whiteTimeLeft;
     let currentBTime = game.blackTimeLeft;
 
-    if (game.chess.turn() === 'w') {
+    if ((game.chess.turn() as 'w' | 'b') === 'w') {
       currentWTime = Math.max(0, currentWTime - elapsedSeconds);
     } else {
       currentBTime = Math.max(0, currentBTime - elapsedSeconds);
@@ -174,7 +195,7 @@ export class GameService {
     return {
       fen: game.chess.fen(),
       turn: game.chess.turn(),
-      history: game.chess.history(),
+      gameHistory: game.chess.history(),
       mode: game.mode,
       chatHistory: game.chatHistory,
       // Send the timer info
@@ -238,7 +259,7 @@ export class GameService {
       );
     }
     this.markAsFinished(gameId);
-    return { winnerColor, reason: 'RESIGNATION' };
+    return { winnerColor, winnerId: parseInt(winnerId), reason: 'RESIGNATION' };
   }
 
   forceDraw(gameId: string): GameOverResult | null {
@@ -253,7 +274,7 @@ export class GameService {
       );
     }
     this.markAsFinished(gameId);
-    return { winnerColor: null, reason: 'DRAW' };
+    return { winnerColor: null, winnerId: null, reason: 'DRAW' };
   }
 
   handleTimeOut(gameId: string, loserPlayerId: string): GameOverResult | null {
@@ -269,13 +290,13 @@ export class GameService {
     // Save the match history
     if (game.mode === 'online') {
       this.matchesService.saveMatchResult(
-        parseInt(game.playerB),
         parseInt(game.playerW),
+        parseInt(game.playerB),
         parseInt(winnerId),
       );
     }
     this.markAsFinished(gameId);
-    return { winnerColor, reason: 'TIMEOUT' };
+    return { winnerColor, winnerId: parseInt(winnerId), reason: 'TIMEOUT' };
   }
 
   deleteGame(gameId: string) {
@@ -359,4 +380,75 @@ export class GameService {
       );
     }
   }
+
+  //do spectator
+  async listActiveGames(): Promise<ActiveGameSummary[]> {
+    const activeEntries = [...this.games.entries()].filter(
+      ([, game]) => !game.isFinished,
+    );
+
+    // playerW is always a real user, in every mode.
+    // playerB is only a real user when mode is 'online' ('bot'/'stockfish' otherwise).
+    const idsToResolve = new Set<number>();
+    for (const [, game] of activeEntries) {
+      idsToResolve.add(parseInt(String(game.playerW)));
+      if (game.mode === 'online') {
+        idsToResolve.add(parseInt(String(game.playerB)));
+      }
+    }
+
+    const users: { id: number; username: string; avatarUrl: string | null }[] = await this.usersService.findByIds([...idsToResolve]);
+    const userById = new Map(users.map((u) => [u.id, u]));
+
+    return activeEntries.map(([gameId, game]) => {
+      const w = userById.get(parseInt(String(game.playerW)));
+      const summary: ActiveGameSummary = {
+        gameId,
+        playerW: game.playerW,
+        playerB: game.playerB,
+        mode: game.mode,
+        playerWName: w?.username,
+        playerWAvatar: w?.avatarUrl ?? undefined,
+      };
+
+      if (game.mode === 'online') {
+        const b = userById.get(parseInt(String(game.playerB)));
+        summary.playerBName = b?.username;
+        summary.playerBAvatar = b?.avatarUrl ?? undefined;
+      }
+
+      return summary;
+    });
+  }
+
+  async buildSpectatorPayload(gameId: string) {
+    const game = this.getGame(gameId);
+    if (!game) return null;
+
+    const state = this.getGameState(gameId);
+    if (!state) return null;
+
+    const idsToResolve = new Set<number>();
+    idsToResolve.add(parseInt(String(game.playerW)));
+    if (game.mode === 'online') {
+      idsToResolve.add(parseInt(String(game.playerB)));
+    }
+
+    const users: { id: number; username: string; avatarUrl: string | null }[] = await this.usersService.findByIds([...idsToResolve]);
+    const userById = new Map(users.map((u) => [u.id, u]));
+
+    const w = userById.get(parseInt(String(game.playerW)));
+    const b = game.mode === 'online' ? userById.get(parseInt(String(game.playerB))) : undefined;
+
+    return {
+      ...state,
+      playerW: game.playerW,
+      playerB: game.playerB,
+      playerWName: w?.username,
+      playerWAvatar: w?.avatarUrl ?? undefined,
+      playerBName: b?.username,
+      playerBAvatar: b?.avatarUrl ?? undefined,
+    };
+  }
 }
+
