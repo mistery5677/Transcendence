@@ -212,4 +212,12 @@ export class MatchGateway {
 
     client.emit('gameState', gameState);
   }
+
+  //do spectator
+  @SubscribeMessage('listActiveGames')
+  async handleListActiveGames(@ConnectedSocket() client: Socket) {
+    const activeGames = await this.gameService.listActiveGames();
+    client.emit('activeGames', activeGames);
+  }
 }
+

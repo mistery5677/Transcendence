@@ -4,6 +4,7 @@ import { MatchSidebarButton } from "./MatchSidebarButton/MatchSidebarButton";
 import { GameSettings } from "./GameSettings/GameSettings";
 import { PlayOptions } from "./PlayOptions/PlayOptions";
 import { Actions } from "./Actions/Actions";
+import { useGame } from "../../contexts/GameContext/GameContext";
 
 type currentTabOpt = "chat" | "actions" | "settings" | "playOptions" | null;
 
@@ -14,6 +15,7 @@ type Menu = {
 
 export function MatchSidebar() {
 	const [menu, setMenu] = useState<Menu>({ currentTab: null, isOpen: false });
+	const { isSpectator } = useGame();
 
 	const toggleMenu = (value: currentTabOpt) => {
 		setMenu((prev) => ({
@@ -39,12 +41,14 @@ export function MatchSidebar() {
 						className="flex-1 text-sm sm:text-base md:text-lg">
 						Actions
 					</MatchSidebarButton>
-					<MatchSidebarButton
-						variant="playNow"
-						className="text-sm sm:text-base md:text-lg whitespace-nowrap"
-						onClick={() => toggleMenu("playOptions")}>
-						PLAY NOW
-					</MatchSidebarButton>
+					{!isSpectator && (
+						<MatchSidebarButton
+							variant="playNow"
+							className="text-sm sm:text-base md:text-lg whitespace-nowrap"
+							onClick={() => toggleMenu("playOptions")}>
+							PLAY NOW
+						</MatchSidebarButton>
+					)}
 				</div>
 			</header>
 

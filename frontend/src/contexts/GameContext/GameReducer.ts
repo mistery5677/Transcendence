@@ -16,6 +16,12 @@ export const initialState: GameState = {
 	lastFinishedGameId: null as string | null,
 	whiteTimeLeft: 10,
 	blackTimeLeft: 10,
+	spectatorPlayerWId: null as string | null,
+	spectatorPlayerBId: null as string | null,
+	spectatorPlayerWName: null as string | null,
+	spectatorPlayerBName: null as string | null,
+	spectatorPlayerWAvatar: null as string | null,
+	spectatorPlayerBAvatar: null as string | null,
 };
 
 export type GameAction =
@@ -28,7 +34,8 @@ export type GameAction =
 	| { type: "SET_MESSAGES"; payload: MessageType[] }
 	| { type: "TICK_CLOCK"; payload: { turn: "w" | "b" } }
 	| { type: "UNEXPECTED_DISCONNECT" }
-	| { type: "RESET_CONTEXT" };
+	| { type: "RESET_CONTEXT" }
+	| { type: "SPECTATE"; payload: any };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
 	switch (action.type) {
@@ -91,6 +98,27 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
 		case "RESET_CONTEXT":
 			return { ...initialState };
+
+		case "SPECTATE":
+			return {
+				...state,
+				gameId: action.payload.gameId,
+				color: null,
+				fen: action.payload.fen,
+				currentTurn: action.payload.turn,
+				opponentId: null,
+				gameHistory: action.payload.history ?? [],
+				messages: action.payload.chatHistory ?? [],
+				whiteTimeLeft: action.payload.whiteTimeLeft ?? 10,
+				blackTimeLeft: action.payload.blackTimeLeft ?? 10,
+				gameOver: null,
+				spectatorPlayerWId: action.payload.playerW != null ? String(action.payload.playerW) : null,
+				spectatorPlayerBId: action.payload.playerB != null ? String(action.payload.playerB) : null,
+				spectatorPlayerWName: action.payload.playerWName ?? null,
+				spectatorPlayerBName: action.payload.playerBName ?? null,
+				spectatorPlayerWAvatar: action.payload.playerWAvatar ?? null,
+				spectatorPlayerBAvatar: action.payload.playerBAvatar ?? null,
+			};
 
 		default:
 			return state;

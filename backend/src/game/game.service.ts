@@ -12,6 +12,19 @@ import {
   MoveResult,
 } from './interfaces/gameLogic.interface';
 import { GameStateEmitPayload } from './dtos/gameEvents.dtos';
+import { UsersService } from 'src/users/users.service';
+
+//for use in listActiveGames()
+export interface ActiveGameSummary {
+  gameId: string;
+  playerW: string;
+  playerB: string;
+  mode: 'online' | 'bot' | 'ai';
+  playerWName?: string;
+  playerBName?: string;
+  playerWAvatar?: string;
+  playerBAvatar?: string;
+}
 
 @Injectable()
 export class GameService {
@@ -20,6 +33,7 @@ export class GameService {
   constructor(
     private readonly matchesService: MatchesService,
     private readonly presenceService: PresenceService,
+    private readonly usersService: UsersService,
   ) {}
 
   private getTimeControlInSeconds(timeControl: string): number {
@@ -367,4 +381,75 @@ export class GameService {
       );
     }
   }
+
+  //do spectator
+  async listActiveGames(): Promise<ActiveGameSummary[]> {
+    const activeEntries = [...this.games.entries()].filter(
+      ([, game]) => !game.isFinished,
+    );
+
+    // playerW is always a real user, in every mode.
+    // playerB is only a real user when mode is 'online' ('bot'/'stockfish' otherwise).
+    const idsToResolve = new Set<number>();
+    for (const [, game] of activeEntries) {
+      idsToResolve.add(parseInt(String(game.playerW)));
+      if (game.mode === 'online') {
+        idsToResolve.add(parseInt(String(game.playerB)));
+      }
+    }
+
+    const users: { id: number; username: string; avatarUrl: string | null }[] = await this.usersService.findByIds([...idsToResolve]);
+    const userById = new Map(users.map((u) => [u.id, u]));
+
+    return activeEntries.map(([gameId, game]) => {
+      const w = userById.get(parseInt(String(game.playerW)));
+      const summary: ActiveGameSummary = {
+        gameId,
+        playerW: game.playerW,
+        playerB: game.playerB,
+        mode: game.mode,
+        playerWName: w?.username,
+        playerWAvatar: w?.avatarUrl ?? undefined,
+      };
+
+      if (game.mode === 'online') {
+        const b = userById.get(parseInt(String(game.playerB)));
+        summary.playerBName = b?.username;
+        summary.playerBAvatar = b?.avatarUrl ?? undefined;
+      }
+
+      return summary;
+    });
+  }
+
+  async buildSpectatorPayload(gameId: string) {
+    const game = this.getGame(gameId);
+    if (!game) return null;
+
+    const state = this.getGameState(gameId);
+    if (!state) return null;
+
+    const idsToResolve = new Set<number>();
+    idsToResolve.add(parseInt(String(game.playerW)));
+    if (game.mode === 'online') {
+      idsToResolve.add(parseInt(String(game.playerB)));
+    }
+
+    const users: { id: number; username: string; avatarUrl: string | null }[] = await this.usersService.findByIds([...idsToResolve]);
+    const userById = new Map(users.map((u) => [u.id, u]));
+
+    const w = userById.get(parseInt(String(game.playerW)));
+    const b = game.mode === 'online' ? userById.get(parseInt(String(game.playerB))) : undefined;
+
+    return {
+      ...state,
+      playerW: game.playerW,
+      playerB: game.playerB,
+      playerWName: w?.username,
+      playerWAvatar: w?.avatarUrl ?? undefined,
+      playerBName: b?.username,
+      playerBAvatar: b?.avatarUrl ?? undefined,
+    };
+  }
 }
+

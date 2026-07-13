@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useReducer } from "react";
+import React, { createContext, useContext, useEffect, useReducer, useState } from "react";
 import type { GameContextType, MessageType } from "./GameContextType";
 import { useAuth } from "../UserContext";
 import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
@@ -12,8 +12,8 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	const { socket } = useGlobalSocket();
 	const { state: authState } = useAuth();
 	const { setIsSearchingMatch } = useMatchMaking();
-
 	const [state, dispatch] = useReducer(gameReducer, initialState);
+	const [isSpectator, setIsSpectator] = useState<boolean>(false);
 
 	const gameIdRef = React.useRef<string | null>(null);
 	gameIdRef.current = state.gameId;
@@ -59,6 +59,11 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	};
 
+	const spectateGame = (targetGameId: string) => {
+		if (!socket) return;
+		socket.emit("spectateGame", { gameId: targetGameId });
+	};
+
 	const resetGameContextToDefault = () => {
 		dispatch({ type: "RESET_CONTEXT" });
 		setIsSearchingMatch(false);
@@ -92,6 +97,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		socket.emit("checkActiveGame");
 
 		const onGameState = (data: any) => {
+			setIsSpectator(false);
 			setIsSearchingMatch(false);
 			dispatch({ type: "START_GAME", payload: data });
 		};
@@ -123,7 +129,14 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 
 		const onOpponentReconnected = () => toastWrapper.success("Opponent has reconnected, ready to play");
 
+		const onSpectatorState = (data: any) => {
+			setIsSpectator(true);
+			gameIdRef.current = data.gameId;
+			dispatch({ type: "SPECTATE", payload: data });
+		};
+
 		socket.on("gameState", onGameState);
+		socket.on("spectatorState", onSpectatorState);
 		socket.on("noActiveGame", onNoActiveGame);
 		socket.on("move", onMove);
 		socket.on("gameOver", onGameOver);
@@ -136,6 +149,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 			console.log("[Game] Exiting of game board. Removing all listeners");
 			socket.off("noActiveGame", onNoActiveGame);
 			socket.off("gameState", onGameState);
+			socket.off("spectatorState", onSpectatorState);
 			socket.off("move", onMove);
 			socket.off("gameOver", onGameOver);
 			socket.off("activeGameNotFound", onActiveGameNotFound);
@@ -194,6 +208,8 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 				proposeRematch,
 				setMessages: (action) => dispatch({ type: "SET_MESSAGES", payload: action as any }),
 				resetGameContextToDefault,
+				isSpectator,
+				spectateGame,
 				handleTimeOut,
 			}}>
 			{children}

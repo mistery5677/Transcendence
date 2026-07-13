@@ -42,6 +42,7 @@ export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }
 		socketInstance.on("haveActiveGame", onHaveActiveGame);
 
 		socketInstance.connect();
+		(window as any).debugSocket = socketInstance;//to remove
 		setSocket(socketInstance);
 		return () => {
 			console.log("Disconnected Global Socket by logout or close Browser");
