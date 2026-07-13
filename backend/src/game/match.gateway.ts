@@ -44,7 +44,8 @@ export class MatchGateway {
     console.log('inviteToPlay from backend');
     const targetFriendId = Number(body.friendId);
     const sender = client.data.user;
-    const senderId = sender.userId;
+
+    const senderId = Number(sender.userId);
     const senderName = sender.username;
     const senderAvatarUrl = sender.avatarUrl;
 
@@ -53,7 +54,7 @@ export class MatchGateway {
       message: `invited you to play`,
       type: 'matchInvite',
       payload: {
-        senderId: senderId,
+        senderId: String(senderId),
         senderUsername: senderName,
         senderAvatarUrl: senderAvatarUrl,
         action: 'PENDING',
@@ -71,7 +72,7 @@ export class MatchGateway {
   async handleRespondToInvite(
     @ConnectedSocket() client: Socket,
     @MessageBody()
-    body: { hostId: number; accept: boolean; notificationId: string },
+    body: { hostId: string; accept: boolean; notificationId: string },
   ) {
     const receiver = client.data.user;
     if (!receiver) return { error: 'No authorized' };
@@ -84,7 +85,10 @@ export class MatchGateway {
     );
 
     if (notificationId) {
-      await this.notificationService.markAsRead(receiverId, notificationId);
+      await this.notificationService.markAsRead(
+        Number(receiverId),
+        notificationId,
+      );
     }
 
     if (!accept) {
@@ -96,26 +100,31 @@ export class MatchGateway {
 
     try {
       const { gameId, game } = this.gameService.createGame({
-        mode: 'online',
-        playerWId: String(hostId),
-        playerBId: String(receiverId),
+        mode: 'friend',
+        playerWId: hostId,
+        playerBId: receiverId,
         timeStamp: '5 min',
       });
 
       client.join(gameId);
-      console.log('Game by invitacion created', gameId);
+      console.log('Game by invitation created', gameId);
+
       this.server.in(`user_${hostId}`).socketsJoin(gameId);
+
+      this.server.to(`user_${hostId}`).emit('matchInviteAccepted', { gameId });
+      this.server
+        .to(`user_${receiverId}`)
+        .emit('matchInviteAccepted', { gameId });
 
       const payloadHost = this.gameService.buildGameStatePayload(
         gameId,
         game,
-        String(hostId),
+        hostId,
       );
-
       const payloadReceiver = this.gameService.buildGameStatePayload(
         gameId,
         game,
-        String(receiverId),
+        receiverId,
       );
 
       this.server.to(`user_${hostId}`).emit('gameState', payloadHost);
@@ -123,8 +132,8 @@ export class MatchGateway {
 
       return { success: true, status: 'STARTED', gameId };
     } catch (error) {
-      console.error('Error al iniciar partida por invitación:', error);
-      return { error: 'No se pudo iniciar la partida.' };
+      console.error('Error starting match:', error);
+      return { error: `Match could\'nt started ` };
     }
   }
 
@@ -209,7 +218,6 @@ export class MatchGateway {
       game,
       userId,
     );
-
     client.emit('gameState', gameState);
   }
 
@@ -220,4 +228,3 @@ export class MatchGateway {
     client.emit('activeGames', activeGames);
   }
 }
-

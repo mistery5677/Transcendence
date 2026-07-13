@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import type { MatchMakingContextType } from "./MatchMakingType";
 import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
 import { useAuth } from "../UserContext";
 import type { MatchStartOptions } from "../GameContext/GameContextType";
+import { useNavigate } from "react-router-dom";
+import { toastWrapper } from "../../adapters/toastWrapper";
 
 const MatchMakingContext = createContext<MatchMakingContextType | undefined>(undefined);
 
@@ -10,6 +12,7 @@ export const MatchMakingProvider = ({ children }: { children: React.ReactNode })
 	const { socket } = useGlobalSocket();
 	const { state: authState } = useAuth();
 	const [isSearchingMatch, setIsSearchingMatch] = useState<boolean>(false);
+	const navigate = useNavigate();
 
 	const hasUser = !!authState.user;
 
@@ -20,7 +23,7 @@ export const MatchMakingProvider = ({ children }: { children: React.ReactNode })
 		}
 	};
 
-	const respondToGameInvite = (hostId: number, accept: boolean, notificationId: string) => {
+	const respondToGameInvite = (hostId: string, accept: boolean, notificationId: string) => {
 		if (!socket || !hasUser) return;
 
 		console.log(`[Matchmaking] Responding to invite from ${hostId}: ${accept ? "ACCEPT" : "REJECT"}`);
@@ -51,6 +54,21 @@ export const MatchMakingProvider = ({ children }: { children: React.ReactNode })
 		setIsSearchingMatch(false);
 		socket.emit("startAIGame", options);
 	};
+	useEffect(() => {
+		if (!socket) return;
+
+		socket.on("matchInviteAccepted", (data: { gameId: string }) => {
+			console.log("Invitation accepted: Redirect to game:", data.gameId);
+			toastWrapper.success("Your challenge has been accepted ", {});
+
+			setTimeout(() => {
+				navigate(`/play`);
+			}, 1500);
+		});
+		return () => {
+			socket.off("matchInviteAccepted");
+		};
+	}, [socket, navigate]);
 
 	return (
 		<MatchMakingContext.Provider

@@ -1,6 +1,7 @@
 import {
   ChatRoomMessage,
   ChessMoveDetails,
+  GameModes,
 } from '../../game/interfaces/gameLogic.interface';
 
 export interface ServerToClientEvents {
@@ -57,7 +58,7 @@ export interface GameStateEmitPayload {
   fen: string;
   currentTurn: 'w' | 'b';
   gameHistory: string[];
-  mode: 'online' | 'bot' | 'ai';
+  mode: GameModes;
   whiteTimeLeft: number;
   blackTimeLeft: number;
   chatHistory?: ChatRoomMessage[];

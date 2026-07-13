@@ -2,7 +2,7 @@ import { Chess } from 'chess.js';
 
 export type TimeControl = '3 min' | '5 min' | '10 min';
 
-export type GameModes = 'online' | 'bot' | 'ai';
+export type GameModes = 'online' | 'bot' | 'ai' | 'friend';
 
 export interface GameOverResult {
   winnerColor: 'w' | 'b' | null;

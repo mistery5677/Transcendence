@@ -7,6 +7,7 @@ import {
   ChessMoveDetails,
   CreateGameDto,
   GameInstance,
+  GameModes,
   GameOverResult,
   GameState,
   MoveResult,
@@ -19,7 +20,7 @@ export interface ActiveGameSummary {
   gameId: string;
   playerW: string;
   playerB: string;
-  mode: 'online' | 'bot' | 'ai';
+  mode: GameModes;
   playerWName?: string;
   playerBName?: string;
   playerWAvatar?: string;
@@ -52,7 +53,6 @@ export class GameService {
     userId: string,
   ): GameStateEmitPayload {
     const userColor: 'w' | 'b' = userId === game.playerW ? 'w' : 'b';
-
     let opponentId = userId === game.playerW ? game.playerB : game.playerW;
 
     const liveState = this.getGameState(gameId);
@@ -60,7 +60,7 @@ export class GameService {
     return {
       gameId: gameId,
       color: userColor,
-      opponentId: String(opponentId),
+      opponentId: opponentId,
       fen: liveState?.fen ?? game.chess.fen(),
       currentTurn: (liveState?.turn ?? game.chess.turn()) as 'w' | 'b',
       gameHistory: liveState?.gameHistory ?? game.chess.history(),
@@ -315,12 +315,10 @@ export class GameService {
     }
   }
 
-  findActiveGameByUserId(userId: string): {
-    gameId: string;
-    game: GameInstance;
-  } | null {
+  findActiveGameByUserId(
+    userId: string,
+  ): { gameId: string; game: GameInstance } | null {
     for (const [gameId, game] of this.games.entries()) {
-      console.log('gameId: ', gameId, game.playerB, game.playerW);
       if (
         !game.isFinished &&
         (game.playerW === userId || game.playerB === userId)
@@ -398,7 +396,8 @@ export class GameService {
       }
     }
 
-    const users: { id: number; username: string; avatarUrl: string | null }[] = await this.usersService.findByIds([...idsToResolve]);
+    const users: { id: number; username: string; avatarUrl: string | null }[] =
+      await this.usersService.findByIds([...idsToResolve]);
     const userById = new Map(users.map((u) => [u.id, u]));
 
     return activeEntries.map(([gameId, game]) => {
@@ -435,11 +434,15 @@ export class GameService {
       idsToResolve.add(parseInt(String(game.playerB)));
     }
 
-    const users: { id: number; username: string; avatarUrl: string | null }[] = await this.usersService.findByIds([...idsToResolve]);
+    const users: { id: number; username: string; avatarUrl: string | null }[] =
+      await this.usersService.findByIds([...idsToResolve]);
     const userById = new Map(users.map((u) => [u.id, u]));
 
     const w = userById.get(parseInt(String(game.playerW)));
-    const b = game.mode === 'online' ? userById.get(parseInt(String(game.playerB))) : undefined;
+    const b =
+      game.mode === 'online'
+        ? userById.get(parseInt(String(game.playerB)))
+        : undefined;
 
     return {
       ...state,
@@ -452,4 +455,3 @@ export class GameService {
     };
   }
 }
-

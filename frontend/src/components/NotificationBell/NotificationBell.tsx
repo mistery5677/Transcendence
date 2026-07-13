@@ -37,8 +37,8 @@ export function NotificationBell() {
 		const hostId = notification.payload?.senderId;
 		const notificationId = notification.id;
 		if (hostId) {
-			respondToGameInvite(Number(hostId), accept, notificationId);
-			console.log("aqui");
+			respondToGameInvite(hostId, accept, notificationId);
+			console.log("Sended as string ");
 		}
 
 		if (!notification.read) {
@@ -145,7 +145,6 @@ export function NotificationBell() {
 													/>
 												</div>
 
-												{/* Contenedor de contenido de texto y acciones */}
 												<div className="flex-1 min-w-0">
 													<div className="text-[11px] text-stone-400 leading-normal">
 														<span className="text-emerald-500 font-bold hover:underline cursor-pointer mr-1">
@@ -154,7 +153,7 @@ export function NotificationBell() {
 														{notification.message}
 													</div>
 
-													{/* 🌟 Botones alineados de forma limpia abajo del texto */}
+													{/* 🌟 Buttons of matchInvite*/}
 													{notification.type === "matchInvite" && (
 														<div className="flex gap-2 mt-2">
 															<button

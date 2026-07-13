@@ -1,6 +1,6 @@
 import type { Socket } from "socket.io-client";
 
-type GameModes = "online" | "bot" | "ai";
+type GameModes = "online" | "bot" | "ai" | "friend";
 
 export type GameOverState = {
 	winnerColor: "w" | "b" | null;

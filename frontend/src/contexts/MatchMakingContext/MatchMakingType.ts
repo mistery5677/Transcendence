@@ -7,5 +7,5 @@ export type MatchMakingContextType = {
 	startBotGame: (options: MatchStartOptions) => void;
 	startAIGame: (options: MatchStartOptions) => void;
 	inviteToPlay: (friendId: number) => void;
-	respondToGameInvite: (hostId: number, accept: boolean, notificationId: string) => void;
+	respondToGameInvite: (hostId: string, accept: boolean, notificationId: string) => void;
 };

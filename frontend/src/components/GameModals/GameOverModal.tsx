@@ -8,11 +8,11 @@ export function GameOverModal() {
 		proposeRematch,
 		rematchProposal,
 		handleRematchResponse,
-		opponentId,
 		resetGameContextToDefault,
 		isSpectator,
 		spectatorPlayerWName,
 		spectatorPlayerBName,
+		mode,
 	} = useGame();
 	const [isDismissed, setIsDismissed] = useState(false);
 	const [isWaitingForRematchProposal, setIsWaitingForRematchProposal] = useState(false);
@@ -51,18 +51,22 @@ export function GameOverModal() {
 
 	const getMatchMessage = () => {
 		if (isDraw) return "A tough battle with no clear winner.";
+
 		if (isSpectator) {
-			const winnerName = gameOver.winnerColor === "w" ? spectatorPlayerWName : (spectatorPlayerBName ?? "Uncle Carlsen");
+			const winnerName =
+				gameOver.winnerColor === "w" ? spectatorPlayerWName : (spectatorPlayerBName ?? "Uncle Carlsen");
 			return winnerName ? `${winnerName} won the match.` : "The match is over.";
 		}
 
-		const isAi = opponentId === "bot" || opponentId === "stockfish" || opponentId === "Uncle Carlsen (AI)";
-		console.log(isAi, opponentId);
 		if (isWinner) {
-			return isAi ? "Good job! You win against the AI." : "You crushed the opponent! +8 ELO";
+			if (mode === "ai" || mode === "bot") return "Good job! You win against the AI.";
+			if (mode === "friend") return "You crushed your friend! (Friendly match)";
+			return "You crushed the opponent! +8 ELO";
 		}
 
-		return isAi ? "The AI outplayed you." : "The opponent outplayed you. -8 ELO";
+		if (mode === "ai" || mode === "bot") return "The AI outplayed you.";
+		if (mode === "friend") return "Your friend outplayed you. Better luck next time!";
+		return "The opponent outplayed you. -8 ELO";
 	};
 
 	const getTitle = () => {

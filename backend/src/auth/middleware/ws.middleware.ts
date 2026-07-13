@@ -21,7 +21,7 @@ export const WsMiddleware = (
       const user = await userService.findOneById(payload.userId);
 
       socket.data.user = {
-        userId: payload.userId,
+        userId: String(payload.userId),
         username: payload.username,
         avatarUrl: user?.avatarUrl || null,
       };
