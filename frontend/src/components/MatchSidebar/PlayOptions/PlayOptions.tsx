@@ -60,7 +60,7 @@ export function PlayOptions() {
 		(window as { Tenor?: { Embed?: { load?: () => void } } }).Tenor?.Embed?.load?.();
 	}, []);
 
-	const { gameId, surrender } = useGame();
+	const { gameId, surrender, markSwitchingGame } = useGame();
 	const { startOnlineGame, startBotGame, startAIGame } = useMatchMaking();
 	useEffect(() => {
 		if (!pendingStart || gameId) return;
@@ -95,6 +95,7 @@ export function PlayOptions() {
 		toastWrapper.confirm("You are currently in a match. To continue, do you want to surrender this game?", {
 			onAccept: () => {
 				setPendingStart({ mode, time, level: mode === "AI" ? aiLevel : undefined });
+				markSwitchingGame();
 				surrender();
 			},
 			acceptLabel: "Surrender & Continue",

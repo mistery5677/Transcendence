@@ -11,6 +11,7 @@ export function GameOverModal() {
 		opponentId,
 		resetGameContextToDefault,
 		isSpectator,
+		isSwitchingGame,
 		spectatorPlayerWName,
 		spectatorPlayerBName,
 	} = useGame();
@@ -26,14 +27,15 @@ export function GameOverModal() {
 
 	useEffect(() => {
 		if (isSpectator) return;
-		if (!rematchProposal && !isWaitingForRematchProposal) return;
+		const isVsComputer = opponentId === "bot" || opponentId === "stockfish";
+		if (!rematchProposal && !(isWaitingForRematchProposal && isVsComputer)) return;
 
 		console.log("Auto-accepting rematch proposal");
 		handleRematchResponse(true);
 		setIsWaitingForRematchProposal(false);
-	}, [rematchProposal, isWaitingForRematchProposal, handleRematchResponse, isSpectator]);
+	}, [rematchProposal, isWaitingForRematchProposal, opponentId, handleRematchResponse, isSpectator]);
 
-	if (!gameOver || isDismissed) return null;
+	if (!gameOver || isDismissed || isSwitchingGame) return null;
 
 	const isWinner = gameOver.winnerColor === color;
 	const isDraw = gameOver.winnerColor === null;

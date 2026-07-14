@@ -67,6 +67,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 		case "GAME_OVER":
 			return {
 				...state,
+				gameId: null,
 				lastFinishedGameId: action.lastGameId,
 				gameOver: action.payload.gameOver,
 				whiteTimeLeft: action.payload.gameOver.whiteTimeLeft ?? 10,
