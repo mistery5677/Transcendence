@@ -21,10 +21,14 @@ services:
     restart: always
     env_file:
       - .env
-    ports:
-      - "${BACKEND_PORT}:${BACKEND_PORT}"
-    depends_on: # We don't need this in inception, because we run the bash scripts directly
-      - database # Depends on the first container, telling to create the database first
+    environment:
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: ${VAULT_BACKEND_TOKEN} # least-privilege read-only token (not root); minted by vault-init
+    depends_on:
+      database:
+        condition: service_started # Depends on the first container, telling to create the database first
+      vault-init:
+        condition: service_completed_successfully # never start before secrets are seeded into Vault
     networks:
       - transcendence
     # This volumes allows the "bind mount" to update the code when we are codding, no need to restart the container
@@ -40,8 +44,6 @@ services:
     restart: always
     env_file:
       - .env
-    ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     depends_on:
       - backend
     networks:
@@ -49,7 +51,83 @@ services:
     volumes:
       - ./frontend:/usr/src/app
       - frontend_modules:/usr/src/app/node_modules
-    
+
+  waf:
+    image: owasp/modsecurity-crs:4.28.0-nginx-alpine-202607030707
+    container_name: chess_waf
+    restart: always
+    environment:
+      BACKEND: http://frontend:5173
+      SERVER_NAME: localhost
+      PORT: "8080"
+      NGINX_ALWAYS_TLS_REDIRECT: "on"
+      MODSEC_RULE_ENGINE: "On"
+      MODSEC_AUDIT_ENGINE: RelevantOnly
+      BLOCKING_PARANOIA: "1"
+      ANOMALY_INBOUND: "5"
+      ANOMALY_OUTBOUND: "4"
+    ports:
+      - "${WAF_PORT}:8080"
+      - "${WAF_SSL_PORT}:8443"
+    volumes:
+      - ./waf/templates/conf.d/default.conf.template:/etc/nginx/templates/conf.d/default.conf.template:ro
+      - ./waf/modsecurity.d/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf:/etc/modsecurity.d/owasp-crs/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - transcendence
+    # Override the image's default HEALTHCHECK (which probes HTTPS on SSL_PORT) — this
+    # phase is HTTP-only (TLS is Phase 4, 8443 intentionally not served), so probe the
+    # actual HTTP listener instead to avoid a permanently "unhealthy" container status.
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  vault:
+    image: hashicorp/vault:1.21
+    container_name: chess_vault
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_ROOT_TOKEN}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_ADDR: http://127.0.0.1:8200
+    ports:
+      - "8200:8200"
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - transcendence
+
+  vault-init:
+    image: hashicorp/vault:1.21
+    container_name: chess_vault_init
+    depends_on:
+      vault:
+        condition: service_healthy
+    environment:
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: ${VAULT_ROOT_TOKEN} # vault-init needs root to write policies and mint tokens
+      VAULT_BACKEND_TOKEN: ${VAULT_BACKEND_TOKEN} # fixed ID for the least-privilege backend token
+      JWT_SECRET: ${JWT_SECRET}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    entrypoint: ["/bin/sh", "/vault-init/bootstrap.sh"]
+    volumes:
+      - ./vault/init:/vault-init:ro
+    networks:
+      - transcendence
+    restart: "no"
+
 networks:
   transcendence:
     driver: bridge
@@ -59,3 +137,4 @@ volumes:
   postgres_data:
   backend_modules: 
   frontend_modules:
+  

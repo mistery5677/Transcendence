@@ -55,6 +55,8 @@ export type GameContextType = {
 	opponentId: string | null;
 	isSpectator: boolean;
 	spectateGame: (gameId: string) => void;
+	isSwitchingGame: boolean;
+	markSwitchingGame: () => void;
 	gameOver: GameOverState;
 	drawProposal: boolean;
 	rematchProposal: boolean;

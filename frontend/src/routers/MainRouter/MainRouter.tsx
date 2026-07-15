@@ -9,8 +9,10 @@ import {
   LeaderBoards,
   Friends,
   HistoryPage,
+  Privacy,
+  Terms,
 } from "../../pages";
-import { FallBack, Login, Signup, MultiRoute, NavBar } from "../../components";
+import { FallBack, Login, Signup, MultiRoute, NavBar, Footer } from "../../components";
 import { useAuth } from "../../contexts/UserContext";
 import { GameProvider } from "../../contexts/GameContext/GameContext";
 import { Play } from "../../pages/Play/Play";
@@ -102,8 +104,12 @@ export function MainRouter() {
                     element={<Settings tabOpt={"profile"} />}
                   ></Route>
                 )}
+                {/* Public legal pages (LEGAL-01, LEGAL-02) */}
+                <Route path={RouterPaths.PRIVACY} element={<Privacy />} />
+                <Route path={RouterPaths.TERMS} element={<Terms />} />
               </Routes>
               <FloatingChatContainer />
+              <Footer />
             </ChatProvider>
           </NotificationProvider>
         </MatchMakingProvider>

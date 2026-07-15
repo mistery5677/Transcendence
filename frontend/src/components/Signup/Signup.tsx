@@ -27,8 +27,7 @@ export function Signup({ onModal }: SignupProps) {
 
 	// Check if all information is true
 	const isFormValid = hasMinLength && hasSpecialChar && hasUpperCase && usernameAvailable && emailAvailable && !hasSpace;
-	// Special condition for password ... REMOVE BEFORE DELIVER
-	const canSubmit = password === "1" || isFormValid;
+	const canSubmit = isFormValid;
 
 	// Check if the username is already in use
 	const checkUsername = async (e: React.FocusEvent<HTMLInputElement>) => {

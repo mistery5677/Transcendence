@@ -14,6 +14,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	const { setIsSearchingMatch } = useMatchMaking();
 	const [state, dispatch] = useReducer(gameReducer, initialState);
 	const [isSpectator, setIsSpectator] = useState<boolean>(false);
+	const [isSwitchingGame, setIsSwitchingGame] = useState<boolean>(false)
 
 	const gameIdRef = React.useRef<string | null>(null);
 	gameIdRef.current = state.gameId;
@@ -69,6 +70,10 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		setIsSearchingMatch(false);
 	};
 
+	const markSwitchingGame = () => {
+		setIsSwitchingGame(true);
+	};
+
 	useEffect(() => {
 		if (!state.gameId || state.gameOver || !state.color) return;
 
@@ -95,6 +100,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		const onGameState = (data: any) => {
 			setIsSpectator(false);
 			setIsSearchingMatch(false);
+			setIsSwitchingGame(false);
 			dispatch({ type: "START_GAME", payload: data });
 		};
 
@@ -206,6 +212,8 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 				resetGameContextToDefault,
 				isSpectator,
 				spectateGame,
+				isSwitchingGame,
+				markSwitchingGame,
 				handleTimeOut,
 			}}>
 			{children}

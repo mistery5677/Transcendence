@@ -1,6 +1,8 @@
 import { Controller, Post, Body, UseGuards, Req, Get } from '@nestjs/common';
 import { FriendRequestService } from './FriendRequest.service';
 import { AuthGuard } from '../auth/guard/auth.guard';
+import { SendFriendRequestDto } from './dto/send-friend-request.dto';
+import { SenderIdDto, FriendIdDto } from './dto/friend-target.dto';
 
 @Controller('FriendRequest')
 export class FriendRequestController {
@@ -9,16 +11,13 @@ export class FriendRequestController {
   // Send a friend request
   @UseGuards(AuthGuard)
   @Post('request')
-  async sendFriendRequest(
-    @Body('targetUsername') targetUsername: string,
-    @Req() req,
-  ) {
+  async sendFriendRequest(@Body() dto: SendFriendRequestDto, @Req() req) {
     // The ID sender comes from the authentication token (through AuthGuard)
     const senderId = req.user.userId;
 
     return await this.friendRequestService.sendRequest(
       senderId,
-      targetUsername,
+      dto.targetUsername,
     );
   }
 
@@ -33,19 +32,25 @@ export class FriendRequestController {
   // Accept the friend request
   @UseGuards(AuthGuard)
   @Post('accept')
-  async acceptFriendRequest(@Body('senderId') senderId: number, @Req() req) {
+  async acceptFriendRequest(@Body() dto: SenderIdDto, @Req() req) {
     // Who is accepting the request, is the receiver
     const receiverId = req.user.userId;
-    return await this.friendRequestService.acceptRequest(receiverId, senderId);
+    return await this.friendRequestService.acceptRequest(
+      receiverId,
+      dto.senderId,
+    );
   }
 
   // Decline the friend request
   @UseGuards(AuthGuard)
   @Post('decline')
-  async declineFriendRequest(@Body('senderId') senderId: number, @Req() req) {
+  async declineFriendRequest(@Body() dto: SenderIdDto, @Req() req) {
     // Who is declining the request, is the receiver
     const receiverId = req.user.userId;
-    return await this.friendRequestService.declineRequest(receiverId, senderId);
+    return await this.friendRequestService.declineRequest(
+      receiverId,
+      dto.senderId,
+    );
   }
 
   // List all accepted friends
@@ -59,10 +64,10 @@ export class FriendRequestController {
   // Remove an accepted friend
   @UseGuards(AuthGuard)
   @Post('remove')
-  async removeFriend(@Body('friendId') friendId: number, @Req() req) {
+  async removeFriend(@Body() dto: FriendIdDto, @Req() req) {
     return await this.friendRequestService.removeFriend(
       req.user.userId,
-      friendId,
+      dto.friendId,
     );
   }
 }

@@ -11,5 +11,7 @@ export const RouterPaths = {
 	LEADERBOARDS: "/leaderboards",
 	FRIENDS: "/friends",
 	RULES: "/rules",
-	LIVEGAMES: "/live-games"
+	LIVEGAMES: "/live-games",
+	PRIVACY: "/privacy",
+	TERMS: "/terms"
 };
