@@ -74,7 +74,7 @@ export function MatchSidebar() {
 			<section className="mt-auto w-full p-5 bg-sidebar-bg border-t border-stone-700/60 shrink-0">
 				<div className="grid grid-cols-3 gap-3 w-full h-14">
 					{/* Surrender Button (Left) */}
-					{gameId && !Boolean(gameOver) && <SurrenderButton func={surrender} />}
+					{gameId && !Boolean(gameOver) && <SurrenderButton onSurrender={surrender} />}
 
 					{/* Settings Button (Middle - now matching icon style) */}
 					<button
@@ -89,7 +89,7 @@ export function MatchSidebar() {
 					</button>
 
 					{/* Offer Draw Button (Right) */}
-					{!dontShowOfferDrawButton && <OfferDrawButton func={proposeDraw} />}
+					{!dontShowOfferDrawButton && <OfferDrawButton onOfferDraw={proposeDraw} />}
 				</div>
 			</section>
 		</div>
