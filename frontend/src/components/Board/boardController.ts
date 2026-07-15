@@ -33,6 +33,43 @@ type UseBoardControllerParams = {
 	learnLevel?: number;
 };
 
+const getKingSquare = (game: Chess, color: "w" | "b"): Square | null => {
+	for (let r = 0; r < 8; r++) {
+		const row = game.board()[r];
+		for (let c = 0; c < 8; c++) {
+			const piece = row[c];
+			if (piece && piece.type === "k" && piece.color === color) {
+				const file = String.fromCharCode(97 + c);
+				const rank = 8 - r;
+				return `${file}${rank}` as Square;
+			}
+		}
+	}
+	return null;
+};
+
+const getLastMoveSquares = (gameHistory: string[] | null | undefined): { from: string; to: string } | null => {
+	if (!gameHistory || gameHistory.length === 0) return null;
+
+	try {
+		const tempGame = new Chess();
+
+		for (const move of gameHistory) {
+			tempGame.move(move);
+		}
+
+		const history = tempGame.history({ verbose: true });
+		const last = history[history.length - 1];
+
+		if (last) {
+			return { from: last.from, to: last.to };
+		}
+	} catch (e) {
+		console.error("Error getting lastMove:", e);
+	}
+	return null;
+};
+
 export function useBoardController({
 	onTurnChange,
 	darkSquareBackground,
@@ -45,7 +82,7 @@ export function useBoardController({
 
 	const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
 
-	const { socket, gameId, color, fen, currentTurn, gameOver, isSpectator } = useGame();
+	const { socket, gameId, color, fen, currentTurn, gameOver, isSpectator, gameHistory } = useGame();
 
 	const [chessPosition, setChessPosition] = useState(() => {
 		if (fen && fen != "start") return fen;
@@ -239,6 +276,33 @@ export function useBoardController({
 
 	// Small green dot for target square + subtle ring on origin.
 	const helperSquareStyles: Record<string, React.CSSProperties> = {};
+
+	const lastMove = getLastMoveSquares(gameHistory);
+	if (lastMove) {
+		helperSquareStyles[lastMove.from] = {
+			backgroundColor: "rgba(30, 144, 255, 0.25)",
+			transition: "background-color 140ms ease",
+		};
+
+		helperSquareStyles[lastMove.to] = {
+			backgroundColor: "rgba(30, 144, 255, 0.4)",
+			transition: "background-color 140ms ease",
+		};
+	}
+
+	if (chessGame.inCheck() && !gameOver) {
+		const activeColor = chessGame.turn();
+		const kingSquare = getKingSquare(chessGame, activeColor);
+
+		if (kingSquare) {
+			helperSquareStyles[kingSquare] = {
+				background: "radial-gradient(circle, rgba(239, 68, 68, 0.4) 0%, rgba(239, 68, 68, 0.15) 70%)",
+				boxShadow: "inset 0 0 0 4px rgba(239, 68, 68, 0.9)",
+				transition: "all 140ms ease",
+			};
+		}
+	}
+
 	const showHint = Boolean(enableHelperMode && isMyTurn && bestMoveSquares);
 
 	if (showHint && bestMoveSquares) {
@@ -253,7 +317,7 @@ export function useBoardController({
 		};
 	}
 
-	if (bestMoveSquares) {
+	if (showHint && bestMoveSquares) {
 		helperSquareStyles[bestMoveSquares.from] = {
 			boxShadow: "inset 0 0 0 5px rgba(250, 204, 21, 0.75)",
 		};
