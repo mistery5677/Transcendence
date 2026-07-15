@@ -15,6 +15,8 @@ import {
   Body,
   Query,
   Header,
+  ForbiddenException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
@@ -207,8 +209,12 @@ export class UsersController {
     };
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(parseInt(id));
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    if (Number(req.user.userId) !== id) {
+      throw new ForbiddenException('You can only delete your own account');
+    }
+    return this.usersService.remove(id);
   }
 }

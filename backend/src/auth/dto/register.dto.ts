@@ -1,13 +1,14 @@
-import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, Matches } from 'class-validator';
+import { IsValidPassword } from 'src/common/validation/password.validator';
 
 export class RegisterDto {
   // @IsString()
   // @MinLength(1)
   // name!: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @Matches(/^[a-zA-Z0-9]+$/, {
+    message: 'Username must contain only letters and numbers',
+  })
   username!: string;
 
   @IsEmail()
@@ -15,7 +16,6 @@ export class RegisterDto {
 
   avatarUrl!: string;
 
-  @IsString()
-  @Transform(({ value }) => value.trim())
+  @IsValidPassword()
   password!: string;
 }
