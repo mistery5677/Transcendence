@@ -98,8 +98,8 @@ export function PlayOptions() {
 				markSwitchingGame();
 				surrender();
 			},
-			acceptLabel: "Surrender & Continue",
-			rejectLabel: "Keep Current Match",
+			acceptLabel: "Surrender",
+			rejectLabel: "Cancel",
 		});
 	};
 

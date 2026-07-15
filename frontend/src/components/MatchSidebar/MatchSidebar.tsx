@@ -4,7 +4,9 @@ import { MatchSidebarButton } from "./MatchSidebarButton/MatchSidebarButton";
 import { GameSettings } from "./GameSettings/GameSettings";
 import { PlayOptions } from "./PlayOptions/PlayOptions";
 import { Actions } from "./Actions/Actions";
+import { SurrenderButton } from "../SurrenderButton/SurrenderButton";
 import { useGame } from "../../contexts/GameContext/GameContext";
+import { OfferDrawButton } from "../OfferDrawButton/OfferDrawButton";
 
 type currentTabOpt = "chat" | "actions" | "settings" | "playOptions" | null;
 
@@ -15,14 +17,16 @@ type Menu = {
 
 export function MatchSidebar() {
 	const [menu, setMenu] = useState<Menu>({ currentTab: null, isOpen: false });
-	const { isSpectator } = useGame();
+	const { surrender, proposeDraw, gameId, gameOver, mode } = useGame();
 
 	const toggleMenu = (value: currentTabOpt) => {
 		setMenu((prev) => ({
 			currentTab: value,
 			isOpen: prev.currentTab !== value ? true : !prev.isOpen,
 		}));
+		console.log(menu.currentTab);
 	};
+	const dontShowOfferDrawButton = mode === "ai" || mode === "bot" || Boolean(gameOver) || !gameId;
 
 	return (
 		<div
@@ -41,14 +45,12 @@ export function MatchSidebar() {
 						className="flex-1 text-sm sm:text-base md:text-lg">
 						Actions
 					</MatchSidebarButton>
-					{!isSpectator && (
-						<MatchSidebarButton
-							variant="playNow"
-							className="text-sm sm:text-base md:text-lg whitespace-nowrap"
-							onClick={() => toggleMenu("playOptions")}>
-							PLAY NOW
-						</MatchSidebarButton>
-					)}
+					<MatchSidebarButton
+						variant="playNow"
+						className="text-sm sm:text-base md:text-lg whitespace-nowrap"
+						onClick={() => toggleMenu("playOptions")}>
+						PLAY NOW
+					</MatchSidebarButton>
 				</div>
 			</header>
 
@@ -68,13 +70,26 @@ export function MatchSidebar() {
 				</div>
 			</section>
 
-			<section className="mt-auto w-full p-5 sm:p-6 bg-stone-900 border-t border-stone-700 shrink-0">
-				<div className="rounded-lg bg-stone-800 border border-stone-700 p-4 sm:p-5">
-					<MatchSidebarButton
+			{/* Bottom Section */}
+			<section className="mt-auto w-full p-5 bg-sidebar-bg border-t border-stone-700/60 shrink-0">
+				<div className="grid grid-cols-3 gap-3 w-full h-14">
+					{/* Surrender Button (Left) */}
+					{gameId && !Boolean(gameOver) && <SurrenderButton func={surrender} />}
+
+					{/* Settings Button (Middle - now matching icon style) */}
+					<button
+						type="button"
+						title="Game Settings"
+						aria-label="Game Settings"
 						onClick={() => toggleMenu("settings")}
-						className="w-full justify-center bg-stone-700 hover:bg-stone-600 text-base sm:text-lg">
-						⚙️ Settings
-					</MatchSidebarButton>
+						className={`border border-stone-700 flex h-full w-full items-center justify-center rounded-xl bg-button-stone
+								text-stone-300 transition-all duration-200 shadow-md hover:bg-stone-700 hover:text-stone-100 
+								hover:border-stone-500 active:scale-[0.98]`}>
+						<span className="text-xl">⚙️</span>
+					</button>
+
+					{/* Offer Draw Button (Right) */}
+					{!dontShowOfferDrawButton && <OfferDrawButton func={proposeDraw} />}
 				</div>
 			</section>
 		</div>
