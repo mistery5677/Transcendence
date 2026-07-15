@@ -9,7 +9,7 @@ export const initialState: GameState = {
 	gameHistory: [] as string[],
 	gameOver: null as GameOverState,
 	messages: [] as MessageType[],
-	mode: "bot",
+	mode: "idle",
 	drawProposal: false,
 	rematchProposal: false,
 	opponentId: null as string | null,

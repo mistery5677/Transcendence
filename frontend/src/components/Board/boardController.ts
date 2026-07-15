@@ -56,7 +56,6 @@ export function useBoardController({
 		(args: any) => {
 			if (isSpectator || currentTurn !== color || gameOver) return false;
 
-
 			const pieceString = args?.piece?.pieceType;
 
 			if (typeof pieceString !== "string") return false;
@@ -290,7 +289,7 @@ export function useBoardController({
 	};
 
 	return {
-		isGameActive: Boolean(gameId),
+		isGameActive: Boolean(gameId) || gameOver !== null,
 		pendingPromotion,
 		onPromotionSelect,
 		onPromotionCancel: () => setPendingPromotion(null),

@@ -14,7 +14,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	const { setIsSearchingMatch } = useMatchMaking();
 	const [state, dispatch] = useReducer(gameReducer, initialState);
 	const [isSpectator, setIsSpectator] = useState<boolean>(false);
-	const [isSwitchingGame, setIsSwitchingGame] = useState<boolean>(false)
+	const [isSwitchingGame, setIsSwitchingGame] = useState<boolean>(false);
 
 	const gameIdRef = React.useRef<string | null>(null);
 	gameIdRef.current = state.gameId;
@@ -30,6 +30,9 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	const proposeRematch = () => {
 		const targetGameId = state.gameId ?? state.lastFinishedGameId;
 		if (socket && targetGameId) socket.emit("proposeRematch", { gameId: targetGameId });
+		if (state.mode !== "ai" && state.mode !== "bot") {
+			toastWrapper.warn("Waiting for opponent...");
+		}
 	};
 
 	const handleDrawResponse = (accept: boolean) => {
