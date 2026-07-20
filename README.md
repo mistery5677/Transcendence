@@ -155,9 +155,9 @@ The entire stack runs under Docker Compose on a private network. The **WAF is th
 > ⚠️ **TODO — this section is mandatory and must be honest and specific.** The subject requires stating **for which tasks** and **which parts of the project** AI was used. Draft to complete, e.g.:
 
 AI assistance was used for:
-- Debugging specific TypeScript/NestJS errors, explaining error messages`
-- Reviewing/explaining existing code during onboarding to the codebase`
-- Drafting this README structure`
+- Debugging specific TypeScript/NestJS errors, explaining error messages
+- Reviewing/explaining existing code during onboarding to the codebase
+- Drafting this README structure
 
 ## Team Information
 
@@ -304,11 +304,10 @@ The last two are flagged because the schema/component tree already has `PrivateM
 - Features/modules: `[TODO]`
 - Challenges faced and how they were overcome: `[TODO]`
 
-### `[TODO: login3]` *(e.g. Diogo — spectator mode)*
+### ddiogo-f
 - Implemented **spectator mode**: backend `listActiveGames`/`spectateGame` events, distinct `spectatorState` vs `gameState`, frontend `LiveGames` page, non-draggable board for spectators, spectator-aware `PlayerHeader`/`GameOverModal`.
 - Fixed a phantom-game bug on rematch flow (`GameReducer`/`GameOverModal`).
 - Fixed a multi-tab disconnection bug in the presence gateway (removed a "kill zombie socket" policy that was disconnecting legitimate second tabs of the same user).
-- Challenges: `[TODO: e.g. debugging the presence/socket disconnect issue took X, root cause was Y]`
 
 ## Known Limitations
 
