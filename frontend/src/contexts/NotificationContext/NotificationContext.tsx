@@ -9,7 +9,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 	const { socket } = useGlobalSocket();
 	const [notifications, setNotifications] = useState<NotificationType[]>([]);
 
-	const unreadCount = notifications.filter((n) => !n.read).length;
+	let unreadCount = notifications.filter((n) => !n.read).length;
 
 	useEffect(() => {
 		const fetchNotifications = async () => {
@@ -17,6 +17,8 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 			setNotifications(data);
 		};
 		fetchNotifications();
+		unreadCount = notifications.filter((n) => !n.read).length;
+
 	}, []);
 
 	useEffect(() => {
@@ -26,6 +28,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 			setNotifications((prev) => [newNotification, ...prev]);
 		};
 
+		unreadCount = notifications.filter((n) => !n.read).length;
 		socket.on("notification", handleIncomingNotification);
 		return () => {
 			socket.off("notification", handleIncomingNotification);
