@@ -14,6 +14,7 @@ import { getUsers } from "../../api/users";
 import { Link } from "react-router-dom";
 import { UserStatusBadge } from "../../components/UserStatusBandage/UserStatusBandage";
 import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
+import { useNotifications } from "../../contexts/NotificationContext/NotificationContext";
 
 type FriendsTab = "list" | "requests" | "add";
 
@@ -40,6 +41,7 @@ export function Friends({ activeTab: initialTab }: FriendsProps) {
 	const [searchUsername, setSearchUsername] = useState("");
 	const [suggestions, setSuggestions] = useState<FriendSuggestion[]>([]);
 	const [showSuggestions, setShowSuggestions] = useState(false);
+	const { markOneAsRead, notifications } = useNotifications();
 
 	// UX Control States
 	const [isPending, startTransition] = useTransition();
@@ -71,10 +73,19 @@ export function Friends({ activeTab: initialTab }: FriendsProps) {
 		}
 	};
 
+	const markRequestAsRead = async (senderId: number) => {
+		notifications.map((notification) => {
+			if (Number(notification.payload.senderId) === senderId) {
+				markOneAsRead(notification.id);
+			}
+		});
+	};
+
 	// Handle accepting a request
 	const handleAccept = async (senderId: number) => {
 		try {
 			await acceptFriendRequest(senderId);
+			markRequestAsRead(senderId);
 			setRequests((prev) => prev.filter((req) => req.senderId !== senderId));
 			toastWrapper.success("Friend request accepted!");
 
@@ -92,6 +103,7 @@ export function Friends({ activeTab: initialTab }: FriendsProps) {
 	const handleDecline = async (senderId: number) => {
 		try {
 			await declineFriendRequest(senderId);
+			markRequestAsRead(senderId);
 			setRequests((prev) => prev.filter((req) => req.senderId !== senderId));
 			toastWrapper.success("Request declined.");
 		} catch {
