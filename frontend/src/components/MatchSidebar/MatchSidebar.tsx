@@ -4,11 +4,12 @@ import { MatchSidebarButton } from "./MatchSidebarButton/MatchSidebarButton";
 import { GameSettings } from "./GameSettings/GameSettings";
 import { PlayOptions } from "./PlayOptions/PlayOptions";
 import { Actions } from "./Actions/Actions";
-import { SurrenderButton } from "../SurrenderButton/SurrenderButton";
+import { SurrenderButton } from "./SurrenderButton/SurrenderButton";
 import { useGame } from "../../contexts/GameContext/GameContext";
-import { OfferDrawButton } from "../OfferDrawButton/OfferDrawButton";
+import { OfferDrawButton } from "./OfferDrawButton/OfferDrawButton";
+import { GameSettingsButton } from "./GameSettingsButton/GameSettingsButton";
 
-type currentTabOpt = "chat" | "actions" | "settings" | "playOptions" | null;
+export type currentTabOpt = "chat" | "actions" | "settings" | "playOptions" | null;
 
 type Menu = {
 	currentTab: currentTabOpt;
@@ -76,17 +77,10 @@ export function MatchSidebar() {
 					{/* Surrender Button (Left) */}
 					{gameId && !Boolean(gameOver) && <SurrenderButton onSurrender={surrender} />}
 
-					{/* Settings Button (Middle - now matching icon style) */}
-					<button
-						type="button"
-						title="Game Settings"
-						aria-label="Game Settings"
-						onClick={() => toggleMenu("settings")}
-						className={`border border-stone-700 flex h-full w-full items-center justify-center rounded-xl bg-button-stone
-								text-stone-300 transition-all duration-200 shadow-md hover:bg-stone-700 hover:text-stone-100 
-								hover:border-stone-500 active:scale-[0.98]`}>
-						<span className="text-xl">⚙️</span>
-					</button>
+					{/* Settings Button */}
+					<div className="col-2">
+						<GameSettingsButton toggleMenu={toggleMenu} />
+					</div>
 
 					{/* Offer Draw Button (Right) */}
 					{!dontShowOfferDrawButton && <OfferDrawButton onOfferDraw={proposeDraw} />}
