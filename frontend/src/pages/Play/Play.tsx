@@ -4,7 +4,6 @@ import type { PieceColor } from "../../components/Board/Board";
 import { useAuth } from "../../contexts/UserContext";
 import { useGame } from "../../contexts/GameContext/GameContext";
 import { GameOverModal } from "../../components/GameModals/GameOverModal";
-import { GameActions } from "./GameActions";
 import chess from "../../assets/chess-pieces.png";
 import penguin from "../../assets/penguin.jpg";
 import cat from "../../assets/cat.jpg";
@@ -34,17 +33,22 @@ export function Play() {
 
 	return (
 		<div
-			className="min-h-[calc(100dvh-5rem)]  bg-stone-800 font-sans flex flex-col items-center py-4 relative overflow-hidden bg-cover bg-center bg-no-repeat"
+			className="min-h-[calc(100dvh-5rem)]  bg-stone-800 font-sans flex flex-col items-center py-4 
+			relative overflow-hidden bg-cover bg-center bg-no-repeat"
 			style={{ backgroundImage: "url(" + selectedBackground + ")" }}>
 			{/* GameProposalRespond */}
 			<GameProposalsRespond />
 			{/* GameOver */}
 			<GameOverModal />
 
-			<div className="relative z-10 mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 xl:max-w-380 xl:flex-row xl:items-stretch xl:justify-center xl:gap-2">
+			<div
+				className="relative z-10 mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 xl:max-w-380 
+			xl:flex-row xl:items-stretch xl:justify-center xl:gap-2">
 				{/* Left column: centered stack, header on top and board pushed to bottom */}
 				<div className="flex w-full justify-center xl:w-auto xl:flex-none">
-					<div className="flex w-full flex-col gap-2 xl:h-[calc(100dvh-7rem)] xl:min-h-0 xl:max-w-[calc((100dvh-7rem)*0.75)] 2xl:max-w-[calc((100dvh-7rem)*0.80)]">
+					<div
+						className="flex w-full flex-col gap-2 xl:h-[calc(100dvh-7rem)] xl:min-h-0 
+					xl:max-w-[calc((100dvh-7rem)*0.75)] 2xl:max-w-[calc((100dvh-7rem)*0.80)]">
 						<div className="w-full xl:basis-[15%] 2xl:basis-[15%] xl:min-h-0">
 							<PlayerHeader
 								state={state}
@@ -55,9 +59,12 @@ export function Play() {
 								}}
 							/>
 						</div>
-						<section className="flex w-full items-center justify-center xl:basis-[75%] 2xl:basis-[80%] 2xl:items-start xl:min-h-0">
+						<section
+							className="flex w-full items-center justify-center xl:basis-[75%] 
+						2xl:basis-[80%] 2xl:items-start xl:min-h-0">
 							<div
-								className={`w-full rounded-xl bg-stone-900 p-3 sm:p-4 xl:h-full border-4 shadow-md ${currentTurn == color ? "border-green-400" : "border-stone-900"}`}>
+								className={`w-full rounded-xl bg-stone-900 p-3 sm:p-4 xl:h-full border-4 shadow-md 
+								${currentTurn == color ? "border-green-400" : "border-stone-900"}`}>
 								<Board onTurnChange={handleTurnChange} />
 							</div>
 						</section>
@@ -66,11 +73,8 @@ export function Play() {
 
 				{/* Right column: Sidebar panel restricted to a max limits of 30% width on widescreen */}
 				<div className="w-full  min-w-[20%] xl:max-w-105 xl:shrink-0">
-					<div className="flex min-h-0 flex-col gap-3 xl:h-[calc(100dvh-7rem)] xl:max-h-[calc(100dvh-7rem)] w-full ">
+					<div className="flex min-h-0 flex-col gap-3 xl:h-[calc(100dvh-7rem)] xl:max-h-[calc(100dvh-10rem)] w-full ">
 						<MatchSidebar />
-						<div className="flex items-center justify-center shrink-0">
-							<GameActions />
-						</div>
 					</div>
 				</div>
 			</div>
