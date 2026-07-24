@@ -115,25 +115,20 @@ bash scripts/verify-legal.sh    # legal pages served + input validation (400 on 
 
 The entire stack runs under Docker Compose on a private network. The **WAF is the only component exposed to the host** — the frontend, backend, and database are not directly reachable from outside.
 
-```
-                           Host
-                             │  https://localhost:8443  (http:8080    → 301 → https)
-                             ▼
-                    ┌─────────────────────┐
-                    │  WAF (ModSec/Nginx) │  TLS termination +    OWASP CRS filtering
-                    └────────┬───┬────────┘
-                   UI /      │   │       /api
-          ┌──────────────────┘   └─────────────────┐
-          ▼                                        ▼
-   ┌────────────┐                            ┌────────────┐
-   │  frontend  │  React SPA (Vite)          │  backend   │  NestJS + WebSockets
-   └────────────┘                            └─────┬──────┘
-                                                   │ Prisma ORM
-                                       ┌───────────┴───────────┐
-                                       ▼                       ▼
-                                ┌────────────┐          ┌────────────┐
-                                │ PostgreSQL │          │   Vault    │  secrets
-                                └────────────┘          └────────────┘
+```mermaid
+flowchart TB
+    Host["Host<br/>https://localhost:8443<br/>(http:8080 → 301 → https)"]
+    WAF["WAF<br/>Nginx + ModSecurity<br/>TLS termination + OWASP CRS filtering"]
+    FE["frontend<br/>React SPA (Vite)"]
+    BE["backend<br/>NestJS + WebSockets"]
+    DB[("PostgreSQL")]
+    Vault[("Vault<br/>secrets")]
+
+    Host --> WAF
+    WAF -->|"UI /"| FE
+    WAF -->|"/api"| BE
+    BE -->|"Prisma ORM"| DB
+    BE --> Vault
 ```
 
 - **Realtime** is handled over WebSockets (live moves, presence, chat, spectating).
@@ -142,53 +137,47 @@ The entire stack runs under Docker Compose on a private network. The **WAF is th
 
 ## Resources
 
-> ⚠️ **TODO — list the references you actually used.** Suggested starting points 🔴**(confirm/replace)**:
-
 ***Tech:***
 - [Socket.IO documentation](https://socket.io/docs/v4/)
 - [NestJS documentation](https://docs.nestjs.com/)
+- [NestJS WebSocket Gateways](https://docs.nestjs.com/websockets/gateways)
 - [Prisma documentation](https://www.prisma.io/docs)
 - [React documentation](https://react.dev/)
 - [chess.js](https://github.com/jhlywa/chess.js)
 - [Stockfish](https://stockfishchess.org/)
 - [Chess logic tutorial (N4JS)](https://eclipse.dev/n4js/userguides/n4js-tutorial-chess/n4js-tutorial-chess.html)
+- [Chessboard.js](https://chessboardjs.com/index.html)
 
 ***Inspiration:***
 - [Chess.com](https://www.chess.com/home)
-- [Techologies](https://dev.to/itxnargis/chess-meets-code-how-i-created-a-full-stack-game-using-react-mongodb-2610)
+- [Technologies](https://dev.to/itxnargis/chess-meets-code-how-i-created-a-full-stack-game-using-react-mongodb-2610)
 
 ### AI usage
-
-> ⚠️ **TODO — mandatory and must be honest and specific.** The subject requires stating **which AI tools** were used and **for which tasks**.
 
 **AI tools used:**
 - Claude
 - Gemini
-- 🔴`[TODO: any other tools used by the team]`
 
 **Used for:**
 - Debugging specific TypeScript/NestJS errors, explaining error messages
+- Debugging WebSocket-related errors
 - Reviewing/explaining existing code during onboarding to the codebase
 - Helping organize/structure code
 - Detecting possible vulnerabilities
 - Drafting this README's structure and content
-- 🔴`[TODO: anything else the team used AI for]`
+- UI/interface design decisions (layout, component consistency)
 
 ## Team Information
-
-> ⚠️ **TODO — one entry per team member.**
 
 | Login | Role(s) | Responsibilities |
 |---|---|---|
 | miafonso | Product Owner + Developer | Account & social features — user profiles, friends system, and player progression (leaderboard, match history) |
-| `[TODO]` | `[TODO: PO / PM / Tech Lead / Developer]` | `[TODO: brief description]` |
-| `[TODO]` | `[TODO]` | `[TODO]` |
+| hbourlot | Product Manager + Developer | Frontend pages (Home, Signup, Play, Friends, Profile, History), matchmaking, chess game logic, AI opponent integration |
+| joralves | Developer | Real-time backend — WebSocket gateways for gameplay sync, chat, notifications, and presence; authentication |
 | `[TODO]` | `[TODO]` | `[TODO]` |
 | ddiogo-f | Developer | Implement Spectator Mode, Readme.md |
 
 ## Project Management
-
-> ⚠️ **TODO — fill in based on how the team actually worked.**
 
 - **Task distribution:** Feature-based branches, one person per module
 - **Meetings/sync cadence:** Weekly online meetings — review what was done during the week, define new milestones, and set priorities
@@ -210,7 +199,7 @@ The entire stack runs under Docker Compose on a private network. The **WAF is th
 
 ### Frontend
 - **React** + **Vite**, **TypeScript**
-- Socket.IO client for real-time communication
+- **Socket.IO** client for real-time communication
 - 🔴**[TODO: confirm styling solution — Tailwind CSS utility classes are used throughout the codebase (e.g. `bg-stone-700/50`, `rounded-3xl`); confirm this is the full styling approach and list any additional UI libraries]**
 
 ### Backend
@@ -233,12 +222,89 @@ The entire stack runs under Docker Compose on a private network. The **WAF is th
 - **HashiCorp Vault** for secrets management — the backend authenticates with a least-privilege, read-only token (never the root token) and fails to boot if Vault is unreachable.
 - **Password hashing** — credentials stored as bcrypt hashes, never plaintext.
 
-### Other significant libraries
-- 🔴**[TODO: any additional notable dependencies worth mentioning, e.g. testing libraries]**
 
 ## Database Schema
-
-> ⚠️ **TODO — consider adding a generated ER diagram (e.g. via `prisma-erd-generator` or a manual diagram) here.** Table/relationship summary below, generated from `schema.prisma`:
+```mermaid
+erDiagram
+    user ||--o| Score : "has"
+    user ||--o{ MatchHistory : "playerA"
+    user ||--o{ MatchHistory : "playerB"
+    user ||--o{ FriendRequest : "sent"
+    user ||--o{ FriendRequest : "received"
+    user ||--o{ UserAchievement : "unlocked"
+    user ||--o{ PrivateMessage : "sent"
+    user ||--o{ PrivateMessage : "received"
+    user ||--o{ Notification : "has"
+ 
+    user {
+        Int id PK
+        String email UK
+        String name
+        String nickname
+        String username UK
+        String password
+        String avatarUrl
+        Int boardTheme
+        Int backgroundTheme
+        DateTime createdAt
+        DateTime updatedAt
+    }
+ 
+    Score {
+        Int id PK
+        Int userId FK
+        Int wins
+        Int losses
+        Int draws
+        Int elo
+        Int totalGames
+        Int bestWinStreak
+        Int currentWinStreak
+        Int bestElo
+    }
+ 
+    MatchHistory {
+        Int id PK
+        Int playerAId FK
+        Int playerBId FK
+        String result
+        DateTime createdAt
+    }
+ 
+    FriendRequest {
+        Int id PK
+        Int senderId FK
+        Int receiverId FK
+        String status
+        DateTime createdAt
+    }
+ 
+    UserAchievement {
+        Int id PK
+        Int userId FK
+        String achievementId
+        DateTime unlockedAt
+    }
+ 
+    PrivateMessage {
+        Int id PK
+        Int fromId FK
+        Int toId FK
+        String message
+        DateTime createdAt
+    }
+ 
+    Notification {
+        Int id PK
+        Int userId FK
+        String title
+        String message
+        String type
+        Boolean read
+        Json payload
+        DateTime createdAt
+    }
+```
 
 | Model | Purpose | Key relationships |
 |---|---|---|
@@ -254,21 +320,19 @@ The entire stack runs under Docker Compose on a private network. The **WAF is th
 
 ## Features List
 
-> ⚠️ **TODO — confirm this list is exhaustive and correct, and fill in the "Implemented by" column.**
-
 | Feature | Description | Implemented by |
 |---|---|---|
-| Authentication | Signup/login, JWT-based auth | `[TODO]` |
-| User profiles | Avatar, stats, match history | miafonso |
-| Real-time chess gameplay | Move validation, turns, timers, draw/surrender | `[TODO]` |
-| Matchmaking | Queue-based matching between players | `[TODO]` |
-| AI opponent | Play against Stockfish | `[TODO]` |
+| Authentication | Signup/login, JWT-based auth | joralves |
+| User profiles | Avatar, stats, match history | miafonso, joralves |
+| Real-time chess gameplay | Move validation, turns, timers, draw/surrender | joralves, hbourlot |
+| Matchmaking | Queue-based matching between players | joralves, hbourlot |
+| AI opponent | Play against Stockfish | hbourlot |
 | Friends system | Send/accept/reject friend requests | miafonso |
-| Private chat | Direct messages between users | `[TODO]` |
-| Notifications | Real-time in-app notifications | `[TODO]` |
+| Private chat | Direct messages between users | joralves |
+| Notifications | Real-time in-app notifications | joralves |
 | Leaderboard / ELO | Ranking based on match results | miafonso |
 | Spectator mode | Browse and watch live games in real time without being able to move pieces | ddiogo-f |
-| `[TODO: any other feature]` | `[TODO]` | `[TODO]` |
+| Frontend pages / UI | Home, Signup, Play, Friends, Profile, and History pages | hbourlot |
 
 ## Modules
 
@@ -276,31 +340,29 @@ Overview table (details for each module below):
 
 | Category | Module | Type | Owner |
 |---|---|---|---|
-| Web | Framework for frontend and backend (React + NestJS) | Major | 🔴`[TODO]` |
-| Web | Real-time features via WebSockets | Major | 🔴`[TODO]` |
+| Web | Framework for frontend and backend (React + NestJS) | Major | hbourlot |
+| Web | Real-time features via WebSockets | Major | joralves |
 | Web | ORM for the database (Prisma) | Minor | miafonso |
 | Web | User interaction (chat + profile + friends system) | Major | miafonso |
-| Web | Notification system | Minor | 🔴`[TODO]` |
-| User Management | Standard user management & authentication | Major | 🔴`[TODO]` |
+| Web | Notification system | Minor | joralves |
+| User Management | Standard user management & authentication | Major | joralves |
 | User Management | Game statistics and match history | Minor | miafonso |
-| Artificial Intelligence | AI Opponent (Stockfish) | Major | 🔴`[TODO]` |
-| Gaming and user experience | Complete web-based game (chess, real-time, live matches) | Major | 🔴`[TODO]` |
-| Gaming and user experience | Remote players (latency handling, reconnection) | Major | 🔴`[TODO]` |
-| Gaming and user experience | Game customization (pawn promotion) | Minor | 🔴`[TODO]` |
+| Artificial Intelligence | AI Opponent (Stockfish) | Major | hbourlot |
+| Gaming and user experience | Complete web-based game (chess, real-time, live matches) | Major | hbourlot |
+| Gaming and user experience | Remote players (latency handling, reconnection) | Major | joralves |
+| Gaming and user experience | Game customization (pawn promotion) | Minor | hbourlot |
 | Gaming and user experience | Spectator mode for games | Minor | ddiogo-f |
 | Cybersecurity | WAF/ModSecurity + HashiCorp Vault | Major | 🔴`[TODO]` |
-
-> ⚠️ **TODO:** confirm this is the final, complete module list for the team (cross-check against Chapter IV of the subject) — modules are only counted if "fully functional and properly implemented"; non-functional/incomplete = 0.
 
 ---
 
 ### Web — Framework for frontend and backend (Major)
-- **Justification:** 🔴`[TODO]`
-- **Implementation:** 🔴`[TODO]`
+- **Justification:** React, NestJS, Tailwind CSS, and TypeScript were chosen to build a modern full-stack app.
+- **Implementation:** the frontend was built with React + TypeScript, styled with Tailwind; the backend was built with NestJS + TypeScript, exposing modular APIs consumed by the frontend.
 
 ### Web — Real-time features via WebSockets (Major)
-- **Justification:** 🔴`[TODO]`
-- **Implementation:** 🔴`[TODO]`
+- **Justification:** enables real-time communication so the site feels more "alive" — used for chat and for remote play between players.
+- **Implementation:** several WebSocket gateways were built (presence, game, notification, chat), each emitting and receiving events to update the frontend live — new messages, friend request notifications, or the chess board state after a page refresh.
 
 ### Web — ORM for the database (Minor)
 - **Justification:** Using an ORM lets us work with objects instead of writing raw SQL, making data manipulation more readable and maintainable.
@@ -311,32 +373,32 @@ Overview table (details for each module below):
 - **Implementation:** User records connect the database to the frontend with real-time updates. Friend requests are modeled with an explicit state (pending/accepted/rejected) per request. The private chat part of this module was implemented by joralves.
 
 ### Web — Notification system (Minor)
-- **Justification:** 🔴`[TODO]`
-- **Implementation:** 🔴`[TODO]`
+- **Justification:** an intuitive notification system, used for game invitations and friend requests, showing new information in real time.
+- **Implementation:** backend gateways and controllers handle notification creation; the frontend has a notification bell that reacts to login or new events, showing the corresponding notification type and letting the user respond directly — e.g. redirecting to the friend hub, or accepting/rejecting a game invitation.
 
 ### User Management — Standard user management & authentication (Major)
-- **Justification:** 🔴`[TODO]`
-- **Implementation:** 🔴`[TODO]`
+- **Justification:** lets users have an account, making the game more competitive online and allowing personalized settings.
+- **Implementation:** user records connect the database to the frontend; backend authentication uses JWTs stored as cookies to keep the session logged in; passwords are hashed with bcrypt (with salt) before storage, and bcrypt is used again to verify a password on login.
 
 ### User Management — Game statistics and match history (Minor)
 - **Justification:** Gives players a timeline of their progress and account evolution over time.
 - **Implementation:** After each match ends, the backend updates the player's stats in the database (wins/losses/draws, ELO, streaks) and records the match in the history table.
 
 ### Artificial Intelligence — AI Opponent, Stockfish (Major)
-- **Justification:** 🔴`[TODO]`
-- **Implementation:** 🔴`[TODO]`
+- **Justification:** lets users practice and improve even when no human opponent is available.
+- **Implementation:** Stockfish was integrated into the NestJS backend, exposing dedicated API endpoints for AI moves.
 
 ### Gaming — Complete web-based game: chess (Major)
-- **Justification:** 🔴`[TODO]`
-- **Implementation:** 🔴`[TODO]`
+- **Justification:** the core project feature — lets users play full chess matches directly in the browser.
+- **Implementation:** full chess gameplay was implemented, including playing with friends and a match system.
 
 ### Gaming — Remote players (Major)
-- **Justification:** 🔴`[TODO]`
-- **Implementation:** 🔴`[TODO]`
+- **Justification:** lets users on different machines play against each other, either in ranked or friendly games, giving the game more life.
+- **Implementation:** built with WebSockets on top of the board logic — each valid move made on the frontend is emitted to the backend, which double-checks its validity and broadcasts the updated board state to the other player so they can make their move.
 
 ### Gaming — Game customization: pawn promotion (Minor)
-- **Justification:** 🔴`[TODO]`
-- **Implementation:** 🔴`[TODO]`
+- **Justification:** added to respect official chess rules.
+- **Implementation:** a promotion flow triggers when a pawn reaches the last rank, letting the player choose the piece and synchronizing the choice for both players.
 
 ### Gaming — Spectator mode (Minor)
 - **Justification:** the real-time infrastructure built for the core game already supported adding more participants to a live match, so extending it to read-only spectators gave the platform a social, "game room" feel at low extra cost.
@@ -348,30 +410,25 @@ Overview table (details for each module below):
 
 ## Individual Contributions
 
-> ⚠️ **TODO — one subsection per team member, written honestly (this is explicitly graded on honesty).**
-
 ### miafonso
-- Features/modules: **User interaction: chat + profile + friends system (Major)**: Implemented the friend request and profile.
-                    **Game statistics and match history (Minor)**: Implemented the leaderboard, game rank and the math history system
-
+- Features/modules: **User interaction: chat + profile + friends system (Major)**: Implemented the friend request and profile. **Game statistics and match history (Minor)**: Implemented the leaderboard, game rank and the math history system
 - Challenges faced and how they were overcome: Making the connection between the frontend, backend and data-base
 
-### `[TODO: login2]`
-- Features/modules: `[TODO]`
-- Challenges faced and how they were overcome: `[TODO]`
+### joralves
+- Features/modules: Authentication, real-time chess gameplay sync, matchmaking, private/in-game chat, notifications, and profile updates (avatar/username/password/theme settings).
+- Challenges faced and how they were overcome: the biggest challenge was understanding WebSockets and Socket.IO (which wraps native WebSockets) well enough to use it intuitively for real-time features.
 
-### `[TODO: login2]`
-- Features/modules: `[TODO]`
-- Challenges faced and how they were overcome: `[TODO]`
+### hbourlot
+- Features/modules: Frontend pages (Home, Signup, Play, Friends, Profile, and History), matchmaking system, chess game logic, AI opponent (Stockfish) integration.
+- Challenges faced and how they were overcome: 🔴`[TODO — não respondeu a esta parte, perguntar depois]`
 
 ### `[TODO: login2]`
 - Features/modules: `[TODO]`
 - Challenges faced and how they were overcome: `[TODO]`
 
 ### ddiogo-f
-- Implemented **spectator mode**: users can browse live games and watch them update in real time, with a read-only board and a spectator-specific view of the game.
-- Fixed a bug where a finished game could reappear as if still active after a rematch.
-- Fixed a multi-tab disconnection bug in the presence gateway (removed a "kill zombie socket" policy that was disconnecting legitimate second tabs of the same user).
+- Features/modules: Spectator mode — users can browse live games and watch them update in real time, with a read-only board and a spectator-specific view of the game.
+- Challenges faced and how they were overcome: misunderstood the existing game architecture at first, building a separate spectator route that created its own disconnected game instance instead of hooking into the real one. Fixed by sharing the existing game state instead of duplicating it.
 
 ## Known Limitations
 
