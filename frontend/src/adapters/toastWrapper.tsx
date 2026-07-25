@@ -86,13 +86,15 @@ export class toastWrapper {
 					<button
 						type="button"
 						onClick={handleAccept}
-						className="flex-1 rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-stone-950 transition-colors hover:bg-emerald-400">
+						className="flex-1 rounded-full bg-button-green px-4 py-2 text-[13px] 
+						font-semibold text-stone-950 transition-colors hover:bg-button-green-hover">
 						{acceptLabel}
 					</button>
 					<button
 						type="button"
 						onClick={handleReject}
-						className="flex-1 rounded-full border border-emerald-300/25 bg-stone-800/70 px-4 py-2 text-[13px] font-semibold text-emerald-100 transition-colors hover:bg-stone-700/75">
+						className="flex-1 rounded-full border border-emerald-300/25 bg-sidebar-bg 
+						px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-stone-700/75 hover:border-red-400 hover:text-red-400">
 						{rejectLabel}
 					</button>
 				</div>
@@ -111,7 +113,7 @@ export class toastWrapper {
 					borderRadius: 20,
 					overflow: "hidden",
 					border: "1px solid rgba(110, 231, 183, 0.35)",
-					background: "rgba(15, 23, 42, 0.84)",
+					background: "rgb(41 37 36)",
 					color: "#d1fae5",
 					backdropFilter: "blur(14px)",
 					WebkitBackdropFilter: "blur(14px)",

@@ -1,4 +1,5 @@
 import { Controller, UseGuards, Get, Req, Param } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { MatchesService } from './matches.service';
 import { getUserMatchHistory } from './dto/getMatchHistory.dto';
 
@@ -6,6 +7,7 @@ import { getUserMatchHistory } from './dto/getMatchHistory.dto';
 export class MatchesController {
   constructor(private readonly matchesService: MatchesService) {}
 
+  @UseGuards(AuthGuard)
   @Get('history')
   async getHistory(@Req() req) {
     const userId = req.user.userId; // The guard checks for the user ID

@@ -85,7 +85,7 @@ export function NotificationBell() {
 					/>
 
 					{unreadCount > 0 && (
-						<span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-lime-300 animate-pulse" />
+						<span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-lime-300 animate-pulse"/>
 					)}
 				</button>
 

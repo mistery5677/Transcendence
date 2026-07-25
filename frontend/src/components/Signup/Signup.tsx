@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useModalReveal } from "../../hooks/useModalReveal";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import successIcon from "../../assets/succsfully_register.gif";
+import { RouterPaths } from "../../routers/MainRouter/RouterPath";
 import { verifyUsername, verifyEmail, signupUser } from "../../api/users.ts";
 
 interface SignupProps {
@@ -21,13 +23,20 @@ export function Signup({ onModal }: SignupProps) {
 	const hasUpperCase = /[A-Z]/.test(password);
 	const hasSpace = /\s/.test(password);
 
+	// Username policy — same rule the backend enforces on signup and on rename
+	const [username, setUsername] = useState("");
+	const hasValidUsername = /^[a-zA-Z0-9]+$/.test(username);
+
 	// Is always checking if the username is available
 	const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 	const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
 
+	// The legal terms must be accepted before the account can be created
+	const [acceptedTerms, setAcceptedTerms] = useState(false);
+
 	// Check if all information is true
-	const isFormValid = hasMinLength && hasSpecialChar && hasUpperCase && usernameAvailable && emailAvailable && !hasSpace;
-	const canSubmit = isFormValid;
+	const isFormValid = hasMinLength && hasSpecialChar && hasUpperCase && hasValidUsername && usernameAvailable && emailAvailable && !hasSpace;
+	const canSubmit = isFormValid && acceptedTerms;
 
 	// Check if the username is already in use
 	const checkUsername = async (e: React.FocusEvent<HTMLInputElement>) => {
@@ -173,6 +182,8 @@ export function Signup({ onModal }: SignupProps) {
 										name="username"
 										type="text"
 										required
+										value={username}
+										onChange={(e) => setUsername(e.target.value)}
 										className="text-board-text bg-board-input border-2 border-board-border w-full
 										 text-sm pl-4 pr-8 py-2.5 rounded-xl focus:border-board-focus focus:outline-none placeholder-board-text-muted"
 										placeholder="Enter your username"
@@ -196,7 +207,20 @@ export function Signup({ onModal }: SignupProps) {
 											data-original="#000000"></path>
 									</svg>
 								</div>
-								{usernameAvailable !== null && (
+								{username !== "" && !hasValidUsername && (
+									<div
+										style={{
+											fontSize: "13px",
+											marginTop: "2px",
+											marginBottom: "10px",
+											textAlign: "left",
+										}}>
+										<span style={{ color: "#EF4444" }}>
+											✗ Only letters and numbers, no spaces or special characters
+										</span>
+									</div>
+								)}
+								{hasValidUsername && usernameAvailable !== null && (
 									<div
 										style={{
 											fontSize: "13px",
@@ -335,20 +359,30 @@ export function Signup({ onModal }: SignupProps) {
 						{/* Terms */}
 						<div className="flex items-center">
 							<input
-								id="remember-me"
-								name="remember-me"
+								id="accept-terms"
+								name="accept-terms"
 								type="checkbox"
+								checked={acceptedTerms}
+								onChange={(e) => setAcceptedTerms(e.target.checked)}
 								className="h-4 w-4 shrink-0 accent-board-focus border-board-border rounded"
 							/>
 							<label
-								htmlFor="remember-me"
+								htmlFor="accept-terms"
 								className="ml-2 text-sm text-board-text-muted">
 								I accept the{" "}
-								<a
-									href="javascript:void(0);"
+								<Link
+									to={RouterPaths.PRIVACY}
+									target="_blank"
 									className="text-board-focus font-semibold hover:underline">
-									Rules of Play
-								</a>
+									Privacy Policy
+								</Link>
+								{" "}and the{" "}
+								<Link
+									to={RouterPaths.TERMS}
+									target="_blank"
+									className="text-board-focus font-semibold hover:underline">
+									Terms of Service
+								</Link>
 							</label>
 						</div>
 

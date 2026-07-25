@@ -64,6 +64,10 @@ services:
       MODSEC_RULE_ENGINE: "On"
       MODSEC_AUDIT_ENGINE: RelevantOnly
       BLOCKING_PARANOIA: "1"
+      # CRS 911100 blocks any method outside this list. The image default
+      # (GET HEAD POST OPTIONS) 403s the API's @Patch/@Delete routes, so the
+      # list declares the verbs the backend actually exposes — PUT stays out.
+      ALLOWED_METHODS: "GET HEAD POST OPTIONS PATCH DELETE"
       ANOMALY_INBOUND: "5"
       ANOMALY_OUTBOUND: "4"
     ports:
