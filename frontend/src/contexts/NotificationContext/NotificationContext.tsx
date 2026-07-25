@@ -1,7 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { type NotificationContextType, type NotificationType } from "./notificationTypes";
 import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
-import { getMyNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "../../api/notifications";
+import {
+	deleteAllNotifications,
+	deleteOneNotification,
+	getMyNotifications,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+} from "../../api/notifications";
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
@@ -44,10 +50,12 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 		await markAllNotificationsAsRead();
 	};
 
-	const deleteOneNotification = async (notificationId: string) => {
+	const deleteOne = async (notificationId: string) => {
+		setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
 		await deleteOneNotification(notificationId);
 	};
-	const deleteAllNotifications = async () => {
+	const deleteAll = async () => {
+		setNotifications([]);
 		await deleteAllNotifications();
 	};
 
@@ -63,8 +71,8 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 				markOneAsRead,
 				markAllAsRead,
 				clearNotifications,
-				deleteOneNotification,
-				deleteAllNotifications,
+				deleteOne,
+				deleteAll,
 			}}>
 			{children}
 		</NotificationContext.Provider>

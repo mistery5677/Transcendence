@@ -67,6 +67,7 @@ export class NotificationController {
     @Req() req: any,
     @Param('notificationId') notificationId: string,
   ) {
+    console.log('Here');
     const userId = Number(req.user.userId);
     if (!userId || Number.isNaN(userId)) {
       throw new BadRequestException('User session is invalid or unauthorized');
