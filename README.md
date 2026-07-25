@@ -89,7 +89,7 @@ make down       # stop the stack
 make generate   # prisma generate inside the backend container
 make db-push    # apply the Prisma schema to the database
 make logs       # follow logs
-# TODO: Add the command make safe, if you don't want the logs**
+make safe       # rebuild + renew node_modules (keeps the DB volume), without tailing logs afterwards
 ```
 
 Extra commands that came up during development (equivalent `docker exec` forms, useful when not going through `make`):
@@ -147,8 +147,10 @@ flowchart TB
 - [Stockfish](https://stockfishchess.org/)
 - [Chess logic tutorial (N4JS)](https://eclipse.dev/n4js/userguides/n4js-tutorial-chess/n4js-tutorial-chess.html)
 - [Chessboard.js](https://chessboardjs.com/index.html)
-
-***Inspiration:***
+- [OWASP Core Rule Set](https://coreruleset.org/docs/)
+- [ModSecurity CRS Docker image](https://github.com/coreruleset/modsecurity-crs-docker)
+- [HashiCorp Vault documentation](https://developer.hashicorp.com/vault/docs)
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [Chess.com](https://www.chess.com/home)
 - [Technologies](https://dev.to/itxnargis/chess-meets-code-how-i-created-a-full-stack-game-using-react-mongodb-2610)
 
@@ -159,13 +161,13 @@ flowchart TB
 - Gemini
 
 **Used for:**
-- Debugging specific TypeScript/NestJS errors, explaining error messages
-- Debugging WebSocket-related errors
+- Debugging and explaining errors (TypeScript/NestJS, WebSockets, infrastructure/WAF)
 - Reviewing/explaining existing code during onboarding to the codebase
 - Helping organize/structure code
 - Detecting possible vulnerabilities
-- Drafting this README's structure and content
 - UI/interface design decisions (layout, component consistency)
+- Learning new technical concepts (ModSecurity/OWASP CRS, Vault)
+- Drafting this README's structure and content
 
 ## Team Information
 
@@ -174,8 +176,8 @@ flowchart TB
 | miafonso | Product Owner + Developer | Account & social features — user profiles, friends system, and player progression (leaderboard, match history) |
 | hbourlot | Product Manager + Developer | Frontend pages (Home, Signup, Play, Friends, Profile, History), matchmaking, chess game logic, AI opponent integration |
 | joralves | Developer | Real-time backend — WebSocket gateways for gameplay sync, chat, notifications, and presence; authentication |
-| `[TODO]` | `[TODO]` | `[TODO]` |
-| ddiogo-f | Developer | Implement Spectator Mode, Readme.md |
+| mfrancis | Developer — Cybersecurity | WAF/ModSecurity, HashiCorp Vault, HTTPS/TLS, server-side validation, and general application security hardening |
+| ddiogo-f | Developer | Spectator mode — real-time live game browsing with a read-only board view; wrote and coordinated the final README |
 
 ## Project Management
 
@@ -333,6 +335,12 @@ erDiagram
 | Leaderboard / ELO | Ranking based on match results | miafonso |
 | Spectator mode | Browse and watch live games in real time without being able to move pieces | ddiogo-f |
 | Frontend pages / UI | Home, Signup, Play, Friends, Profile, and History pages | hbourlot |
+| WAF / request filtering | Nginx + ModSecurity (OWASP CRS) filters malicious traffic before it reaches the app | mfrancis |
+| Secrets management | HashiCorp Vault stores and serves JWT signing key and DB credentials | mfrancis |
+| HTTPS/TLS | TLS termination at the WAF; HTTP redirects to HTTPS | mfrancis |
+| Server-side input validation | DTO-based validation on backend endpoints | mfrancis |
+| Application security hardening | Centralized password policy, endpoint authorization checks, `Secure` session cookies | mfrancis |
+| Legal pages | Privacy Policy and Terms of Service pages | mfrancis |
 
 ## Modules
 
@@ -352,7 +360,8 @@ Overview table (details for each module below):
 | Gaming and user experience | Remote players (latency handling, reconnection) | Major | joralves |
 | Gaming and user experience | Game customization (pawn promotion) | Minor | hbourlot |
 | Gaming and user experience | Spectator mode for games | Minor | ddiogo-f |
-| Cybersecurity | WAF/ModSecurity + HashiCorp Vault | Major | 🔴`[TODO]` |
+| Cybersecurity | WAF/ModSecurity + HashiCorp Vault | Major | mfrancis |
+| Security | General application security hardening | Module of choice | mfrancis |
 
 ---
 
@@ -405,8 +414,12 @@ Overview table (details for each module below):
 - **Implementation:** spectators join the same real-time session as the players but in a read-only role, so they see the live board update without being able to move pieces. Active games only exist in memory while in progress, so no database changes were needed.
 
 ### Cybersecurity — WAF/ModSecurity + HashiCorp Vault (Major)
-- **Justification:** 🔴`[TODO]`
-- **Implementation:** 🔴`[TODO]`
+- **Justification:** the application handles real accounts and passwords, so we wanted all traffic filtered before it reached our code, and no secrets stored in the repository.
+- **Implementation:** the WAF (Nginx + OWASP CRS) is the only entry point of the application and proxies to the frontend and backend, with some rules tuned to avoid false positives. TLS is terminated at the WAF and HTTP redirects to HTTPS. Vault stores the JWT key and database credentials, which the backend reads at startup using a read-only token.
+
+### Security — General application security (Module of choice)
+- **Justification:** the WAF and Vault protect the perimeter and the secrets, but not the application from itself. We needed the API itself to validate what it receives and verify who is making each request, so security wouldn't depend on a single layer.
+- **Implementation:** endpoints now validate input server-side using DTOs, and the password policy lives in one place, used both at signup and password change. Authentication and ownership checks were added to the account-deletion endpoint, which had been open to anyone. The session cookie is now always `Secure`.
 
 ## Individual Contributions
 
@@ -422,9 +435,9 @@ Overview table (details for each module below):
 - Features/modules: Frontend pages (Home, Signup, Play, Friends, Profile, and History), matchmaking system, chess game logic, AI opponent (Stockfish) integration.
 - Challenges faced and how they were overcome: 🔴`[TODO — não respondeu a esta parte, perguntar depois]`
 
-### `[TODO: login2]`
-- Features/modules: `[TODO]`
-- Challenges faced and how they were overcome: `[TODO]`
+### mfrancis
+- Features/modules: WAF (ModSecurity/OWASP CRS), HashiCorp Vault, HTTPS/TLS, server-side input validation, general application security hardening (password policy, endpoint authorization, secure cookies), and the legal pages.
+- Challenges faced and how they were overcome: understanding the WAF. After adding it, the app started returning 403s on legitimate requests with nothing showing up in the backend logs. Reading ModSecurity's audit log to see exactly which rule was blocking each request solved it.
 
 ### ddiogo-f
 - Features/modules: Spectator mode — users can browse live games and watch them update in real time, with a read-only board and a spectator-specific view of the game.
