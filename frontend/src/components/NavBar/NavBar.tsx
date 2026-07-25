@@ -169,7 +169,7 @@ export function NavBar({ onModal }: NavBarProps) {
 								</MenuButton>
 								<MenuItems
 									transition
-									className="absolute right-0 z-10 mt-3 w-56 origin-top-right rounded-2xl bg-stone-900/95 py-2 border border-emerald-300/20 shadow-[0_12px_36px_-14px_rgba(0,0,0,0.8)] transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-75 data-leave:ease-in overflow-hidden">
+									className="absolute right-0 z-10 mt-3 w-56 origin-top-right rounded-2xl bg-stone-900/95 py-2 border border-emerald-300/20 shadow-[0_12px_36px_-14px_rgba(0,0,0,0.8)] transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-75 data-leave:ease-in overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400">
 									<MenuItem>
 										<a
 											href="/friends"
