@@ -7,17 +7,17 @@
 
 **ft_transcendence** is a full-stack, real-time multiplayer web application built as the final project of the 42 Common Core. It lets users play **chess** against other players, against an AI opponent (Stockfish), in real time, with matchmaking, live spectating, friends, private messaging, notifications, match history, and player statistics (ELO, win/loss/draw record, streaks).
 
+Why chess instead of the subject's reference example (Pong)? One of the team members is a chess enthusiast and the team felt it offered a more interesting technical challenge.
+
 Key features at a glance:
 - Real-time multiplayer chess over WebSockets (Socket.IO)
 - Matchmaking and direct/bot game modes- Friends system, private chat, and notifications 
-- User profiles, avatars, match history, and ELO-based leaderboard **TODO: Add that we have 4 types of rank rookie/challenger/grandmaster/alumni**
-- AI opponent powered by Stockfish **TODO: Add that we can costumize the bot difficult level**
+- User profiles, avatars, match history, and ELO-based leaderboard. Players are placed into one of 5 rank tiers based on ELO: Rookie, Challenger, Master, Grandmaster, and Alumni.
+- Timed games against a human opponent, a basic bot, or a Stockfish-powered AI with an adjustable difficulty slider.
 - Secure infrastructure: HTTPS/TLS, WAF (ModSecurity via Nginx), secrets management (HashiCorp Vault)
 - Fully containerized with Docker Compose
 - Watch ongoing games live in spectator mode, with real-time board updates
 
-
-> ⚠️ **TODO:** confirm final feature list matches what was actually implemented/graded, and add a one-line "why chess" note if relevant (the subject's reference example is Pong; this team built a chess platform instead — worth stating explicitly here).
 
 ## Instructions
 
@@ -202,7 +202,7 @@ flowchart TB
 ### Frontend
 - **React** + **Vite**, **TypeScript**
 - **Socket.IO** client for real-time communication
-- 🔴**[TODO: confirm styling solution — Tailwind CSS utility classes are used throughout the codebase (e.g. `bg-stone-700/50`, `rounded-3xl`); confirm this is the full styling approach and list any additional UI libraries]**
+- **Tailwind CSS** for styling
 
 ### Backend
 - **NestJS** (Node.js), **TypeScript**
@@ -433,7 +433,7 @@ Overview table (details for each module below):
 
 ### hbourlot
 - Features/modules: Frontend pages (Home, Signup, Play, Friends, Profile, and History), matchmaking system, chess game logic, AI opponent (Stockfish) integration.
-- Challenges faced and how they were overcome: 🔴`[TODO — não respondeu a esta parte, perguntar depois]`
+- Challenges faced and how they were overcome: the biggest challenge was ensuring a consistent layout across many screen sizes and resolutions. Solved by iteratively testing the interface on multiple viewport sizes, identifying layout breaks, and adjusting component structure to keep the UI stable on both desktop and smaller screens.
 
 ### mfrancis
 - Features/modules: WAF (ModSecurity/OWASP CRS), HashiCorp Vault, HTTPS/TLS, server-side input validation, general application security hardening (password policy, endpoint authorization, secure cookies), and the legal pages.
@@ -445,9 +445,9 @@ Overview table (details for each module below):
 
 ## Known Limitations
 
-> ⚠️ **TODO — optional but recommended.** e.g.:
-- `[TODO: any known edge case, such as the still-unconfirmed "Watch from the same tab you're playing in" scenario]`
+- Using the browser's back/forward buttons to return to a previously viewed spectate page shows a stale board — it does not resume live updates. To watch a game live again, navigate to it fresh via the Live Games page.
+- Performance on mobile is noticeably slower than on desktop.
 
 ## License / Credits
 
-> ⚠️ **TODO — optional.**
+This project was developed as part of the 42 (Lisboa) Common Core curriculum and is not licensed for external use or distribution.
