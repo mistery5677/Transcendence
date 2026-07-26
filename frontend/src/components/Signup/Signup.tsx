@@ -4,7 +4,7 @@ import { useModalReveal } from "../../hooks/useModalReveal";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import successIcon from "../../assets/succsfully_register.gif";
 import { RouterPaths } from "../../routers/MainRouter/RouterPath";
-import { verifyUsername, verifyEmail, signupUser } from "../../api/users.ts";
+import { verifyUsername, verifyEmail, signupUser } from "../../api/usersApi.ts";
 
 interface SignupProps {
 	onModal: (modal: "signup" | "login" | null) => void;

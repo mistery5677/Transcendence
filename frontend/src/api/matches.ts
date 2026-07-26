@@ -1,4 +1,4 @@
-import type { Match } from "../types/match";
+import type { Match } from "../types/matchType";
 
 export async function handleGameOver(playerAId: number, playerBId: number, matchResult: string): Promise<void> {
 	try {

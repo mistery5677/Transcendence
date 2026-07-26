@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadMoveEffect } from "../../utils/loadMoveEffect";
 import { Chess, type Square } from "chess.js";
-import { useGame } from "../../context/GameContext/GameContext";
+import { useGame } from "../../context/Game/GameContext";
 import { analyzePosition } from "../../api/stockfish";
 
 type PieceColor = "w" | "b";

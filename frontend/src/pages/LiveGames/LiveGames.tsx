@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGlobalSocket } from "../../context/GlobalSocketContext/GlobalSocketContext";
-import { useGame } from "../../context/GameContext/GameContext";
-import { useAuth } from "../../context/UserContext";
+import { useGlobalSocket } from "../../context/GlobalSocket/GlobalSocketContext";
+import { useGame } from "../../context/Game/GameContext";
+import { useAuth } from "../../context/auth";
 import magnusImg from "../../assets/magnus-carlsen.jpg";
 
 type ActiveGame = {

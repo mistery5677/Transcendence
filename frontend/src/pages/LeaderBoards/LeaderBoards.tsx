@@ -1,6 +1,6 @@
 import { IconTrophy, IconMedal } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
-import { getLeaderboard } from "../../api/users";
+import { getLeaderboard } from "../../api/leaderboardApi";
 import { Link } from "react-router-dom";
 
 interface PlayerData {

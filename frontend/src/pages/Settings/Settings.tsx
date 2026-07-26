@@ -1,15 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useAuth } from "../../context/UserContext";
+import { useAuth } from "../../context/auth";
 import {
-	updateAvatar,
+	verifyEmail,
+	verifyUsername,
+} from "../../api/usersApi";
+
+import {
+	updateAvatar,	
 	updateBackGroundTheme,
 	updateBoardTheme,
 	updateEmail,
 	updatePassword,
 	updateUserName,
-	verifyEmail,
-	verifyUsername,
-} from "../../api/users";
+} from "../../api/settingsApi";
+
 import { toast } from "react-toastify";
 import { toastWrapper } from "../../adapters/toastWrapper";
 import { IconUser, IconDeviceLaptop, IconPalette, IconTrophy, IconHistory } from "@tabler/icons-react";

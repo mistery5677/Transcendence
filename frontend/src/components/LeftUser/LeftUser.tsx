@@ -1,7 +1,7 @@
 import { displayElo } from "../../utils/displayElo";
 import { Timer } from "../Timer/Timer";
-import { useGame } from "../../context/GameContext/GameContext";
-import type { User } from "../../context/UserContext/authTypes";
+import { useGame } from "../../context/Game/GameContext";
+import type { User } from "../../context/auth/authTypes";
 
 type LeftUserProps = {
 	state: { user: User | null; isLoading: boolean };

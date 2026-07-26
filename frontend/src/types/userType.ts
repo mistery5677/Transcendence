@@ -1,4 +1,4 @@
-import type { Score } from "./score";
+import type { Score } from "./scoreType";
 
 type onlineMatch = {
 	id: number;

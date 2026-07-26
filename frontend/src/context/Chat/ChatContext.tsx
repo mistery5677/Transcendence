@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ChatContextType, PrivateMessage } from "./ChatContextType";
-import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
-import { useAuth } from "../UserContext";
+import { useGlobalSocket } from "../GlobalSocket/GlobalSocketContext";
+import { useAuth } from "../auth";
 import { getChatHistory } from "../../api/privateChat";
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);

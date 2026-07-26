@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { IconTrophy } from "@tabler/icons-react"; 
-import { getMyAchievements } from "../../api/users"; 
+import { getMyAchievements } from "../../api/usersApi"; 
 
 const BASE_ACHIEVEMENTS = [
     { id: 'FIRST_WIN', title: 'First Blood!', description: 'Win your first match in online mode.', icon: '🥇', unlocked: false },

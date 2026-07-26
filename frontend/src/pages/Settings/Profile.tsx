@@ -1,11 +1,11 @@
-import { useAuth } from "../../context/UserContext";
+import { useAuth } from "../../context/auth";
 import { Trophy, Swords, Equal } from "lucide-react";
 import { ProfileHeader, ProfileOverview } from "../../components";
 import type { ProfileStatsVM } from "../../models/profileStats";
 import { userToProfileStats } from "../../mappers/userToProfileStats";
 import type { Match, PublicProfile } from "../../types";
 import { useEffect, useState } from "react";
-import { getPublicProfile } from "../../api/users";
+import { getPublicProfile } from "../../api/usersApi";
 import { getHistoryByUsername } from "../../api/matches";
 
 export function Profile() {

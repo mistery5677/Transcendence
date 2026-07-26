@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { MatchMakingContextType } from "./MatchMakingType";
-import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
-import { useAuth } from "../UserContext";
-import type { MatchStartOptions } from "../GameContext/GameContextType";
+import { useGlobalSocket } from "../GlobalSocket/GlobalSocketContext";
+import { useAuth } from "../auth";
+import type { MatchStartOptions } from "../Game/GameContextType";
 import { useNavigate } from "react-router-dom";
 import { toastWrapper } from "../../adapters/toastWrapper";
 

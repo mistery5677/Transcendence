@@ -1,5 +1,5 @@
 import { Chessboard } from "react-chessboard";
-import { useAuth } from "../../context/UserContext";
+import { useAuth } from "../../context/auth";
 import { PromotionPicker } from "./PromotionPicker";
 import { useBoardController } from "./boardController";
 export type PieceColor = "w" | "b";

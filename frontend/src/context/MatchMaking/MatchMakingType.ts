@@ -1,4 +1,4 @@
-import type { MatchStartOptions } from "../GameContext/GameContextType";
+import type { MatchStartOptions } from "../Game/GameContextType";
 
 export type MatchMakingContextType = {
 	isSearchingMatch: boolean;

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { type NotificationContextType, type NotificationType } from "./notificationTypes";
-import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
+import { useGlobalSocket } from "../GlobalSocket/GlobalSocketContext";
 import {
 	deleteAllNotifications,
 	deleteOneNotification,

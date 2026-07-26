@@ -1,5 +1,5 @@
 import { LeftUser } from "../index";
-import type { AuthState } from "../../context/UserContext/authTypes";
+import type { AuthState } from "../../context/auth/authTypes";
 import { RightUser } from "../RightUser/RightUser";
 
 type PlayerHeaderProps = {

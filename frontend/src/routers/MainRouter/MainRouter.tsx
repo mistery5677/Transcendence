@@ -13,17 +13,17 @@ import {
   Terms,
 } from "../../pages";
 import { FallBack, Login, Signup, MultiRoute, NavBar, Footer, ForgotPassword } from "../../components";
-import { useAuth } from "../../context/UserContext/index.ts";
-import { GameProvider } from "../../context/GameContext/GameContext.tsx";
+import { useAuth } from "../../context/auth/index.ts";
+import { GameProvider } from "../../context/Game/GameContext.tsx";
 import { Play } from "../../pages/Play/Play";
-import { GlobalSocketProvider } from "../../context/GlobalSocketContext/GlobalSocketContext.tsx";
+import { GlobalSocketProvider } from "../../context/GlobalSocket/GlobalSocketContext.tsx";
 import { Rules } from "../../pages/Rules/Rules.tsx";
-import { ChatProvider } from "../../context/ChatContext/ChatContext.tsx";
+import { ChatProvider } from "../../context/Chat/ChatContext.tsx";
 import { FloatingChatContainer } from "../../components/Chat/FloatingChatContainer.tsx";
 import { NotificationProvider } from "../../context/NotificationContext/NotificationContext.tsx";
 import { ProfilePage } from "../../pages/Profile/ProfilePage.tsx";
 import { LiveGames } from "../../pages/LiveGames/LiveGames";
-import { MatchMakingProvider } from "../../context/MatchMakingContext/MatchMakingContext.tsx";
+import { MatchMakingProvider } from "../../context/MatchMaking/MatchMakingContext.tsx";
 
 type ActivateModal = "signup" | "login" | "forgot" | null;
 

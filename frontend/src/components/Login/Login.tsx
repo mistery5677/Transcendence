@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useModalReveal } from "../../hooks/useModalReveal";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
-import { useAuth } from "../../context/UserContext";
+import { useAuth } from "../../context/auth";
 import successIcon from "../../assets/succsfully_register.gif";
 
 type LoginProps = {

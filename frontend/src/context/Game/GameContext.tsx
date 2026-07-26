@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useReducer, useState } from "react";
 import type { GameContextType, MessageType } from "./GameContextType";
-import { useAuth } from "../UserContext";
-import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
+import { useAuth } from "../auth";
+import { useGlobalSocket } from "../GlobalSocket/GlobalSocketContext";
 import { toastWrapper } from "../../adapters/toastWrapper";
-import { useMatchMaking } from "../MatchMakingContext/MatchMakingContext";
+import { useMatchMaking } from "../MatchMaking/MatchMakingContext";
 import { gameReducer, initialState } from "./GameReducer";
 
 const GameContext = createContext<GameContextType | undefined>(undefined);

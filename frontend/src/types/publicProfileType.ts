@@ -1,4 +1,4 @@
-import type { Score } from "./score";
+import type { Score } from "./scoreType";
 
 export type PublicProfile = {
 	id: number;
