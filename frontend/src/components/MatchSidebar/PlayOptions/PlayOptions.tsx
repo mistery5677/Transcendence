@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import penguinBot from "../../../assets/penguin-pudgy.gif";
 import penguinPlayer from "../../../assets/penguin-player.gif";
 import penguinMaster from "../../../assets/penguin-master.gif";
-import { useGame } from "../../../contexts/GameContext/GameContext";
+import { useGame } from "../../../context/GameContext/GameContext";
 import { toastWrapper } from "../../../adapters/toastWrapper";
 import { PlayOptionsCard, type PlayMode, type PlayOptionCardContent } from "./PlayOptionsCard";
-import { useMatchMaking } from "../../../contexts/MatchMakingContext/MatchMakingContext";
+import { useMatchMaking } from "../../../context/MatchMakingContext/MatchMakingContext";
 
 type ModeVisual = {
 	imageSrc: string;

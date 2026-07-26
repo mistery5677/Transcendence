@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import { authReducer, initialAuthState } from "./authReducer";
 import type { AuthAction, AuthState } from "./authTypes";
-import type { User } from "../../types";
+import * as authApi from "../../context/api/authApi";
 
 type AuthContextValue = {
 	state: AuthState;
 	dispatch: React.Dispatch<AuthAction>;
-	login: (email: string, password: string) => Promise<void>;
+	login: (identity: string, password: string) => Promise<void>;
 	logout: () => Promise<void>;
 	refreshMe: (options?: { silent?: boolean }) => Promise<void>;
 };
@@ -18,20 +18,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const hasBootstrapped = useRef(false);
 
 	async function refreshMe({ silent = false } = {}) {
-		if (!silent) dispatch({ type: "AUTH_LOADING" });
+		if (!silent)
+			dispatch({ type: "AUTH_LOADING" });
 
 		try {
-			const res = await fetch("/api/auth/me", {
-				method: "GET",
-				credentials: "include",
-			});
-
-			if (!res.ok) {
-				dispatch({ type: "AUTH_LOGOUT" });
-				return;
-			}
-
-			const user: User = await res.json();
+			const user = await authApi.me();
 			dispatch({ type: "AUTH_SUCCESS", payload: user });
 		} catch {
 			dispatch({ type: "AUTH_LOGOUT" });
@@ -39,26 +30,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	}
 
 	async function login(identity: string, password: string) {
-		const loginRes = await fetch("/api/auth/login", {
-			method: "POST",
-			credentials: "include",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ identity, password }),
-		});
-
-		if (!loginRes.ok) {
-			throw new Error("Login failed");
-		}
-
+		await authApi.login(identity, password);
 		await refreshMe({ silent: true });
 	}
 
 	async function logout() {
-		await fetch("/api/auth/logout", {
-			method: "POST",
-			credentials: "include",
-		});
-
+		await authApi.logout();
 		dispatch({ type: "AUTH_LOGOUT" });
 	}
 

@@ -1,4 +1,4 @@
-import { useGame } from "../../../contexts/GameContext/GameContext";
+import { useGame } from "../../../context/GameContext/GameContext";
 
 const PIECE_ICONS: Record<string, string> = {
 	N: "♞",

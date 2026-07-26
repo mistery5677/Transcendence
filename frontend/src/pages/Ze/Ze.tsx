@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { GameProvider, useGame } from "../../contexts/GameContext/GameContext";
+import { GameProvider, useGame } from "../../context/GameContext/GameContext";
 import { Chat } from "../../components/Chat/Chat";
 
 export function Ze() {

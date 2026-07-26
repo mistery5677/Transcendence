@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useAuth } from "../../contexts/UserContext";
+import { useAuth } from "../../context/UserContext";
 import { ProfileTabs, ProfileHeader, ProfileOverview, MatchHistory, ProfileStats } from "../../components";
 import { userToProfileStats } from "../../mappers/userToProfileStats";
 import type { ProfileStatsVM } from "../../models/profileStats";

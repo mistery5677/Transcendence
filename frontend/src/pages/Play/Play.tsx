@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Board, PlayerHeader, MatchSidebar } from "../../components";
 import type { PieceColor } from "../../components/Board/Board";
-import { useAuth } from "../../contexts/UserContext";
-import { useGame } from "../../contexts/GameContext/GameContext";
+import { useAuth } from "../../context/UserContext";
+import { useGame } from "../../context/GameContext/GameContext";
 import { GameOverModal } from "../../components/GameModals/GameOverModal";
 import chess from "../../assets/chess-pieces.png";
 import penguin from "../../assets/penguin.jpg";

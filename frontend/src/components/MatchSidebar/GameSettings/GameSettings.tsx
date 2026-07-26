@@ -1,6 +1,6 @@
 import { toastWrapper } from "../../../adapters/toastWrapper";
 import { updateBackGroundTheme, updateBoardTheme } from "../../../api/users";
-import { useAuth } from "../../../contexts/UserContext";
+import { useAuth } from "../../../context/UserContext";
 import { BoardThemeButton } from "../../index";
 import styles from "./style.module.css";
 

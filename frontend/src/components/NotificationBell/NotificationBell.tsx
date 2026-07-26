@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { useNotifications } from "../../contexts/NotificationContext/NotificationContext";
+import { useNotifications } from "../../context/NotificationContext/NotificationContext";
 import { BellIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
-import type { NotificationType } from "../../contexts/NotificationContext/notificationTypes";
+import { useMatchMaking } from "../../context/MatchMakingContext/MatchMakingContext";
+import type { NotificationType } from "../../context/NotificationContext/notificationTypes";
 
 export function NotificationBell() {
 	const { respondToGameInvite } = useMatchMaking();

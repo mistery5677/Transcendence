@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { displayElo } from "../../utils/displayElo";
 import { Timer } from "../Timer/Timer";
-import { useGame } from "../../contexts/GameContext/GameContext";
+import { useGame } from "../../context/GameContext/GameContext";
 import { getOpponentData } from "../../api/users";
 import type { PlayerData } from "../../api/PlayerDataType";
 import magnusImg from "../../assets/magnus-carlsen.jpg";
-import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
+import { useMatchMaking } from "../../context/MatchMakingContext/MatchMakingContext";
 
 type RightUserProps = {
 	onTimeOut: (loserColor: "w" | "b") => void;

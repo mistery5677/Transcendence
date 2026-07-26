@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useAuth } from "../../contexts/UserContext";
+import { useAuth } from "../../context/UserContext";
 import {
 	updateAvatar,
 	updateBackGroundTheme,

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useGame } from "../../contexts/GameContext/GameContext";
+import { useGame } from "../../context/GameContext/GameContext";
 import { ChatHeader, ChatMessages, ChatInput } from "./index";
 
 interface ChatProps {

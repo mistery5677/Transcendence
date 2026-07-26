@@ -12,20 +12,20 @@ import {
   Privacy,
   Terms,
 } from "../../pages";
-import { FallBack, Login, Signup, MultiRoute, NavBar, Footer } from "../../components";
-import { useAuth } from "../../contexts/UserContext";
-import { GameProvider } from "../../contexts/GameContext/GameContext";
+import { FallBack, Login, Signup, MultiRoute, NavBar, Footer, ForgotPassword } from "../../components";
+import { useAuth } from "../../context/UserContext/index.ts";
+import { GameProvider } from "../../context/GameContext/GameContext.tsx";
 import { Play } from "../../pages/Play/Play";
-import { GlobalSocketProvider } from "../../contexts/GlobalSocketContext/GlobalSocketContext";
+import { GlobalSocketProvider } from "../../context/GlobalSocketContext/GlobalSocketContext.tsx";
 import { Rules } from "../../pages/Rules/Rules.tsx";
-import { ChatProvider } from "../../contexts/ChatContext/ChatContext.tsx";
+import { ChatProvider } from "../../context/ChatContext/ChatContext.tsx";
 import { FloatingChatContainer } from "../../components/Chat/FloatingChatContainer.tsx";
-import { NotificationProvider } from "../../contexts/NotificationContext/NotificationContext.tsx";
+import { NotificationProvider } from "../../context/NotificationContext/NotificationContext.tsx";
 import { ProfilePage } from "../../pages/Profile/ProfilePage.tsx";
 import { LiveGames } from "../../pages/LiveGames/LiveGames";
-import { MatchMakingProvider } from "../../contexts/MatchMakingContext/MatchMakingContext.tsx";
+import { MatchMakingProvider } from "../../context/MatchMakingContext/MatchMakingContext.tsx";
 
-type ActivateModal = "signup" | "login" | null;
+type ActivateModal = "signup" | "login" | "forgot" | null;
 
 function GameProviderLayout() {
   return (
@@ -57,6 +57,7 @@ export function MainRouter() {
               <NavBar onModal={setActiveModal} />
               {activeModal === "signup" && <Signup onModal={setActiveModal} />}
               {activeModal === "login" && <Login onModal={setActiveModal} />}
+              {activeModal === "forgot" && <ForgotPassword onModal={setActiveModal} />}
               <Routes>
                 {MultiRoute(RouterPaths.HOME, <Home />)}
                 <Route path={RouterPaths.ERROR} element={<Error />} />
@@ -76,6 +77,7 @@ export function MainRouter() {
                     element={<Login onModal={setActiveModal} />}
                   />
                 )}
+                
                 {/* Path for the rules*/}
                 <Route path={RouterPaths.RULES} element={<Rules />} />
                 {/* Path for the leaderboard*/}

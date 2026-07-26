@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { getFriendsList } from "../../api/friendRequest";
 import { useNavigate } from "react-router-dom";
-import { useChat } from "../../contexts/ChatContext/ChatContext";
+import { useChat } from "../../context/ChatContext/ChatContext";
 import { getActiveChats } from "../../api/privateChat";
-import { useAuth } from "../../contexts/UserContext";
+import { useAuth } from "../../context/UserContext";
 import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { UserStatusBadge, type UserStatus } from "../UserStatusBandage/UserStatusBandage";
 

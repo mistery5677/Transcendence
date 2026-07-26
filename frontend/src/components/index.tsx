@@ -23,3 +23,4 @@ export { ProfileTabs } from "./ProfileTabs/ProfileTabs";
 export { ProfileOverview } from "./ProfileOverview/ProfileOverview";
 export { MatchHistory } from "./MatchHistory/MatchHistory";
 export { ProfileStats } from "./ProfileStats/ProfileStats";
+export  {ForgotPassword} from "./ForgotPassword/ForgotPassword";

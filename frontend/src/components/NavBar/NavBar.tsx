@@ -10,7 +10,7 @@ import {
 	MenuItems,
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useAuth } from "../../contexts/UserContext";
+import { useAuth } from "../../context/UserContext";
 import { useEffect, useState } from "react";
 import { NotificationBell } from "../NotificationBell/NotificationBell";
 const navigation = [

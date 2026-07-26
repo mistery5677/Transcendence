@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useModalReveal } from "../../hooks/useModalReveal";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
-import { useAuth } from "../../contexts/UserContext";
+import { useAuth } from "../../context/UserContext";
 import successIcon from "../../assets/succsfully_register.gif";
 
 type LoginProps = {
-	onModal: (modal: "signup" | "login" | null) => void;
+	onModal: (modal: "signup" | "login" | "forgot" | null) => void;
 };
 
 export function Login({ onModal }: LoginProps) {
@@ -106,7 +106,8 @@ export function Login({ onModal }: LoginProps) {
 											name="identity"
 											type="text"
 											required
-											className="w-full text-board-text text-sm border-2 border-board-border px-4 py-3 pr-10 rounded-xl focus:border-board-focus focus:outline-none bg-board-input placeholder-board-text-muted"
+											className="w-full text-board-text text-sm border-2 border-board-border px-4 py-3 pr-10 rounded-xl 
+											focus:border-board-focus focus:outline-none bg-board-input placeholder-board-text-muted"
 											placeholder="Enter your username or email"
 										/>
 										<svg
@@ -121,7 +122,8 @@ export function Login({ onModal }: LoginProps) {
 												r="6"
 												data-original="#000000"></circle>
 											<path
-												d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
+												d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 
+												1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
 												data-original="#000000"></path>
 										</svg>
 									</div>
@@ -165,17 +167,19 @@ export function Login({ onModal }: LoginProps) {
 											Remember me
 										</label>
 									</div>
-									<a
-										href="#"
+									<button
+										type="button"
+										onClick={() => onModal("forgot")}
 										className="text-sm text-board-focus hover:underline font-semibold">
 										Forgot password?
-									</a>
+									</button>
 								</div>
 
 								{/* Submit */}
 								<button
 									type="submit"
-									className="w-full py-3 px-4 text-sm font-bold tracking-wide rounded-xl text-white bg-button-primary hover:bg-button-primary-hover focus:outline-none cursor-pointer shadow-lg transition-all mt-2"
+									className="w-full py-3 px-4 text-sm font-bold tracking-wide rounded-xl text-white bg-button-primary hover:bg-button-primary-hover 
+									focus:outline-none cursor-pointer shadow-lg transition-all mt-2"
 									style={{
 										opacity: 1 ? 1 : 0.5,
 										cursor: 1 ? "pointer" : "not-allowed",

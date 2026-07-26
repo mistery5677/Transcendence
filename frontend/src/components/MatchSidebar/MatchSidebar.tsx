@@ -5,7 +5,7 @@ import { GameSettings } from "./GameSettings/GameSettings";
 import { PlayOptions } from "./PlayOptions/PlayOptions";
 import { Actions } from "./Actions/Actions";
 import { SurrenderButton } from "./SurrenderButton/SurrenderButton";
-import { useGame } from "../../contexts/GameContext/GameContext";
+import { useGame } from "../../context/GameContext/GameContext";
 import { OfferDrawButton } from "./OfferDrawButton/OfferDrawButton";
 import { GameSettingsButton } from "./GameSettingsButton/GameSettingsButton";
 

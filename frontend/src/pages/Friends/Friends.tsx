@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useTransition } from "react";
-import { useAuth } from "../../contexts/UserContext";
+import { useAuth } from "../../context/UserContext";
 import {
 	sendFriendRequest,
 	acceptFriendRequest,
@@ -13,8 +13,8 @@ import { toastWrapper } from "../../adapters/toastWrapper";
 import { getUsers } from "../../api/users";
 import { Link } from "react-router-dom";
 import { UserStatusBadge } from "../../components/UserStatusBandage/UserStatusBandage";
-import { useMatchMaking } from "../../contexts/MatchMakingContext/MatchMakingContext";
-import { useNotifications } from "../../contexts/NotificationContext/NotificationContext";
+import { useMatchMaking } from "../../context/MatchMakingContext/MatchMakingContext";
+import { useNotifications } from "../../context/NotificationContext/NotificationContext";
 
 type FriendsTab = "list" | "requests" | "add";
 
