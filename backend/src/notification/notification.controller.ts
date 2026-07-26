@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -45,10 +46,36 @@ export class NotificationController {
     if (!userId || Number.isNaN(userId)) {
       throw new BadRequestException('User session is invalid or unauthorized');
     }
-    if (!notificationId || Number.isNaN(notificationId)) {
+    if (!notificationId || typeof notificationId !== 'string') {
       throw new BadRequestException('NotificationId is invalid or missing');
     }
 
     return await this.notificationService.markAsRead(userId, notificationId);
+  }
+
+  @Delete('delete-all')
+  async deleteAllNotification(@Req() req: any) {
+    const userId = Number(req.user.userId);
+    if (!userId || Number.isNaN(userId)) {
+      throw new BadRequestException('User session is invalid or unauthorized');
+    }
+    return await this.notificationService.deleteAll(userId);
+  }
+
+  @Delete('delete/:notificationId')
+  async deleteOneNotification(
+    @Req() req: any,
+    @Param('notificationId') notificationId: string,
+  ) {
+    console.log('Here');
+    const userId = Number(req.user.userId);
+    if (!userId || Number.isNaN(userId)) {
+      throw new BadRequestException('User session is invalid or unauthorized');
+    }
+    if (!notificationId || typeof notificationId !== 'string') {
+      throw new BadRequestException('NotificationId is invalid or missing');
+    }
+
+    return await this.notificationService.deleteOne(userId, notificationId);
   }
 }

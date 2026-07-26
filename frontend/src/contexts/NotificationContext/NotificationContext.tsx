@@ -1,7 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { type NotificationContextType, type NotificationType } from "./notificationTypes";
 import { useGlobalSocket } from "../GlobalSocketContext/GlobalSocketContext";
-import { getMyNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "../../api/users";
+import {
+	deleteAllNotifications,
+	deleteOneNotification,
+	getMyNotifications,
+	markAllNotificationsAsRead,
+	markNotificationAsRead,
+} from "../../api/notifications";
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
@@ -18,7 +24,6 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 		};
 		fetchNotifications();
 		unreadCount = notifications.filter((n) => !n.read).length;
-
 	}, []);
 
 	useEffect(() => {
@@ -45,13 +50,30 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 		await markAllNotificationsAsRead();
 	};
 
+	const deleteOne = async (notificationId: string) => {
+		setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+		await deleteOneNotification(notificationId);
+	};
+	const deleteAll = async () => {
+		setNotifications([]);
+		await deleteAllNotifications();
+	};
+
 	const clearNotifications = () => {
 		setNotifications([]);
 	};
 
 	return (
 		<NotificationContext.Provider
-			value={{ notifications, unreadCount, markOneAsRead, markAllAsRead, clearNotifications }}>
+			value={{
+				notifications,
+				unreadCount,
+				markOneAsRead,
+				markAllAsRead,
+				clearNotifications,
+				deleteOne,
+				deleteAll,
+			}}>
 			{children}
 		</NotificationContext.Provider>
 	);

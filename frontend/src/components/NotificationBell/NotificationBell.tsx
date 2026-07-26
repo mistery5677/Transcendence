@@ -7,7 +7,7 @@ import type { NotificationType } from "../../contexts/NotificationContext/notifi
 
 export function NotificationBell() {
 	const { respondToGameInvite } = useMatchMaking();
-	const { unreadCount, notifications, markOneAsRead, markAllAsRead } = useNotifications();
+	const { unreadCount, notifications, markOneAsRead, markAllAsRead, deleteOne, deleteAll } = useNotifications();
 	const [isOpen, setIsOpen] = useState<boolean>(false);
 	const navigate = useNavigate();
 
@@ -85,7 +85,7 @@ export function NotificationBell() {
 					/>
 
 					{unreadCount > 0 && (
-						<span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-lime-300 animate-pulse"/>
+						<span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-lime-300 animate-pulse" />
 					)}
 				</button>
 
@@ -112,6 +112,14 @@ export function NotificationBell() {
 										Mark all as read
 									</button>
 								)}
+								{notifications.length > 0 && unreadCount == 0 && (
+									<button
+										type="button"
+										onClick={deleteAll}
+										className="text-[11px] font-medium text-emerald-400 hover:text-emerald-300 hover:underline transition-all focus:outline-none">
+										Delete all notifications
+									</button>
+								)}
 							</div>
 
 							{/* List */}
@@ -134,8 +142,20 @@ export function NotificationBell() {
 													? "bg-stone-800/20 hover:bg-stone-800/50 border-stone-700"
 													: "bg-stone-800/70 hover:bg-stone-800/90 border-emerald-500"
 											}`}>
-											<p className="text-xs font-medium text-stone-200">{notification.title}</p>
-
+											<div className="flex items-center justify-between">
+												<p className="text-xs font-medium text-stone-200">
+													{notification.title}
+												</p>
+												<a
+													className="text-[16px] text-stone-400 hover:text-emerald-400 hover:underline cursor-pointer"
+													onClick={(e) => {
+														e.stopPropagation();
+														// markOneAsRead(notification.id);
+														deleteOne(notification.id);
+													}}>
+													x
+												</a>
+											</div>
 											<div className="flex items-start gap-2 mt-1">
 												<div className="ring ring-emerald-500 rounded-full w-6 h-6 flex items-center justify-center overflow-hidden cursor-pointer shrink-0 mt-0.5">
 													<img
