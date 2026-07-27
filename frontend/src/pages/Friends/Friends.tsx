@@ -7,7 +7,7 @@ import {
 	getPendingFriendRequests,
 	getFriendsList,
 	removeFriend,
-} from "../../api/friendRequest";
+} from "../../api/friendRequestApi";
 import { ConfirmDialog } from "../../components/index";
 import { toastWrapper } from "../../adapters/toastWrapper";
 import { getUsers } from "../../api/usersApi";

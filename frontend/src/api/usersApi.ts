@@ -1,6 +1,4 @@
-import type { UserStatus } from "../components/UserStatusBandage/UserStatusBandage";
 import type { PublicProfile, PlayerData } from "../types";
-
 
 export async function verifyUsername(username: string): Promise<boolean> {
 	const response = await fetch(`/api/users/check-username?username=${username}`);
@@ -23,23 +21,6 @@ export async function verifyEmail(email: string): Promise<boolean> {
 	return data.isAvailable;
 }
 
-// Function to sign up connecting to api
-export async function signupUser(userData: Record<string, any>): Promise<boolean> {
-	
-	const response = await fetch("/api/auth/signup", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(userData),
-	});
-	console.log('Signup DTO:', userData); // Log the userData to see what is being sent
-
-	if (!response.ok) {
-		throw new Error("Failed to sign up user.");
-	}
-
-	const data = await response.json();
-	return data;
-}
 
 
 export async function getOpponentData(opponentId: string): Promise<PlayerData | null> {
@@ -55,10 +36,6 @@ export async function getOpponentData(opponentId: string): Promise<PlayerData | 
 
 	return opponent;
 }
-
-
-
-
 
 // Get users by username substring (for suggestions)
 export async function getUsers(
@@ -107,17 +84,5 @@ export async function getMyAchievements(): Promise<string[]> {
 	}
 }
 
-export async function getUserStatus(userId: number): Promise<UserStatus> {
-	try {
-		const response = await fetch(`/api/presence/${userId}`, {
-			method: "GET",
-			headers: { "Content-Type": "application/json" },
-		});
-		const data = await response.json();
-		return data;
-	} catch (error) {
-		console.error("Failed get User Status :", error);
-		return "offline";
-	}
-}
+
 

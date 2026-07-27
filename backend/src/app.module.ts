@@ -11,6 +11,7 @@ import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
 import { NotificationModule } from './notification/notification.module';
 import { PresenceGateway } from './presence/presence.gateway';
+import { MailModule } from './mail/mail.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -24,6 +25,7 @@ import { PresenceGateway } from './presence/presence.gateway';
     ChatModule,
     GameModule,
     NotificationModule,
+    MailModule,
   ], //Allows to all variables be accessed
   providers: [PresenceGateway],
 })

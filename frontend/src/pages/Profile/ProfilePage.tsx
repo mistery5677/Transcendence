@@ -5,7 +5,7 @@ import { ProfileTabs, ProfileHeader, ProfileOverview, MatchHistory, ProfileStats
 import { userToProfileStats } from "../../mappers/userToProfileStats";
 import type { ProfileStatsVM } from "../../models/profileStats";
 import type { Match } from "../../types/matchType";
-import { getHistoryByUsername, getMatchHistory } from "../../api/matches";
+import { getHistoryByUsername, getMatchHistory } from "../../api/matchesApi";
 import { getPublicProfile } from "../../api/usersApi";
 import type { PublicProfile } from "../../types";
 

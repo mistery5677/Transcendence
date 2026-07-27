@@ -78,3 +78,6 @@ install-prisma:
 	docker exec -it chess_backend sh -c "npm install @prisma/client && npx prisma generate"
 
 .PHONY: all up up-d down clean fclean re logs
+
+
+# npx prisma generate --schema=./backend/prisma/schema.prisma

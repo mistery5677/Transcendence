@@ -51,6 +51,8 @@ model user {
     // Profile statistics
     score Score?
 
+    PasswordResetToken PasswordResetToken?
+
     // Player position
     matchesAsPlayerA MatchHistory[] @relation("PlayerAMatches")
     matchesAsPlayerB MatchHistory[] @relation("PlayerBMatches")
@@ -65,6 +67,18 @@ model user {
 
     notification Notification[] @relation("UserNotifications")
     scoreId      Int?
+    // passwordResetTokenId String?
+
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId Int    @unique
+  user   user @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Score {

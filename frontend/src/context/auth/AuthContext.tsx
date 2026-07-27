@@ -18,8 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const hasBootstrapped = useRef(false);
 
 	async function refreshMe({ silent = false } = {}) {
-		if (!silent)
-			dispatch({ type: "AUTH_LOADING" });
+		if (!silent) dispatch({ type: "AUTH_LOADING" });
 
 		try {
 			const user = await authApi.me();

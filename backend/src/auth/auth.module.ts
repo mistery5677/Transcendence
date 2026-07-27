@@ -4,11 +4,11 @@ import { AuthService } from './auth.service';
 import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { getJwtSecret } from './constant/jwt.constant';
-import { PrismaService } from 'src/prisma/prisma.service';
-
+import { MailModule } from 'src/mail/mail.module';
 @Module({
   imports: [
     UsersModule,
+    MailModule,
     JwtModule.registerAsync({
       global: true,
       useFactory: () => ({
@@ -18,6 +18,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService],
+  providers: [AuthService],
 })
 export class AuthModule {}

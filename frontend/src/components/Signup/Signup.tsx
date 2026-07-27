@@ -4,7 +4,7 @@ import { useModalReveal } from "../../hooks/useModalReveal";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import successIcon from "../../assets/succsfully_register.gif";
 import { RouterPaths } from "../../routers/MainRouter/RouterPath";
-import { verifyUsername, verifyEmail, signupUser } from "../../api/usersApi.ts";
+import { verifyUsername, verifyEmail, signupUser } from "../../api";
 
 interface SignupProps {
 	onModal: (modal: "signup" | "login" | null) => void;
@@ -35,7 +35,14 @@ export function Signup({ onModal }: SignupProps) {
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
 
 	// Check if all information is true
-	const isFormValid = hasMinLength && hasSpecialChar && hasUpperCase && hasValidUsername && usernameAvailable && emailAvailable && !hasSpace;
+	const isFormValid =
+		hasMinLength &&
+		hasSpecialChar &&
+		hasUpperCase &&
+		hasValidUsername &&
+		usernameAvailable &&
+		emailAvailable &&
+		!hasSpace;
 	const canSubmit = isFormValid && acceptedTerms;
 
 	// Check if the username is already in use
@@ -71,7 +78,6 @@ export function Signup({ onModal }: SignupProps) {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const data = Object.fromEntries(formData.entries());
-		console.log("Data ready for backend", data);
 
 		try {
 			const response = await signupUser(data);
@@ -328,87 +334,89 @@ export function Signup({ onModal }: SignupProps) {
 							</div>
 
 							{/* Password requirements */}
-							<div style={{ 
-								display: 'flex', 
-								flexDirection: 'column', 
-								gap: '3px', 
-								fontSize: '13px', 
-								marginTop: '10px',
-								textAlign: 'left'
-							}}>
+							<div
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									gap: "3px",
+									fontSize: "13px",
+									marginTop: "10px",
+									textAlign: "left",
+								}}>
 								{/* Password Length */}
-								<span style={{ color: hasMinLength ? '#10B981' : '#EF4444', transition: 'color 0.3s' }}>
-									{hasMinLength ? '✓' : '✗'} More than 6 letters
+								<span style={{ color: hasMinLength ? "#10B981" : "#EF4444", transition: "color 0.3s" }}>
+									{hasMinLength ? "✓" : "✗"} More than 6 letters
 								</span>
 
 								{/* Special characters */}
-								<span style={{ color: hasSpecialChar ? '#10B981' : '#EF4444', transition: 'color 0.3s' }}>
-									{hasSpecialChar ? '✓' : '✗'} At least one special character (!@#$...)
+								<span
+									style={{ color: hasSpecialChar ? "#10B981" : "#EF4444", transition: "color 0.3s" }}>
+									{hasSpecialChar ? "✓" : "✗"} At least one special character (!@#$...)
 								</span>
 
 								{/* Upper case letter */}
-								<span style={{ color: hasUpperCase ? '#10B981' : '#EF4444', transition: 'color 0.3s' }}>
-									{hasUpperCase ? '✓' : '✗'} At least one upper case
+								<span style={{ color: hasUpperCase ? "#10B981" : "#EF4444", transition: "color 0.3s" }}>
+									{hasUpperCase ? "✓" : "✗"} At least one upper case
 								</span>
 
 								{/* No spaces */}
-								<span style={{ color: !hasSpace ? '#10B981' : '#EF4444', transition: 'color 0.3s' }}>
-									{!hasSpace ? '✓' : '✗'} No spaces allowed
+								<span style={{ color: !hasSpace ? "#10B981" : "#EF4444", transition: "color 0.3s" }}>
+									{!hasSpace ? "✓" : "✗"} No spaces allowed
 								</span>
 							</div>
-						{/* Terms */}
-						<div className="flex items-center">
-							<input
-								id="accept-terms"
-								name="accept-terms"
-								type="checkbox"
-								checked={acceptedTerms}
-								onChange={(e) => setAcceptedTerms(e.target.checked)}
-								className="h-4 w-4 shrink-0 accent-board-focus border-board-border rounded"
-							/>
-							<label
-								htmlFor="accept-terms"
-								className="ml-2 text-sm text-board-text-muted">
-								I accept the{" "}
-								<Link
-									to={RouterPaths.PRIVACY}
-									target="_blank"
-									className="text-board-focus font-semibold hover:underline">
-									Privacy Policy
-								</Link>
-								{" "}and the{" "}
-								<Link
-									to={RouterPaths.TERMS}
-									target="_blank"
-									className="text-board-focus font-semibold hover:underline">
-									Terms of Service
-								</Link>
-							</label>
-						</div>
+							{/* Terms */}
+							<div className="flex items-center">
+								<input
+									id="accept-terms"
+									name="accept-terms"
+									type="checkbox"
+									checked={acceptedTerms}
+									onChange={(e) => setAcceptedTerms(e.target.checked)}
+									className="h-4 w-4 shrink-0 accent-board-focus border-board-border rounded"
+								/>
+								<label
+									htmlFor="accept-terms"
+									className="ml-2 text-sm text-board-text-muted">
+									I accept the{" "}
+									<Link
+										to={RouterPaths.PRIVACY}
+										target="_blank"
+										className="text-board-focus font-semibold hover:underline">
+										Privacy Policy
+									</Link>{" "}
+									and the{" "}
+									<Link
+										to={RouterPaths.TERMS}
+										target="_blank"
+										className="text-board-focus font-semibold hover:underline">
+										Terms of Service
+									</Link>
+								</label>
+							</div>
 
-						{/* Submit */}
-						<button
-							type="submit"
-							className="w-full py-3 px-4 text-sm font-bold tracking-wide rounded-xl text-white
+							{/* Submit */}
+							<button
+								type="submit"
+								className="w-full py-3 px-4 text-sm font-bold tracking-wide rounded-xl text-white
 							 bg-button-primary border-2 border-button-primary hover:bg-white hover:text-board-text
 							  focus:outline-none cursor-pointer shadow-lg transition-all mt-2"
-							disabled={ canSubmit == false } // Have to remove (password != "1") just for tests
-							style={{
-								opacity: canSubmit ? 1 : 0.5,
-								cursor: canSubmit ? 'pointer' : 'not-allowed'
-							}}>
-							Start Playing
-						</button>
-						<p className="text-board-text-muted text-sm text-center">
-							Already have an account?{" "}
-							<button
-								type="button"
-								onClick={() => onModal("login")}
-								className="text-board-focus font-bold hover:underline cursor-pointer bg-transparent border-none p-0">
-								Log in here
+								disabled={canSubmit == false} // Have to remove (password != "1") just for tests
+								style={{
+									opacity: canSubmit ? 1 : 0.5,
+									cursor: canSubmit ? "pointer" : "not-allowed",
+								}}>
+								Start Playing
 							</button>
-						</p>
-					</form>
+							<p className="text-board-text-muted text-sm text-center">
+								Already have an account?{" "}
+								<button
+									type="button"
+									onClick={() => onModal("login")}
+									className="text-board-focus font-bold hover:underline cursor-pointer bg-transparent border-none p-0">
+									Log in here
+								</button>
+							</p>
+						</form>
 					)}
 				</div>
 			</div>

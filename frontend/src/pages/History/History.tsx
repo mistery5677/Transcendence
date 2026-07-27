@@ -1,7 +1,7 @@
 import { History } from "lucide-react";
 import { ArrowDownNarrowWideIcon, ArrowUpWideNarrowIcon } from "lucide-react";
 import { useEffect, useState, type JSX } from "react";
-import { getMatchHistory, getHistoryByUsername } from "../../api/matches";
+import { getMatchHistory, getHistoryByUsername } from "../../api/matchesApi";
 import { useAuth } from "../../context/auth";
 import { useParams } from "react-router-dom";
 import type { Match } from "../../types";

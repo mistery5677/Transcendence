@@ -7,20 +7,24 @@ import {
 	getMyNotifications,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
-} from "../../api/notifications";
+} from "../../api/notificationsApi";
+import { useAuth } from "../auth";
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
 	const { socket } = useGlobalSocket();
+	const {state} = useAuth();
 	const [notifications, setNotifications] = useState<NotificationType[]>([]);
 
 	let unreadCount = notifications.filter((n) => !n.read).length;
 
 	useEffect(() => {
 		const fetchNotifications = async () => {
-			const data = await getMyNotifications();
-			setNotifications(data);
+			if (state.user) {
+				const data = await getMyNotifications();
+				setNotifications(data);
+			}
 		};
 		fetchNotifications();
 		unreadCount = notifications.filter((n) => !n.read).length;

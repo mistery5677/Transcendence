@@ -4,7 +4,7 @@ import type { ProfileStatsVM } from "../../../../models/profileStats";
 import { userToProfileStats } from "../../../../mappers/userToProfileStats";
 import type { Match, PublicProfile } from "../../../../types";
 import { useEffect, useState } from "react";
-import { getHistoryByUsername } from "../../../../api/matches";
+import { getHistoryByUsername } from "../../../../api/matchesApi";
 import { getPublicProfile } from "../../../../api/usersApi";
 import { useAuth } from "../../../../context/auth";
 

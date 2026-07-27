@@ -10,6 +10,9 @@ import * as bcryptjs from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { getMyProfileDto } from './dto/getProfile.dto';
+import { randomBytes, createHash } from 'crypto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { MailService } from 'src/mail/mail.service';
 
 const DEFAULT_AVATARS = [
   '/assets/avatars/default1.png',
@@ -24,6 +27,8 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -77,6 +82,55 @@ export class AuthService {
       password: hashedPassword,
       avatarUrl: randomAvatar,
     });
+  }
+
+  async generateToken(userId: number) {
+    const token = randomBytes(32).toString('hex');
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    console.log('Constructor:', this.prisma.constructor.name);
+
+    console.log(
+      await this.prisma.$queryRawUnsafe(`
+    SELECT current_database(), current_schema();
+  `),
+    );
+
+    console.log(
+      await this.prisma.$queryRawUnsafe(`
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public';
+  `),
+    );
+
+    console.log(await this.prisma.passwordResetToken.findMany());
+
+    await this.prisma.passwordResetToken.create({
+      data: {
+        tokenHash,
+        userId,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+
+    return token;
+  }
+
+  // forgotPassword method to handle password reset requests
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findOneByEmail(email);
+    if (!user) {
+      return {
+        message:
+          'If that email address is in our database, we will send you an email to reset your password.',
+      };
+    }
+    const token = await this.generateToken(user.id);
+
+    await this.mailService.sendResetPasswordEmail(email, token);
+
+    return { message: 'Password reset link has been sent to your email.' };
   }
 
   async getProfile(id: number): Promise<getMyProfileDto> {
