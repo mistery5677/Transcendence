@@ -80,4 +80,4 @@ install-prisma:
 .PHONY: all up up-d down clean fclean re logs
 
 
-# npx prisma generate --schema=./backend/prisma/schema.prisma
+# npx prisma generate --name TokenMail --schema=./backend/prisma/schema.prisma

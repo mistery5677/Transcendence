@@ -88,23 +88,11 @@ export class AuthService {
     const token = randomBytes(32).toString('hex');
     const tokenHash = createHash('sha256').update(token).digest('hex');
 
-    console.log('Constructor:', this.prisma.constructor.name);
-
-    console.log(
-      await this.prisma.$queryRawUnsafe(`
-    SELECT current_database(), current_schema();
-  `),
-    );
-
-    console.log(
-      await this.prisma.$queryRawUnsafe(`
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = 'public';
-  `),
-    );
-
-    console.log(await this.prisma.passwordResetToken.findMany());
+    await this.prisma.passwordResetToken.deleteMany({
+      where: {
+        userId,
+      },
+    });
 
     await this.prisma.passwordResetToken.create({
       data: {
