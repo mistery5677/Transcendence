@@ -52,14 +52,14 @@ export function ProfileHeader({ user }: Props) {
 				<div className="flex flex-col md:items-end">
 					<span className="text-[10px] uppercase font-bold tracking-widest text-stone-500">Board Style</span>
 					<span className="text-sm font-semibold text-emerald-400">
-						{BOARD_THEMES[user?.boardTheme || 1]}
+						{BOARD_THEMES.at((user?.boardTheme || 1) - 1)?.name || "Forest"}
 					</span>
 				</div>
 
 				<div className="flex flex-col md:items-end">
 					<span className="text-[10px] uppercase font-bold tracking-widest text-stone-500">Background</span>
 					<span className="text-sm font-semibold text-stone-200">
-						{BACKGROUND_THEMES[user?.backgroundTheme || 1]}
+						{BACKGROUND_THEMES.at((user?.backgroundTheme || 1) - 1)?.name || "Chess"}
 					</span>
 				</div>
 			</div>

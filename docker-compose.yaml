@@ -51,9 +51,10 @@ services:
     volumes:
       - ./frontend:/usr/src/app
       - frontend_modules:/usr/src/app/node_modules
-
+  # waf:
+  #   image: owasp/modsecurity-crs:4.28.0-nginx-alpine-202607030707
   waf:
-    image: owasp/modsecurity-crs:4.28.0-nginx-alpine-202607030707
+    image: owasp/modsecurity-crs:nginx-alpine
     container_name: chess_waf
     restart: always
     environment:
@@ -64,10 +65,6 @@ services:
       MODSEC_RULE_ENGINE: "On"
       MODSEC_AUDIT_ENGINE: RelevantOnly
       BLOCKING_PARANOIA: "1"
-      # CRS 911100 blocks any method outside this list. The image default
-      # (GET HEAD POST OPTIONS) 403s the API's @Patch/@Delete routes, so the
-      # list declares the verbs the backend actually exposes — PUT stays out.
-      ALLOWED_METHODS: "GET HEAD POST OPTIONS PATCH DELETE"
       ANOMALY_INBOUND: "5"
       ANOMALY_OUTBOUND: "4"
     ports:

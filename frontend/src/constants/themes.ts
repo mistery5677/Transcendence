@@ -1,13 +1,45 @@
-export const BACKGROUND_THEMES: Record<number, string> = {
-	1: "Chess",
-	2: "Cats",
-	3: "Sky",
-	4: "Penguin",
-	5: "Standard",
-};
+export const BOARD_THEMES = [
+	{
+		id: 1 as const,
+		name: "Forest",
+		className: "custom-button-forest",
+	},
+	{
+		id: 2 as const,
+		name: "Classic",
+		className: "custom-button-classic",
+	},
+	{
+		id: 3 as const,
+		name: "Midnight",
+		className: "custom-button-midnight",
+	},
+];
 
-export const BOARD_THEMES: Record<number, string> = {
-	1: "Forest",
-	2: "Classic",
-	3: "Midnight",
-};
+export const BACKGROUND_THEMES = [
+	{
+		id: 1 as const,
+		name: "Chess",
+		className: "custom-button-forest",
+	},
+	{
+		id: 2 as const,
+		name: "Cats",
+		className: "custom-button-classic",
+	},
+	{
+		id: 3 as const,
+		name: "Sky",
+		className: "custom-button-midnight",
+	},
+	{
+		id: 4 as const,
+		name: "Penguin",
+		className: "custom-button-forest",
+	},
+	{
+		id: 5 as const,
+		name: "Standard",
+		className: "custom-button-classic",
+	},
+];

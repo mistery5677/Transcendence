@@ -4,7 +4,7 @@ import { useThemeTab } from "./useThemeTab";
 import {
 	BOARD_THEMES,
 	BACKGROUND_THEMES,
-} from "./themeConstants";
+} from "../../../../constants/themes";
 
 
 export function ThemeTab() {
