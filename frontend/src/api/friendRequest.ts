@@ -1,12 +1,10 @@
 // Send the friend request for the targetUsername
 export async function sendFriendRequest(targetUsername: string) {
-	const token = localStorage.getItem("token");
-
-	const response = await fetch("./api/FriendRequest/request", {
+	const response = await fetch("/api/FriendRequest/request", {
 		method: "POST",
+		credentials: "include",
 		headers: {
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${token}`,
 		},
 		body: JSON.stringify({
 			targetUsername: targetUsername,
@@ -16,7 +14,7 @@ export async function sendFriendRequest(targetUsername: string) {
 	// If we get a bad response from the data base
 	if (response.ok == false) {
 		const errorData = await response.json();
-		throw new Error(errorData.message || "Erro desconhecido ao adicionar amigo.");
+		throw new Error(errorData.message || "Unknown  error adding a new friend.");
 	}
 
 	return await response.json();
@@ -24,13 +22,11 @@ export async function sendFriendRequest(targetUsername: string) {
 
 // Get all the pending requests
 export async function getPendingFriendRequests() {
-	const token = localStorage.getItem("token");
-
-	const response = await fetch("./api/FriendRequest/pending", {
+	const response = await fetch("/api/FriendRequest/pending", {
 		method: "GET",
+		credentials: "include",
 		headers: {
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${token}`,
 		},
 	});
 
@@ -40,12 +36,11 @@ export async function getPendingFriendRequests() {
 
 // Accept the friend request
 export async function acceptFriendRequest(senderId: number) {
-	const token = localStorage.getItem("token");
-	const response = await fetch("./api/FriendRequest/accept", {
+	const response = await fetch("/api/FriendRequest/accept", {
 		method: "POST",
+		credentials: "include",
 		headers: {
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${token}`,
 		},
 		body: JSON.stringify({ senderId: senderId }),
 	});
@@ -57,12 +52,11 @@ export async function acceptFriendRequest(senderId: number) {
 
 // Decline the friend request
 export async function declineFriendRequest(senderId: number) {
-	const token = localStorage.getItem("token");
-	const response = await fetch("./api/FriendRequest/decline", {
+	const response = await fetch("/api/FriendRequest/decline", {
 		method: "POST",
+		credentials: "include",
 		headers: {
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${token}`,
 		},
 		body: JSON.stringify({ senderId: senderId }),
 	});
@@ -73,21 +67,23 @@ export async function declineFriendRequest(senderId: number) {
 
 // Get all friends
 export async function getFriendsList() {
-	const token = localStorage.getItem("token");
-	const response = await fetch("./api/FriendRequest/list", {
-		headers: { Authorization: `Bearer ${token}` },
+	const response = await fetch("/api/FriendRequest/list", {
+		method: "GET",
+		credentials: "include",
+		headers: {
+			"Content-Type": "application/json",
+		},
 	});
 	return await response.json();
 }
 
-// Remove a frined
+// Remove a friend
 export async function removeFriend(friendId: number) {
-	const token = localStorage.getItem("token");
-	const response = await fetch("./api/FriendRequest/remove", {
+	const response = await fetch("/api/FriendRequest/remove", {
 		method: "POST",
+		credentials: "include",
 		headers: {
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${token}`,
 		},
 		body: JSON.stringify({ friendId }),
 	});

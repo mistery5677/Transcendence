@@ -16,7 +16,6 @@ interface ChatListItemProps {
 }
 
 function ChatListItem({ avatarUrl, username, status, onClick, children }: ChatListItemProps) {
-	console.log(status);
 	return (
 		<div
 			onClick={onClick}
