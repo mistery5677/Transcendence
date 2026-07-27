@@ -7,7 +7,7 @@ build/
 /generated/prisma
 NOTES.md
 backend/assets/Stockfish2
-
+diff.txt
 backend/assets/avatars/uploaded/
 
 .vscode
