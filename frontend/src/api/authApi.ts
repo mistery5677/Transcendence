@@ -59,7 +59,7 @@ export async function forgotPassword(email: string): Promise<string> {
 		if (!response.ok) {
 			throw new Error("Failed to send password reset email.");
 		}
-
+ 
 		const data = await response.json();
 		console.log("Password reset response:", data); // Log the response to see what is returned
 		return data.message;
