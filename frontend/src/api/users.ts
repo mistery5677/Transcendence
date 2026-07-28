@@ -10,7 +10,10 @@ export async function updatePassword(currentPassword: string, newPassword: strin
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ currentPassword, newPassword }),
 	});
-	if (!res.ok) throw new Error("Failed to update password");
+	if (!res.ok) {
+		const data = await res.json().catch(() => null);
+		throw new Error(data?.message || "Failed to update password");
+	}
 }
 
 // Updates the profile image

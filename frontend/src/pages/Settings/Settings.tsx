@@ -112,11 +112,11 @@ export function Settings({ tabOpt }: SettingsProps) {
 			return;
 		}
 		try {
-			console.log("current: ", currentPassword);
-			console.log("newPassword: ", newPassword);
 			await updatePassword(currentPassword, newPassword);
+			toastWrapper.success("Password updated successfully.");
 		} catch (err) {
 			console.log(err);
+			toastWrapper.error(err instanceof Error ? err.message : "Failed to update password. Please try again.");
 		}
 	};
 
