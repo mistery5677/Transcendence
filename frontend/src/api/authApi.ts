@@ -49,22 +49,44 @@ export async function logout() {
 }
 
 export async function forgotPassword(email: string): Promise<string> {
-	try {
-		const response = await fetch("/api/auth/forgot-password", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ email }),
-		});
+	const response = await fetch("/api/password-reset/forgot", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ email }),
+	});
 
-		if (!response.ok) {
-			throw new Error("Failed to send password reset email.");
-		}
- 
-		const data = await response.json();
-		console.log("Password reset response:", data); // Log the response to see what is returned
-		return data.message;
-	} catch (error) {
-		console.error("Failed to send password reset email:", error);
-		throw error;
+	const data = await response.json();
+
+	if (!response.ok) {
+		throw new Error(
+			data.message ?? "Failed to send password reset email."
+		);
 	}
+
+	return data.message;
+}
+
+export async function resetPassword(
+	token: string,
+	password: string,
+): Promise<string> {
+	const response = await fetch("/api/password-reset", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ token, password }),
+	});
+
+	const data = await response.json();
+
+	if (!response.ok) {
+		throw new Error(
+			data.message ?? "Failed to reset password."
+		);
+	}
+
+	return data.message;
 }

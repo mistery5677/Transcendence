@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useModalReveal } from "../../hooks/useModalReveal";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
-import successIcon from "../../assets/succsfully_register.gif";
+import successIcon from "../../assets/successfully_register.gif";
 import { RouterPaths } from "../../routers/MainRouter/RouterPath";
 import { verifyUsername, verifyEmail, signupUser } from "../../api";
+import { AuthCard } from "./AuthCard";
+import { PasswordRequirements } from "./PasswordRequirements";
 
 interface SignupProps {
 	onModal: (modal: "signup" | "login" | null) => void;
@@ -16,12 +18,8 @@ export function Signup({ onModal }: SignupProps) {
 
 	const [successMessage, setSuccessMessage] = useState(false);
 
-	// Password policy
 	const [password, setPassword] = useState("");
-	const hasMinLength = password.length >= 6;
-	const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-	const hasUpperCase = /[A-Z]/.test(password);
-	const hasSpace = /\s/.test(password);
+
 
 	// Username policy — same rule the backend enforces on signup and on rename
 	const [username, setUsername] = useState("");
@@ -34,16 +32,24 @@ export function Signup({ onModal }: SignupProps) {
 	// The legal terms must be accepted before the account can be created
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+	const passwordRules = {
+		hasMinLength: password.length >= 6,
+		hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+		hasUpperCase: /[A-Z]/.test(password),
+		hasSpace: /\s/.test(password),
+	};
+
 	// Check if all information is true
 	const isFormValid =
-		hasMinLength &&
-		hasSpecialChar &&
-		hasUpperCase &&
+		passwordRules.hasMinLength &&
+		passwordRules.hasSpecialChar &&
+		passwordRules.hasUpperCase &&
+		!passwordRules.hasSpace &&
 		hasValidUsername &&
 		usernameAvailable &&
-		emailAvailable &&
-		!hasSpace;
-	const canSubmit = isFormValid && acceptedTerms;
+		emailAvailable;
+
+const canSubmit = isFormValid && acceptedTerms;
 
 	// Check if the username is already in use
 	const checkUsername = async (e: React.FocusEvent<HTMLInputElement>) => {
@@ -91,40 +97,31 @@ export function Signup({ onModal }: SignupProps) {
 	};
 
 	return (
-		/* Backdrop */
+	<div
+		className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 ${
+			show ? "opacity-100" : "opacity-0"
+		}`}
+		onClick={() => onModal(null)}
+	>
 		<div
-			className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 ${show ? "opacity-100" : "opacity-0"}`}
-			onClick={() => onModal(null)}>
-			{/* Card */}
-			<div
-				onClick={(e) => e.stopPropagation()}
-				className={`relative w-full max-w-md mx-4 transform transition-all duration-300 ease-out ${
-					show ? "scale-100 opacity-100" : "scale-90 opacity-0"
-				}`}>
-				{/* Chess stripe top */}
-				<div className="flex h-2 rounded-t-2xl overflow-hidden">
-					<div className="flex-1 bg-board-dark" />
-					<div className="flex-1 bg-board-light" />
-					<div className="flex-1 bg-board-dark" />
-					<div className="flex-1 bg-board-light" />
-					<div className="flex-1 bg-board-dark" />
-				</div>
+			onClick={(e) => e.stopPropagation()}
+			className={`relative w-full max-w-md mx-4 transform transition-all duration-300 ease-out ${
+				show ? "scale-100 opacity-100" : "scale-90 opacity-0"
+			}`}
+		>
+			<button
+				onClick={() => onModal(null)}
+				className="absolute top-5 right-5 z-10 text-gray-400 hover:text-gray-600 text-xl leading-none cursor-pointer"
+				aria-label="Close"
+			>
+				✕
+			</button>
 
-				<div className="bg-board-bg px-8 py-8 rounded-b-2xl shadow-2xl">
-					{/* Close button */}
-					<button
-						onClick={() => onModal(null)}
-						className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 text-xl leading-none cursor-pointer"
-						aria-label="Close">
-						✕
-					</button>
-
-					{/* Header */}
-					<div className="text-center mb-8 text-board-text">
-						<p className="text-3xl">♞</p>
-						<h1 className="text-2xl font-bold mt-1">New Challenger</h1>
-						<p className="text-board-text-muted text-xs mt-1 tracking-widest uppercase">Join the game</p>
-					</div>
+			<AuthCard
+				icon="♞"
+				title="New Challenger"
+				subtitle="Join the game"
+			>
 					{successMessage ? (
 						<div
 							className="success-container"
@@ -152,34 +149,6 @@ export function Signup({ onModal }: SignupProps) {
 						<form
 							onSubmit={handleSubmit}
 							className="space-y-5">
-							{/* Name */}
-							{/* <div>
-								<label className="text-board-text text-sm font-semibold mb-1.5 block">Name</label>
-								<div className="relative flex items-center">
-									<input
-										name="name"
-										type="text"
-										required
-										className="text-board-text bg-board-input border-2 border-board-border w-full text-sm pl-4 pr-8 py-2.5 rounded-xl focus:border-board-focus focus:outline-none placeholder-board-text-muted"
-										placeholder="Enter your name"
-									/>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="#94a3b8"
-										stroke="#94a3b8"
-										className="w-4 h-4 absolute right-4"
-										viewBox="0 0 24 24">
-										<circle
-											cx="10"
-											cy="7"
-											r="6"
-											data-original="#000000"></circle>
-										<path
-											d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
-											data-original="#000000"></path>
-									</svg>
-								</div>
-							</div> */}
 							{/* Username */}
 							<div>
 								<label className="text-board-text text-sm font-semibold mb-1.5 block">Username</label>
@@ -334,36 +303,9 @@ export function Signup({ onModal }: SignupProps) {
 							</div>
 
 							{/* Password requirements */}
-							<div
-								style={{
-									display: "flex",
-									flexDirection: "column",
-									gap: "3px",
-									fontSize: "13px",
-									marginTop: "10px",
-									textAlign: "left",
-								}}>
-								{/* Password Length */}
-								<span style={{ color: hasMinLength ? "#10B981" : "#EF4444", transition: "color 0.3s" }}>
-									{hasMinLength ? "✓" : "✗"} More than 6 letters
-								</span>
-
-								{/* Special characters */}
-								<span
-									style={{ color: hasSpecialChar ? "#10B981" : "#EF4444", transition: "color 0.3s" }}>
-									{hasSpecialChar ? "✓" : "✗"} At least one special character (!@#$...)
-								</span>
-
-								{/* Upper case letter */}
-								<span style={{ color: hasUpperCase ? "#10B981" : "#EF4444", transition: "color 0.3s" }}>
-									{hasUpperCase ? "✓" : "✗"} At least one upper case
-								</span>
-
-								{/* No spaces */}
-								<span style={{ color: !hasSpace ? "#10B981" : "#EF4444", transition: "color 0.3s" }}>
-									{!hasSpace ? "✓" : "✗"} No spaces allowed
-								</span>
-							</div>
+							<PasswordRequirements
+								password={password}
+							/>
 							{/* Terms */}
 							<div className="flex items-center">
 								<input
@@ -418,7 +360,7 @@ export function Signup({ onModal }: SignupProps) {
 							</p>
 						</form>
 					)}
-				</div>
+				</AuthCard>
 			</div>
 		</div>
 	);

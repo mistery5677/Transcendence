@@ -8,7 +8,9 @@ export class MailService {
   constructor(private readonly mailer: MailerService) {}
 
   async sendResetPasswordEmail(email: string, token: string) {
-    const url = `http://localhost:5173/reset-password?token=${token}`;
+    // const url = `http://localhost:8443/reset-password?token=${token}`;
+    const url = `https://192.168.1.219:8443/reset-password?token=${token}`;
+
 
     this.logger.log(`Sending password reset email to ${email}`);
 

@@ -57,9 +57,4 @@ export class AuthController {
     return await this.authService.getProfile(parseInt(req.user.userId));
   }
 
-  @Post('/forgot-password')
-  async forgotPassword(@Body('email') email: string) {
-    console.log("Forgot password request received for email:", email);
-    return this.authService.forgotPassword(email);
-  }
 }

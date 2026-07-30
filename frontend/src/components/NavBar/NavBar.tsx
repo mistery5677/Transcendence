@@ -157,7 +157,7 @@ export function NavBar({ onModal }: NavBarProps) {
 										<img
 											src={avatarSrc}
 											alt="avatar"
-											className="size-10 rounded-full object-fit"
+											className="size-10 rounded-full object-fit shrink-0"
 										/>
 									) : (
 										<IconUser

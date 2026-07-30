@@ -1,5 +1,5 @@
 import { toastWrapper } from "../../../../adapters/toastWrapper";
-import { updatePassword } from "../../../../api/settingsApi";
+import { changePassword } from "../../../../api/settingsApi";
 
 
 export function usePasswordForm() {
@@ -40,7 +40,7 @@ export function usePasswordForm() {
 		}
 
 		try {
-			await updatePassword(currentPassword, newPassword);
+			await changePassword(currentPassword, newPassword);
 
 			toastWrapper.success("Password updated successfully.");
 

@@ -50,7 +50,7 @@ export class UsersService {
     });
   }
 
-  async updatePassword(userId: number, current: string, newPassword: string) {
+  async changePassword(userId: number, current: string, newPassword: string) {
     const user = await this.findOneByIdInternal(userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -65,6 +65,17 @@ export class UsersService {
     return await this.prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword, updatedAt: new Date() },
+    });
+  }
+
+  async updatePassword(userId: number, hashedPassword: string) : Promise<void> {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: hashedPassword,
+      }
     });
   }
 

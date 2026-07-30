@@ -5,6 +5,9 @@ import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { getJwtSecret } from './constant/jwt.constant';
 import { MailModule } from 'src/mail/mail.module';
+import { PasswordResetService } from './password-reset/password-reset.service';
+import { PasswordResetController } from './password-reset/password-reset.controller';
+
 @Module({
   imports: [
     UsersModule,
@@ -17,7 +20,13 @@ import { MailModule } from 'src/mail/mail.module';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService],
+  controllers: [
+    AuthController,
+    PasswordResetController,
+  ],
+  providers: [
+    AuthService,
+    PasswordResetService,
+  ],
 })
 export class AuthModule {}

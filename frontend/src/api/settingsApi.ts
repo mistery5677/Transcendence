@@ -62,7 +62,7 @@ export async function updateBackGroundTheme(backgroundThemeVal: number): Promise
 	return data;
 }
 
-export async function updatePassword(currentPassword: string, newPassword: string) : Promise<void> {
+export async function changePassword(currentPassword: string, newPassword: string) : Promise<void> {
 	const res = await fetch("/api/users/me/password", {
 		method: "PATCH",
 		credentials: "include",

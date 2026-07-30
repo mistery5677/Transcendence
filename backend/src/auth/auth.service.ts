@@ -11,8 +11,8 @@ import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { getMyProfileDto } from './dto/getProfile.dto';
 import { randomBytes, createHash } from 'crypto';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { MailService } from 'src/mail/mail.service';
+import { PasswordResetService } from './password-reset/password-reset.service';
 
 const DEFAULT_AVATARS = [
   '/assets/avatars/default1.png',
@@ -27,7 +27,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly prisma: PrismaService,
+    private readonly passwordResetService: PasswordResetService,
     private readonly mailService: MailService,
   ) {}
 
@@ -84,42 +84,45 @@ export class AuthService {
     });
   }
 
-  async generateToken(userId: number) {
-    const token = randomBytes(32).toString('hex');
-    const tokenHash = createHash('sha256').update(token).digest('hex');
-
-    await this.prisma.passwordResetToken.deleteMany({
-      where: {
-        userId,
-      },
-    });
-
-    await this.prisma.passwordResetToken.create({
-      data: {
-        tokenHash,
-        userId,
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-      },
-    });
-
-    return token;
-  }
-
-  // forgotPassword method to handle password reset requests
-  async forgotPassword(email: string) {
+  async forgotPassword( email: string,): Promise<{ message: string }> {
     const user = await this.usersService.findOneByEmail(email);
-    if (!user) {
-      return {
-        message:
-          'If that email address is in our database, we will send you an email to reset your password.',
-      };
+
+    if (user) {
+      const token =
+        await this.passwordResetService.createToken(user.id);
+
+      await this.mailService.sendResetPasswordEmail(
+        user.email,
+        token,
+      );
     }
-    const token = await this.generateToken(user.id);
 
-    await this.mailService.sendResetPasswordEmail(email, token);
-
-    return { message: 'Password reset link has been sent to your email.' };
+    return {
+      message:
+        "If an account exists for this email, a password reset link has been sent.",
+    };
   }
+
+  async resetPassword(token: string, password: string) : Promise<{message: string}> {
+    const resetToken = await this.passwordResetService.validateToken(token);
+
+    if (!resetToken) {
+      throw new UnauthorizedException("Invalid or expired reset token");
+    }
+
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(password, salt);
+
+    await this.usersService.updatePassword(resetToken.userId, hashedPassword);
+
+    await this.passwordResetService.deleteToken(resetToken.userId);
+
+    return {
+      message: "Password updated Successfuly."
+    }
+  }
+
+
 
   async getProfile(id: number): Promise<getMyProfileDto> {
     const user = await this.usersService.findOneById(id);
