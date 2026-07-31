@@ -19,12 +19,12 @@ export function ProfileHeader({ user }: Props) {
 					<img
 						src={user?.avatarUrl || "/api/assets/avatars/default1.png"}
 						alt="Profile avatar"
-						className="h-28 w-28 rounded-full border border-emerald-400/30 object-fit shadow-2xl ring-4 ring-emerald-500/5"
+						className="2xl:h-28 2xl:w-28 xl:h-25 xl:w-25 rounded-full border border-emerald-400/30 object-fit shadow-2xl ring-4 ring-emerald-500/5"
 					/>
 				</div>
 
 				<div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-2 flex-1 min-w-0">
-					<h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white truncate w-full max-w-[18ch]">
+					<h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white w-full max-w-[28ch] min-w-[10ch] truncate">
 						{user?.username || "Player"}
 					</h1>
 
@@ -37,19 +37,6 @@ export function ProfileHeader({ user }: Props) {
 			{/* RIGHT SIDE */}
 			<div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 md:flex md:flex-col gap-4 md:gap-2 w-full md:w-auto pt-6 md:pt-0 border-t md:border-t-0 border-white/10 sm:text-center md:text-right">
 				<div className="flex flex-col md:items-end">
-					<span className="text-[10px] uppercase font-bold tracking-widest text-stone-500">
-						{user && "email" in user ? "Email" : "Profile Created"}
-					</span>
-					<span className="text-sm font-semibold text-stone-200 truncate max-w-[22ch]">
-						{user && "email" in user
-							? user.email
-							: user?.createdAt
-								? new Date(user.createdAt).toLocaleDateString()
-								: "—"}
-					</span>
-				</div>
-
-				<div className="flex flex-col md:items-end">
 					<span className="text-[10px] uppercase font-bold tracking-widest text-stone-500">Board Style</span>
 					<span className="text-sm font-semibold text-emerald-400">
 						{BOARD_THEMES.at((user?.boardTheme || 1) - 1)?.name || "Forest"}
@@ -60,6 +47,18 @@ export function ProfileHeader({ user }: Props) {
 					<span className="text-[10px] uppercase font-bold tracking-widest text-stone-500">Background</span>
 					<span className="text-sm font-semibold text-stone-200">
 						{BACKGROUND_THEMES.at((user?.backgroundTheme || 1) - 1)?.name || "Chess"}
+					</span>
+				</div>
+				<div className="flex flex-col md:items-end">
+					<span className="text-[10px] uppercase font-bold tracking-widest text-stone-500">
+						{user && "email" in user ? "Email" : "Profile Created"}
+					</span>
+					<span className="text-sm font-semibold text-stone-200 truncate max-w-[20ch]">
+						{user && "email" in user
+							? user.email
+							: user?.createdAt
+								? new Date(user.createdAt).toLocaleDateString()
+								: "—"}
 					</span>
 				</div>
 			</div>
