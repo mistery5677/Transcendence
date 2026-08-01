@@ -174,8 +174,8 @@ flowchart TB
 | Login | Role(s) | Responsibilities |
 |---|---|---|
 | miafonso | Product Owner + Developer | Account & social features — user profiles, friends system, and player progression (leaderboard, match history) |
-| hbourlot | Product Manager + Developer | Frontend pages (Home, Signup, Play, Friends, Profile, History), matchmaking, chess game logic, AI opponent integration |
-| joralves | Developer | Real-time backend — WebSocket gateways for gameplay sync, chat, notifications, and presence; authentication |
+| hbourlot | Project Manager + Developer | Frontend pages (Home, Signup, Play, Friends, Profile, History), matchmaking, chess game logic, AI opponent integration |
+| joralves | Technical Lead + Developer | Real-time backend — WebSocket gateways for gameplay sync, chat, notifications, and presence; authentication |
 | mfrancis | Developer — Cybersecurity | WAF/ModSecurity, HashiCorp Vault, HTTPS/TLS, server-side validation, and general application security hardening |
 | ddiogo-f | Developer | Spectator mode — real-time live game browsing with a read-only board view; wrote and coordinated the final README |
 
