@@ -5,6 +5,7 @@ import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import successIcon from "../../assets/succsfully_register.gif";
 import { RouterPaths } from "../../routers/MainRouter/RouterPath";
 import { verifyUsername, verifyEmail, signupUser } from "../../api/users.ts";
+import { toastWrapper } from "../../adapters/toastWrapper";
 
 interface SignupProps {
 	onModal: (modal: "signup" | "login" | null) => void;
@@ -27,6 +28,12 @@ export function Signup({ onModal }: SignupProps) {
 	const [username, setUsername] = useState("");
 	const hasValidUsername = /^[a-zA-Z0-9]+$/.test(username);
 
+	// Email policy — requires local@domain.tld, same shape the backend expects
+	const [email, setEmail] = useState("");
+	const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+
+	// Is always checking if the username is available
+
 	// Is always checking if the username is available
 	const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 	const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
@@ -35,7 +42,7 @@ export function Signup({ onModal }: SignupProps) {
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
 
 	// Check if all information is true
-	const isFormValid = hasMinLength && hasSpecialChar && hasUpperCase && hasValidUsername && usernameAvailable && emailAvailable && !hasSpace;
+	const isFormValid = hasMinLength && hasSpecialChar && hasUpperCase && hasValidUsername && usernameAvailable && hasValidEmail && emailAvailable && !hasSpace;
 	const canSubmit = isFormValid && acceptedTerms;
 
 	// Check if the username is already in use
@@ -53,8 +60,7 @@ export function Signup({ onModal }: SignupProps) {
 	// Check if the email is already in use
 	const checkEmail = async (e: React.FocusEvent<HTMLInputElement>) => {
 		const value = e.target.value;
-		// Check if it includes @
-		if (!value.includes("@")) {
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
 			setEmailAvailable(null);
 			return;
 		}
@@ -81,6 +87,7 @@ export function Signup({ onModal }: SignupProps) {
 			}, 1500);
 		} catch (err) {
 			console.error("Failed to sign up user", err);
+			toastWrapper.error(err instanceof Error ? err.message : "Failed to sign up user. Please try again.");
 		}
 	};
 
@@ -247,6 +254,8 @@ export function Signup({ onModal }: SignupProps) {
 										name="email"
 										type="email"
 										required
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
 										className="text-board-text bg-board-input border-2 border-board-border w-full
 										 text-sm pl-4 pr-8 py-2.5 rounded-xl focus:border-board-focus focus:outline-none placeholder-board-text-muted"
 										placeholder="Enter your email"
@@ -284,7 +293,20 @@ export function Signup({ onModal }: SignupProps) {
 										</g>
 									</svg>
 								</div>
-								{emailAvailable !== null && (
+								{email !== "" && !hasValidEmail && (
+									<div
+										style={{
+											fontSize: "13px",
+											marginTop: "2px",
+											marginBottom: "10px",
+											textAlign: "left",
+										}}>
+										<span style={{ color: "#EF4444" }}>
+											✗ Enter a valid email address
+										</span>
+									</div>
+								)}
+								{hasValidEmail && emailAvailable !== null && (
 									<div
 										style={{
 											fontSize: "13px",

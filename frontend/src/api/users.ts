@@ -63,7 +63,9 @@ export async function signupUser(userData: Record<string, any>): Promise<boolean
 	console.log('Signup DTO:', userData); // Log the userData to see what is being sent
 
 	if (!response.ok) {
-		throw new Error("Failed to sign up user.");
+		const data = await response.json().catch(() => null);
+		const message = Array.isArray(data?.message) ? data.message.join(" ") : data?.message;
+		throw new Error(message || "Failed to sign up user.");
 	}
 
 	const data = await response.json();
