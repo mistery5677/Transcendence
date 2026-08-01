@@ -115,21 +115,7 @@ bash scripts/verify-legal.sh    # legal pages served + input validation (400 on 
 
 The entire stack runs under Docker Compose on a private network. The **WAF is the only component exposed to the host** — the frontend, backend, and database are not directly reachable from outside.
 
-```mermaid
-flowchart TB
-    Host["Host<br/>https://localhost:8443<br/>(http:8080 → 301 → https)"]
-    WAF["WAF<br/>Nginx + ModSecurity<br/>TLS termination + OWASP CRS filtering"]
-    FE["frontend<br/>React SPA (Vite)"]
-    BE["backend<br/>NestJS + WebSockets"]
-    DB[("PostgreSQL")]
-    Vault[("Vault<br/>secrets")]
-
-    Host --> WAF
-    WAF -->|"UI /"| FE
-    WAF -->|"/api"| BE
-    BE -->|"Prisma ORM"| DB
-    BE --> Vault
-```
+![Architecture diagram](docs/architecture.svg)
 
 - **Realtime** is handled over WebSockets (live moves, presence, chat, spectating).
 - **Secrets** (JWT signing key, DB credentials) are seeded into **HashiCorp Vault** at startup; the backend fetches them from Vault and refuses to boot without them.
@@ -211,6 +197,7 @@ flowchart TB
 - **Stockfish** engine integration for the AI opponent
 - **Prisma ORM**
 - **DTO validation** (`class-validator`) on all `@Body` endpoints
+- **Nodemailer** (via `@nestjs-modules/mailer`) for transactional emails (password reset)
 
 ### Database
 - **PostgreSQL**, accessed via Prisma ORM.
@@ -226,87 +213,7 @@ flowchart TB
 
 
 ## Database Schema
-```mermaid
-erDiagram
-    user ||--o| Score : "has"
-    user ||--o{ MatchHistory : "playerA"
-    user ||--o{ MatchHistory : "playerB"
-    user ||--o{ FriendRequest : "sent"
-    user ||--o{ FriendRequest : "received"
-    user ||--o{ UserAchievement : "unlocked"
-    user ||--o{ PrivateMessage : "sent"
-    user ||--o{ PrivateMessage : "received"
-    user ||--o{ Notification : "has"
- 
-    user {
-        Int id PK
-        String email UK
-        String name
-        String nickname
-        String username UK
-        String password
-        String avatarUrl
-        Int boardTheme
-        Int backgroundTheme
-        DateTime createdAt
-        DateTime updatedAt
-    }
- 
-    Score {
-        Int id PK
-        Int userId FK
-        Int wins
-        Int losses
-        Int draws
-        Int elo
-        Int totalGames
-        Int bestWinStreak
-        Int currentWinStreak
-        Int bestElo
-    }
- 
-    MatchHistory {
-        Int id PK
-        Int playerAId FK
-        Int playerBId FK
-        String result
-        DateTime createdAt
-    }
- 
-    FriendRequest {
-        Int id PK
-        Int senderId FK
-        Int receiverId FK
-        String status
-        DateTime createdAt
-    }
- 
-    UserAchievement {
-        Int id PK
-        Int userId FK
-        String achievementId
-        DateTime unlockedAt
-    }
- 
-    PrivateMessage {
-        Int id PK
-        Int fromId FK
-        Int toId FK
-        String message
-        DateTime createdAt
-    }
- 
-    Notification {
-        Int id PK
-        Int userId FK
-        String title
-        String message
-        String type
-        Boolean read
-        Json payload
-        DateTime createdAt
-    }
-```
+![Architecture diagram](docs/er_diagram.svg)
 
 | Model | Purpose | Key relationships |
 |---|---|---|
@@ -317,6 +224,7 @@ erDiagram
 | `UserAchievement` | Unlocked achievements per user | many–1 with `user`; unique per user-achievement pair |
 | `PrivateMessage` | Direct messages between users | many–1 with `user` (from/to) |
 | `Notification` | In-app notifications (title, message, type, read flag, optional JSON payload) | many–1 with `user` |
+| `PasswordResetToken` | Short-lived, hashed token for the forgot-password flow | 1–1 with `user` (`onDelete: Cascade`) |
 
 > ⚠️ **Note:** in-progress games are **not** represented in this schema by design — they exist only in server memory while active.
 
@@ -341,6 +249,7 @@ erDiagram
 | Server-side input validation | DTO-based validation on backend endpoints | mfrancis |
 | Application security hardening | Centralized password policy, endpoint authorization checks, `Secure` session cookies | mfrancis |
 | Legal pages | Privacy Policy and Terms of Service pages | mfrancis |
+| Password recovery | Forgot-password email flow with a short-lived (15 min), hashed reset token | hbourlot |
 
 ## Modules
 
