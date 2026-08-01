@@ -150,7 +150,6 @@ export function NotificationBell() {
 													className="text-[16px] text-stone-400 hover:text-emerald-400 hover:underline cursor-pointer"
 													onClick={(e) => {
 														e.stopPropagation();
-														// markOneAsRead(notification.id);
 														deleteOne(notification.id);
 													}}>
 													x
@@ -167,9 +166,19 @@ export function NotificationBell() {
 
 												<div className="flex-1 min-w-0">
 													<div className="text-[11px] text-stone-400 leading-normal">
-														<span className="text-emerald-500 font-bold hover:underline cursor-pointer mr-1">
+														<button
+															type="button"
+															onClick={(e) => {
+																e.stopPropagation();
+																if (notification.payload?.senderUsername) {
+																	navigate(
+																		`/profile/${notification.payload?.senderUsername}`,
+																	);
+																}
+															}}
+															className="text-emerald-500 font-bold hover:underline cursor-pointer mr-1">
 															{notification.payload?.senderUsername}
-														</span>
+														</button>
 														{notification.message}
 													</div>
 

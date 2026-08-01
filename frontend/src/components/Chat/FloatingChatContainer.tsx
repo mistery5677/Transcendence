@@ -5,7 +5,8 @@ import { useChat } from "../../context/Chat/ChatContext";
 import { getActiveChats } from "../../api/privateChatApi";
 import { useAuth } from "../../context/auth";
 import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/outline";
-import { UserStatusBadge, type UserStatus } from "../UserStatusBandage/UserStatusBandage";
+import { UserStatusBadge } from "../UserStatusBandage/UserStatusBandage";
+import type { Friend, UserStatus } from "../../types/";
 
 interface ChatListItemProps {
 	avatarUrl: string;
@@ -41,7 +42,7 @@ function ChatListItem({ avatarUrl, username, status, onClick, children }: ChatLi
 }
 
 function ShowFriendList({ onSelectFriend }: { onSelectFriend: (friend: any) => void }) {
-	const [friends, setFriends] = useState<any[]>([]);
+	const [friends, setFriends] = useState<Friend[]>([]);
 	const [loading, setLoading] = useState(true);
 	const navigate = useNavigate();
 
@@ -77,11 +78,11 @@ function ShowFriendList({ onSelectFriend }: { onSelectFriend: (friend: any) => v
 					{friends.map((friend) => (
 						<ChatListItem
 							key={friend.id}
-							avatarUrl={friend.avatarUrl}
+							avatarUrl={friend.avatarUrl ?? ""}
 							username={friend.username}
 							status={friend.status}
 							onClick={() => onSelectFriend(friend)}>
-							<p className="text-[10px] text-emerald-400">ELO: {friend.elo}</p>
+							<p className="text-[10px] text-emerald-400">ELO: {friend.score?.elo}</p>
 						</ChatListItem>
 					))}
 				</div>
