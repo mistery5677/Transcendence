@@ -1,41 +1,11 @@
-import { toastWrapper } from "../../../adapters/toastWrapper";
-import { updateBackGroundTheme, updateBoardTheme } from "../../../api/users";
-import { useAuth } from "../../../contexts/UserContext";
+import { BACKGROUND_THEMES, BOARD_THEMES } from "../../../constants";
 import { BoardThemeButton } from "../../index";
 import styles from "./style.module.css";
+import { useGameSettings } from "./useGameSettings";
 
 export function GameSettings() {
-	const { state, dispatch } = useAuth();
-	const currentTheme = state.user?.backgroundTheme;
-	const boardTheme = state.user?.boardTheme;
 
-	const handleBoardTheme = (themeId: 1 | 2 | 3) => async () => {
-		try {
-			await updateBoardTheme(themeId);
-			toastWrapper.success("Board theme update successfully.");
-			if (state.user) {
-				dispatch({ type: "AUTH_SUCCESS", payload: { ...state.user, boardTheme: themeId } });
-			}
-		} catch (error) {
-			toastWrapper.error("Error updating board theme.");
-		}
-	};
-
-	const handleBackgroundTheme = (backgroundID: 1 | 2 | 3 | 4 | 5) => async () => {
-		try {
-
-			console.log("ID: ++++++ ", backgroundID);
-			await updateBackGroundTheme(backgroundID);
-
-			toastWrapper.success("Background theme update successfully.");
-
-			if (state.user) {
-				dispatch({ type: "AUTH_SUCCESS", payload: { ...state.user, backgroundTheme: backgroundID } });
-			}
-		} catch (error) {
-			toastWrapper.error("Error changing background.");
-		}
-	};
+	const { handleBoardTheme, handleBackgroundTheme } = useGameSettings();
 
 	return (
 		<div className="w-full rounded-lg border border-stone-700/60 bg-stone-900/40 p-3 sm:p-4">
@@ -46,23 +16,14 @@ export function GameSettings() {
 				</div>
 
 				<div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-					<BoardThemeButton
-						onClick={handleBoardTheme(1)}
-						className={`${styles["custom-button-forest"]} ${
-							boardTheme === 1 ? "border-emerald-400" : ""
-						}`}>
-						Forest
-					</BoardThemeButton>
-					<BoardThemeButton
-						onClick={handleBoardTheme(2)}
-						className={`${styles["custom-button-classic"]}`}>
-						Classic
-					</BoardThemeButton>
-					<BoardThemeButton
-						onClick={handleBoardTheme(3)}
-						className={`${styles["custom-button-midnight"]}`}>
-						Midnight
-					</BoardThemeButton>
+					{BOARD_THEMES.map((theme) => (
+						<BoardThemeButton
+							key={theme.id}
+							onClick={handleBoardTheme(theme.id)}
+							className={styles[theme.className]}>
+							{theme.name}
+						</BoardThemeButton>
+					))}
 				</div>
 			</section>
 			{/* BackGround Theme Section */}
@@ -71,31 +32,15 @@ export function GameSettings() {
 					<h2 className="text-md tracking-wide text-stone-100 font-extrabold">Background Theme</h2>
 				</div>
 				<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+					{BACKGROUND_THEMES.map((theme) => (
 					<BoardThemeButton
-						onClick={handleBackgroundTheme(1)}
-						className={`${styles["custom-button-forest"]}`}>
-						Chess
+						key={theme.id}
+						onClick={handleBackgroundTheme(theme.id)}
+						className={styles[theme.className]}
+					>
+						{theme.name}
 					</BoardThemeButton>
-					<BoardThemeButton
-						onClick={handleBackgroundTheme(2)}
-						className={`${styles["custom-button-classic"]}`}>
-						Cats
-					</BoardThemeButton>
-					<BoardThemeButton
-						onClick={handleBackgroundTheme(3)}
-						className={`${styles["custom-button-midnight"]}`}>
-						Sky
-					</BoardThemeButton>
-					<BoardThemeButton
-						onClick={handleBackgroundTheme(4)}
-						className={`${styles["custom-button-classic"]}`}>
-						Penguin
-					</BoardThemeButton>
-					<BoardThemeButton
-						onClick={handleBackgroundTheme(5)}
-						className={`${styles["custom-button-forest"]}`}>
-						Standard
-					</BoardThemeButton>
+				))}
 				</div>
 			</section>
 		</div>

@@ -56,4 +56,5 @@ export class AuthController {
   async getProfile(@Req() req) {
     return await this.authService.getProfile(parseInt(req.user.userId));
   }
+
 }

@@ -10,7 +10,7 @@ import {
 	MenuItems,
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useAuth } from "../../contexts/UserContext";
+import { useAuth } from "../../context/auth";
 import { useEffect, useState } from "react";
 import { NotificationBell } from "../NotificationBell/NotificationBell";
 const navigation = [
@@ -157,7 +157,7 @@ export function NavBar({ onModal }: NavBarProps) {
 										<img
 											src={avatarSrc}
 											alt="avatar"
-											className="size-10 rounded-full object-fit"
+											className="size-10 rounded-full object-fit shrink-0"
 										/>
 									) : (
 										<IconUser

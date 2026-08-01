@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useGame } from "../../contexts/GameContext/GameContext";
+import { useGame } from "../../context/Game/GameContext";
 
 export function GameOverModal() {
 	const {

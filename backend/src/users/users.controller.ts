@@ -28,7 +28,7 @@ import {
   getOpponentDto,
   getPublicProfileDto,
 } from 'src/auth/dto/getProfile.dto';
-import { UpdatePasswordDto } from './dto/update-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdateEmailDto } from './dto/update-email.dto';
 import { UpdateUsernameDto } from './dto/update-username.dto';
 import {
@@ -120,9 +120,9 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Patch('me/password')
-  async updatePassword(@Body() dto: UpdatePasswordDto, @Req() req) {
+  async changePassword(@Body() dto: ChangePasswordDto, @Req() req) {
     const userId = req.user.userId;
-    return await this.usersService.updatePassword(
+    return await this.usersService.changePassword(
       parseInt(userId),
       dto.currentPassword,
       dto.newPassword,

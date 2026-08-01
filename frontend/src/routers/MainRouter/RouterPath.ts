@@ -1,7 +1,7 @@
 export const RouterPaths = {
 	LOGIN: "/login",
 	SIGNUP: "/signup",
-	HOME: ["/", "/home"],
+	HOME: ["/", "/home", "/reset-password"],
 	PLAY: "/play",
 	SETTINGS: "/settings",
 	PROFILE: "/profile",
@@ -13,5 +13,6 @@ export const RouterPaths = {
 	RULES: "/rules",
 	LIVEGAMES: "/live-games",
 	PRIVACY: "/privacy",
-	TERMS: "/terms"
+	TERMS: "/terms",
+	RESET_PASSWORD: "/reset-password"
 };

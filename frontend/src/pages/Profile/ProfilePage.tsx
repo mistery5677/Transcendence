@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useAuth } from "../../contexts/UserContext";
+import { useAuth } from "../../context/auth";
 import { ProfileTabs, ProfileHeader, ProfileOverview, MatchHistory, ProfileStats } from "../../components";
 import { userToProfileStats } from "../../mappers/userToProfileStats";
 import type { ProfileStatsVM } from "../../models/profileStats";
-import type { Match } from "../../types/match";
-import { getHistoryByUsername, getMatchHistory } from "../../api/matches";
-import { getPublicProfile } from "../../api/users";
+import type { Match } from "../../types/matchType";
+import { getHistoryByUsername, getMatchHistory } from "../../api/matchesApi";
+import { getPublicProfile } from "../../api/usersApi";
 import type { PublicProfile } from "../../types";
 
 export function ProfilePage() {
