@@ -21,9 +21,6 @@ export function Signup({ onModal }: SignupProps) {
 
 	const [password, setPassword] = useState("");
 
-	const [email, setEmail] = useState("");
-	const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
-
 	// Username policy — same rule the backend enforces on signup and on rename
 	const [username, setUsername] = useState("");
 	const hasValidUsername = /^[a-zA-Z0-9]+$/.test(username);
