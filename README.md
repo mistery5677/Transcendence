@@ -255,22 +255,24 @@ The entire stack runs under Docker Compose on a private network. The **WAF is th
 
 Overview table (details for each module below):
 
-| Category | Module | Type | Owner |
-|---|---|---|---|
-| Web | Framework for frontend and backend (React + NestJS) | Major | hbourlot |
-| Web | Real-time features via WebSockets | Major | joralves |
-| Web | ORM for the database (Prisma) | Minor | miafonso |
-| Web | User interaction (chat + profile + friends system) | Major | miafonso |
-| Web | Notification system | Minor | joralves |
-| User Management | Standard user management & authentication | Major | joralves |
-| User Management | Game statistics and match history | Minor | miafonso |
-| Artificial Intelligence | AI Opponent (Stockfish) | Major | hbourlot |
-| Gaming and user experience | Complete web-based game (chess, real-time, live matches) | Major | hbourlot |
-| Gaming and user experience | Remote players (latency handling, reconnection) | Major | joralves |
-| Gaming and user experience | Game customization (pawn promotion) | Minor | hbourlot |
-| Gaming and user experience | Spectator mode for games | Minor | ddiogo-f |
-| Cybersecurity | WAF/ModSecurity + HashiCorp Vault | Major | mfrancis |
-| Security | General application security hardening | Module of choice | mfrancis |
+| Category | Module | Type | Points | Owner |
+|---|---|---|---|---|
+| Web | Framework for frontend and backend (React + NestJS) | Major | 2 | hbourlot |
+| Web | Real-time features via WebSockets | Major | 2 | joralves |
+| Web | ORM for the database (Prisma) | Minor | 1 | miafonso |
+| Web | Notification system | Minor | 1 | joralves |
+| User Management | Standard user management & authentication | Major | 2 | joralves |
+| User Management | Game statistics and match history | Minor | 1 | miafonso |
+| Artificial Intelligence | AI Opponent (Stockfish) | Major | 2 | hbourlot |
+| Gaming and user experience | User interaction (chat + profile + friends system) | Minor | 1 | miafonso |
+| Gaming and user experience | Complete web-based game (chess, real-time, live matches) | Major | 2 | hbourlot |
+| Gaming and user experience | Remote players (latency handling, reconnection) | Major | 2 | joralves |
+| Gaming and user experience | Game customization (pawn promotion) | Minor | 1 | hbourlot |
+| Gaming and user experience | Spectator mode for games | Minor | 1 | ddiogo-f |
+| Cybersecurity | WAF/ModSecurity + HashiCorp Vault | Major | 2 | mfrancis |
+| **Total** | | | **20** | |
+
+Minimum required: **14 points**. Points beyond 14 count as bonus, capped at **+5**.
 
 ---
 
@@ -326,9 +328,6 @@ Overview table (details for each module below):
 - **Justification:** the application handles real accounts and passwords, so we wanted all traffic filtered before it reached our code, and no secrets stored in the repository.
 - **Implementation:** the WAF (Nginx + OWASP CRS) is the only entry point of the application and proxies to the frontend and backend, with some rules tuned to avoid false positives. TLS is terminated at the WAF and HTTP redirects to HTTPS. Vault stores the JWT key and database credentials, which the backend reads at startup using a read-only token.
 
-### Security — General application security (Module of choice)
-- **Justification:** the WAF and Vault protect the perimeter and the secrets, but not the application from itself. We needed the API itself to validate what it receives and verify who is making each request, so security wouldn't depend on a single layer.
-- **Implementation:** endpoints now validate input server-side using DTOs, and the password policy lives in one place, used both at signup and password change. Authentication and ownership checks were added to the account-deletion endpoint, which had been open to anyone. The session cookie is now always `Secure`.
 
 ## Individual Contributions
 
