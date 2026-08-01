@@ -9,7 +9,7 @@ type ActiveGame = {
 	gameId: string;
 	playerW: string;
 	playerB: string;
-	mode: "online" | "bot" | "ai";
+	mode: "online" | "bot" | "ai" | "friend";
 	playerWName?: string;
 	playerBName?: string;
 	playerWAvatar?: string;
@@ -23,7 +23,6 @@ export function LiveGames() {
 	const navigate = useNavigate();
 	const [games, setGames] = useState<ActiveGame[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	
 
 	useEffect(() => {
 		if (!socket) return;
@@ -82,7 +81,8 @@ export function LiveGames() {
 						<div className="space-y-3 sm:space-y-4">
 							{games.map((game) => {
 								const isOwnGame = authState.user
-									? String(game.playerW) === String(authState.user.id) || String(game.playerB) === String(authState.user.id)
+									? String(game.playerW) === String(authState.user.id) ||
+										String(game.playerB) === String(authState.user.id)
 									: false;
 
 								return (
@@ -97,8 +97,16 @@ export function LiveGames() {
 													className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-emerald-500/60 shrink-0 relative z-10"
 												/>
 												<img
-													src={game.mode === "online" ? (game.playerBAvatar ?? "/assets/avatars/default1.png") : magnusImg}
-													alt={game.mode === "online" ? (game.playerBName ?? "Player") : "Uncle Carlsen"}
+													src={
+														game.mode === "online" || game.mode === "friend"
+															? (game.playerBAvatar ?? "/assets/avatars/default1.png")
+															: magnusImg
+													}
+													alt={
+														game.mode === "online" || game.mode === "friend"
+															? (game.playerBName ?? "Player")
+															: "Uncle Carlsen"
+													}
 													className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-stone-600 shrink-0 -ml-3 sm:-ml-4"
 												/>
 											</div>
@@ -108,9 +116,13 @@ export function LiveGames() {
 													<span className="truncate max-w-[8ch] xs:max-w-[10ch] sm:max-w-none">
 														{game.playerWName ?? game.playerW}
 													</span>
-													<span className="text-emerald-400/70 font-normal shrink-0 text-sm sm:text-base">vs</span>
+													<span className="text-emerald-400/70 font-normal shrink-0 text-sm sm:text-base">
+														vs
+													</span>
 													<span className="truncate max-w-[8ch] xs:max-w-[10ch] sm:max-w-none">
-														{game.mode === "online" ? (game.playerBName ?? game.playerB) : "Uncle Carlsen"}
+														{game.mode === "online" || game.mode === "friend"
+															? (game.playerBName ?? game.playerB)
+															: "Uncle Carlsen"}
 													</span>
 												</div>
 												{game.mode !== "online" && (

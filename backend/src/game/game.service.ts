@@ -391,7 +391,7 @@ export class GameService {
     const idsToResolve = new Set<number>();
     for (const [, game] of activeEntries) {
       idsToResolve.add(parseInt(String(game.playerW)));
-      if (game.mode === 'online') {
+      if (game.mode === 'online' || game.mode === 'friend') {
         idsToResolve.add(parseInt(String(game.playerB)));
       }
     }
@@ -411,7 +411,7 @@ export class GameService {
         playerWAvatar: w?.avatarUrl ?? undefined,
       };
 
-      if (game.mode === 'online') {
+      if (game.mode === 'online' || game.mode === 'friend') {
         const b = userById.get(parseInt(String(game.playerB)));
         summary.playerBName = b?.username;
         summary.playerBAvatar = b?.avatarUrl ?? undefined;
