@@ -20,9 +20,7 @@ export function Login({ onModal }: LoginProps) {
 	const [invalidCredentials, setInvalidCredentials] = useState(false);
 	const [successMessage, setSuccessMessage] = useState(false);
 
-	const handleSubmit = async (
-		e: React.FormEvent<HTMLFormElement>,
-	) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		const formData = new FormData(e.currentTarget);
@@ -50,19 +48,16 @@ export function Login({ onModal }: LoginProps) {
 			className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 transition-opacity duration-300 ${
 				show ? "opacity-100" : "opacity-0"
 			}`}
-			onClick={() => onModal(null)}
-		>
+			onClick={() => onModal(null)}>
 			<div
 				className={`w-full max-w-md mx-4 transition-all transform duration-300 ease-out ${
 					show ? "scale-100 opacity-100" : "scale-90 opacity-0"
 				}`}
-				onClick={(e) => e.stopPropagation()}
-			>
+				onClick={(e) => e.stopPropagation()}>
 				<AuthCard
 					icon="♚"
 					title="Make your move"
-					subtitle="Welcome back to the board"
-				>
+					subtitle="Welcome back to the board">
 					{successMessage ? (
 						<div className="flex min-h-[350px] flex-col items-center justify-center text-center">
 							<img
@@ -70,24 +65,17 @@ export function Login({ onModal }: LoginProps) {
 								alt="success"
 							/>
 
-							<h2 className="mt-4 text-2xl font-bold text-board-text">
-								Challenger Accepted!
-							</h2>
+							<h2 className="mt-4 text-2xl font-bold text-board-text">Challenger Accepted!</h2>
 
-							<p className="mt-2 text-board-text/70">
-								Login successful.
-							</p>
+							<p className="mt-2 text-board-text/70">Login successful.</p>
 						</div>
 					) : (
 						<form
 							onSubmit={handleSubmit}
-							className="space-y-5"
-						>
+							className="space-y-5">
 							{/* Username */}
 							<div>
-								<label className="mb-1.5 block text-sm font-semibold text-board-text">
-									Username
-								</label>
+								<label className="mb-1.5 block text-sm font-semibold text-board-text">Username</label>
 
 								<div className="relative flex items-center">
 									<input
@@ -103,8 +91,7 @@ export function Login({ onModal }: LoginProps) {
 										fill="#94a3b8"
 										stroke="#94a3b8"
 										className="absolute right-4 h-4 w-4"
-										viewBox="0 0 24 24"
-									>
+										viewBox="0 0 24 24">
 										<circle
 											cx="10"
 											cy="7"
@@ -118,18 +105,12 @@ export function Login({ onModal }: LoginProps) {
 
 							{/* Password */}
 							<div>
-								<label className="mb-1.5 block text-sm font-semibold text-board-text">
-									Password
-								</label>
+								<label className="mb-1.5 block text-sm font-semibold text-board-text">Password</label>
 
 								<div className="relative flex items-center">
 									<input
 										name="password"
-										type={
-											showPassword
-												? "text"
-												: "password"
-										}
+										type={showPassword ? "text" : "password"}
 										required
 										placeholder="Enter your password"
 										className="w-full rounded-xl border-2 border-board-border bg-board-input px-4 py-3 pr-10 text-sm text-board-text placeholder-board-text-muted focus:border-board-focus focus:outline-none"
@@ -137,73 +118,39 @@ export function Login({ onModal }: LoginProps) {
 
 									<button
 										type="button"
-										onClick={() =>
-											setShowPassword(
-												(prev) => !prev,
-											)
-										}
-										className="absolute right-4 text-board-text-muted hover:text-board-text"
-									>
-										{showPassword ? (
-											<IconEye size={18} />
-										) : (
-											<IconEyeOff size={18} />
-										)}
+										onClick={() => setShowPassword((prev) => !prev)}
+										className="absolute right-4 text-board-text-muted hover:text-board-text">
+										{showPassword ? <IconEye size={18} /> : <IconEyeOff size={18} />}
 									</button>
 								</div>
 							</div>
 
-							{/* Remember + Forgot */}
+							{/* Forgot */}
 							<div className="flex items-center justify-between">
-								<label className="flex items-center gap-2">
-									<input
-											id="remember-me"
-											name="remember-me"
-											type="checkbox"
-											className="h-4 w-4 shrink-0 accent-board-focus border-board-border rounded"
-										/>
-
-									<label
-											htmlFor="remember-me"
-											className="ml-2 text-sm text-board-text-muted">
-											Remember me
-										</label>
-								</label>
-
 								<button
 									type="button"
-									onClick={() =>
-										onModal("forgot")
-									}
-									className="text-sm font-semibold text-board-focus hover:underline"
-								>
+									onClick={() => onModal("forgot")}
+									className="text-sm font-semibold text-board-focus hover:underline">
 									Forgot password?
 								</button>
 							</div>
 
 							<button
 								type="submit"
-								className="mt-2 w-full cursor-pointer rounded-xl bg-button-primary px-4 py-3 text-sm font-bold tracking-wide text-white shadow-lg transition-all hover:bg-button-primary-hover focus:outline-none"
-							>
+								className="mt-2 w-full cursor-pointer rounded-xl bg-button-primary px-4 py-3 text-sm font-bold tracking-wide text-white shadow-lg transition-all hover:bg-button-primary-hover focus:outline-none">
 								Log In to Play
 							</button>
 
 							{invalidCredentials && (
-								<p className="text-sm text-red-500">
-									Invalid username/email or
-									password.
-								</p>
+								<p className="text-sm text-red-500">Invalid username/email or password.</p>
 							)}
 
 							<p className="text-center text-sm text-board-text-muted">
 								Don't have an account?{" "}
 								<button
 									type="button"
-									onClick={() =>
-										onModal("signup")
-									}
-									className="font-bold text-board-focus hover:underline"
-								>
+									onClick={() => onModal("signup")}
+									className="font-bold text-board-focus hover:underline">
 									Join the game
 								</button>
 							</p>
