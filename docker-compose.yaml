@@ -31,6 +31,7 @@ services:
                 condition: service_completed_successfully # never start before secrets are seeded into Vault
         networks:
             - transcendence
+
         # This volumes allows the "bind mount" to update the code when we are codding, no need to restart the container
         volumes:
             - ./backend:/usr/src/app # This way we say that the code in ./backend, will update the docker

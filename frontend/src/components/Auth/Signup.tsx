@@ -7,6 +7,7 @@ import { RouterPaths } from "../../routers/MainRouter/RouterPath";
 import { verifyUsername, verifyEmail, signupUser } from "../../api";
 import { AuthCard } from "./AuthCard";
 import { PasswordRequirements } from "./PasswordRequirements";
+import { toastWrapper } from "../../adapters/toastWrapper";
 
 interface SignupProps {
 	onModal: (modal: "signup" | "login" | null) => void;
@@ -20,6 +21,8 @@ export function Signup({ onModal }: SignupProps) {
 
 	const [password, setPassword] = useState("");
 
+	const [email, setEmail] = useState("");
+	const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 
 	// Username policy — same rule the backend enforces on signup and on rename
 	const [username, setUsername] = useState("");
@@ -47,9 +50,9 @@ export function Signup({ onModal }: SignupProps) {
 		!passwordRules.hasSpace &&
 		hasValidUsername &&
 		usernameAvailable &&
-		emailAvailable;
+		hasValidEmail;
 
-const canSubmit = isFormValid && acceptedTerms;
+	const canSubmit = isFormValid && acceptedTerms;
 
 	// Check if the username is already in use
 	const checkUsername = async (e: React.FocusEvent<HTMLInputElement>) => {
@@ -67,7 +70,7 @@ const canSubmit = isFormValid && acceptedTerms;
 	const checkEmail = async (e: React.FocusEvent<HTMLInputElement>) => {
 		const value = e.target.value;
 		// Check if it includes @
-		if (!value.includes("@")) {
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
 			setEmailAvailable(null);
 			return;
 		}
@@ -93,35 +96,32 @@ const canSubmit = isFormValid && acceptedTerms;
 			}, 1500);
 		} catch (err) {
 			console.error("Failed to sign up user", err);
+			toastWrapper.error(err instanceof Error ? err.message : "Failed to sign up user. Please try again.");
 		}
 	};
 
 	return (
-	<div
-		className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 ${
-			show ? "opacity-100" : "opacity-0"
-		}`}
-		onClick={() => onModal(null)}
-	>
 		<div
-			onClick={(e) => e.stopPropagation()}
-			className={`relative w-full max-w-md mx-4 transform transition-all duration-300 ease-out ${
-				show ? "scale-100 opacity-100" : "scale-90 opacity-0"
+			className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 ${
+				show ? "opacity-100" : "opacity-0"
 			}`}
-		>
-			<button
-				onClick={() => onModal(null)}
-				className="absolute top-5 right-5 z-10 text-gray-400 hover:text-gray-600 text-xl leading-none cursor-pointer"
-				aria-label="Close"
-			>
-				✕
-			</button>
+			onClick={() => onModal(null)}>
+			<div
+				onClick={(e) => e.stopPropagation()}
+				className={`relative w-full max-w-md mx-4 transform transition-all duration-300 ease-out ${
+					show ? "scale-100 opacity-100" : "scale-90 opacity-0"
+				}`}>
+				<button
+					onClick={() => onModal(null)}
+					className="absolute top-5 right-5 z-10 text-gray-400 hover:text-gray-600 text-xl leading-none cursor-pointer"
+					aria-label="Close">
+					✕
+				</button>
 
-			<AuthCard
-				icon="♞"
-				title="New Challenger"
-				subtitle="Join the game"
-			>
+				<AuthCard
+					icon="♞"
+					title="New Challenger"
+					subtitle="Join the game">
 					{successMessage ? (
 						<div
 							className="success-container"
@@ -221,6 +221,8 @@ const canSubmit = isFormValid && acceptedTerms;
 									<input
 										name="email"
 										type="email"
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
 										required
 										className="text-board-text bg-board-input border-2 border-board-border w-full
 										 text-sm pl-4 pr-8 py-2.5 rounded-xl focus:border-board-focus focus:outline-none placeholder-board-text-muted"
@@ -259,7 +261,18 @@ const canSubmit = isFormValid && acceptedTerms;
 										</g>
 									</svg>
 								</div>
-								{emailAvailable !== null && (
+								{email !== "" && !hasValidEmail && (
+									<div
+										style={{
+											fontSize: "13px",
+											marginTop: "2px",
+											marginBottom: "10px",
+											textAlign: "left",
+										}}>
+										<span style={{ color: "#EF4444" }}>✗ Enter a valid email address</span>
+									</div>
+								)}
+								{hasValidEmail && emailAvailable !== null && (
 									<div
 										style={{
 											fontSize: "13px",
@@ -303,9 +316,7 @@ const canSubmit = isFormValid && acceptedTerms;
 							</div>
 
 							{/* Password requirements */}
-							<PasswordRequirements
-								password={password}
-							/>
+							<PasswordRequirements password={password} />
 							{/* Terms */}
 							<div className="flex items-center">
 								<input
