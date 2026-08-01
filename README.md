@@ -60,6 +60,10 @@ Required `.env` variables:
 | `VAULT_BACKEND_TOKEN` | Least-privilege token the backend uses to read its own secrets from Vault |
 | `WAF_PORT` | Public HTTP port (redirects to HTTPS) — `8080` |
 | `WAF_SSL_PORT` | Public HTTPS port — `8443` |
+| `SMTP_HOST` | SMTP server hostname used to send password-recovery emails |
+| `SMTP_PORT` | SMTP server port |
+| `SMTP_USER` | SMTP account username |
+| `SMTP_PASSWORD` | SMTP account password |
 
 `.env` is git-ignored — keep it that way. An `.env.example` with safe placeholder values is committed instead.
 
