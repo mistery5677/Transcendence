@@ -35,3 +35,22 @@ export type User = {
 	backgroundTheme: 1 | 2 | 3 | 4 | 5;
 	score: Score | null;
 };
+
+export const friends: {
+	status: UserStatus;
+	id: number;
+	username: string;
+	avatarUrl: string | null;
+	score: {
+		userId: number;
+		id: number;
+		wins: number;
+		losses: number;
+		draws: number;
+		elo: number;
+		totalGames: number;
+		bestWinStreak: number;
+		currentWinStreak: number;
+		bestElo: number;
+	} | null;
+}[];

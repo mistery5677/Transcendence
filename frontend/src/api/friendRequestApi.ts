@@ -1,3 +1,5 @@
+import type { Friend } from "../types/FriendType";
+
 // Send the friend request for the targetUsername
 export async function sendFriendRequest(targetUsername: string) {
 	const response = await fetch("/api/FriendRequest/request", {
@@ -66,7 +68,7 @@ export async function declineFriendRequest(senderId: number) {
 }
 
 // Get all friends
-export async function getFriendsList() {
+export async function getFriendsList(): Promise<Friend[]> {
 	const response = await fetch("/api/FriendRequest/list", {
 		method: "GET",
 		credentials: "include",

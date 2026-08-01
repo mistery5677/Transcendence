@@ -1,6 +1,5 @@
 import bishop from "../../assets/chess-piece-bishop.png";
-
-export type UserStatus = "online" | "offline" | "playing";
+import type { UserStatus } from "../../types/userStatusType";
 
 interface UserStatusBadgeProps {
 	status: UserStatus | string;
