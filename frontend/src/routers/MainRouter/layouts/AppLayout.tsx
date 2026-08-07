@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import {
   Footer,
@@ -16,25 +16,18 @@ import { FloatingChatContainer } from "../../../components/Chat/FloatingChatCont
 type ActivateModal = "signup" | "login" | "forgot" | "checkEmail" | "resetPassword" | null;
 
 export function AppLayout() {
-  const [activeModal, setActiveModal] =
-    useState<ActivateModal>(null);
+  const getTokenFromUrl = () => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("token") ?? "";
+  };
+
+  const [activeModal, setActiveModal] = useState<ActivateModal>(() => {
+    const token = getTokenFromUrl();
+    return token ? "resetPassword" : null;
+  });
 
   const [resetEmail, setResetEmail] = useState("");
-  const [resetToken, setResetToken] = useState("");
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    const token = params.get("token");
-
-    if(token)
-    {
-      setResetToken(token);
-      setActiveModal("resetPassword");
-    }
-
-  }, []);
-
+  const [resetToken] = useState(getTokenFromUrl);
 
   return (
     <>
