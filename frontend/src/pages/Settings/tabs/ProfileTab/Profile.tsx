@@ -1,4 +1,3 @@
-import { Trophy, Swords, Equal } from "lucide-react";
 import { ProfileHeader, ProfileOverview } from "../../../../components";
 import type { ProfileStatsVM } from "../../../../models/profileStats";
 import { userToProfileStats } from "../../../../mappers/userToProfileStats";

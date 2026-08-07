@@ -67,8 +67,6 @@ export class toastWrapper {
 	static confirm(question: string, config: ConfirmToastOptions) {
 		const { onAccept, onReject, acceptLabel = "Accept", rejectLabel = "No", options } = config;
 
-		let toastId: Id;
-
 		const handleAccept = () => {
 			onAccept();
 			toast.dismiss(toastId);
@@ -79,7 +77,7 @@ export class toastWrapper {
 			toast.dismiss(toastId);
 		};
 
-		toastId = toast.info(
+		const toastId = toast.info(
 			<div className="flex min-w-65 flex-col gap-3 text-center">
 				<p className="text-[15px] font-semibold tracking-[-0.01em] text-emerald-50">{question}</p>
 				<div className="flex gap-2 pt-1">

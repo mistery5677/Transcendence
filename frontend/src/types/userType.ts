@@ -1,27 +1,5 @@
 import type { Score } from "./scoreType";
-
-type onlineMatch = {
-	id: number;
-	playerAId: number;
-	playerBId: number;
-	result: string | null;
-	createdAt: string;
-	updatedAt: string;
-};
-type offlineMatch = {
-	type: "AI" | "HUMAN";
-	playerAId: number;
-	playerBId: number;
-	result: string | null;
-	createdAt: string;
-	updatedAt: string;
-};
-
-type match = onlineMatch | offlineMatch;
-
-type matchHistory = {
-	matches: match[];
-};
+import type { UserStatus } from "./userStatusType";
 
 export type User = {
 	id: number;
