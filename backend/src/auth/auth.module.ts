@@ -20,13 +20,7 @@ import { PasswordResetController } from './password-reset/password-reset.control
       }),
     }),
   ],
-  controllers: [
-    AuthController,
-    PasswordResetController,
-  ],
-  providers: [
-    AuthService,
-    PasswordResetService,
-  ],
+  controllers: [AuthController, PasswordResetController],
+  providers: [AuthService, PasswordResetService],
 })
 export class AuthModule {}

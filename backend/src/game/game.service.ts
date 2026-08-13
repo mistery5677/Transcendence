@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Chess } from 'chess.js';
+import { Server } from 'socket.io';
 import { MatchesService } from 'src/matches/matches.service';
 import { v4 as uuidv4 } from 'uuid';
 import { PresenceService } from '../presence/presence.service';
@@ -14,6 +15,8 @@ import {
 } from './interfaces/gameLogic.interface';
 import { GameStateEmitPayload } from './dtos/gameEvents.dtos';
 import { UsersService } from 'src/users/users.service';
+
+type ChessMoveInput = string | { from: string; to: string; promotion?: string };
 
 //for use in listActiveGames()
 export interface ActiveGameSummary {
@@ -53,7 +56,7 @@ export class GameService {
     userId: string,
   ): GameStateEmitPayload {
     const userColor: 'w' | 'b' = userId === game.playerW ? 'w' : 'b';
-    let opponentId = userId === game.playerW ? game.playerB : game.playerW;
+    const opponentId = userId === game.playerW ? game.playerB : game.playerW;
 
     const liveState = this.getGameState(gameId);
 
@@ -112,7 +115,7 @@ export class GameService {
     return this.games.get(gameId);
   }
 
-  makeMove(gameId: string, move: any): MoveResult | null {
+  makeMove(gameId: string, move: ChessMoveInput): MoveResult | null {
     const game = this.games.get(gameId);
     if (!game) return null;
 
@@ -144,7 +147,7 @@ export class GameService {
         whiteTimeLeft: game.whiteTimeLeft,
         blackTimeLeft: game.blackTimeLeft,
       };
-    } catch (e) {
+    } catch {
       return null;
     }
   }
@@ -229,7 +232,7 @@ export class GameService {
     if (winnerColor === 'b') winnerId = parseInt(game.playerB);
 
     if (game.mode === 'online') {
-      this.matchesService.saveMatchResult(
+      void this.matchesService.saveMatchResult(
         parseInt(game.playerW),
         parseInt(game.playerB),
         winnerId,
@@ -252,7 +255,7 @@ export class GameService {
     const winnerId = winnerColor === 'w' ? game.playerW : game.playerB;
 
     if (game.mode === 'online') {
-      this.matchesService.saveMatchResult(
+      void this.matchesService.saveMatchResult(
         parseInt(game.playerW),
         parseInt(game.playerB),
         parseInt(winnerId),
@@ -267,7 +270,7 @@ export class GameService {
     if (!game) return null;
 
     if (game.mode === 'online') {
-      this.matchesService.saveMatchResult(
+      void this.matchesService.saveMatchResult(
         parseInt(game.playerW),
         parseInt(game.playerB),
         null,
@@ -289,7 +292,7 @@ export class GameService {
 
     // Save the match history
     if (game.mode === 'online') {
-      this.matchesService.saveMatchResult(
+      void this.matchesService.saveMatchResult(
         parseInt(game.playerW),
         parseInt(game.playerB),
         parseInt(winnerId),
@@ -329,7 +332,7 @@ export class GameService {
     return null;
   }
 
-  startAbandonTimeout(gameId: string, loserUserId: string, server: any) {
+  startAbandonTimeout(gameId: string, loserUserId: string, server: Server) {
     const game = this.getGame(gameId);
     if (!game || game.isFinished || game.mode === 'bot') return;
 
@@ -346,7 +349,7 @@ export class GameService {
       const winnerColor: 'w' | 'b' = isWhiteLoser ? 'b' : 'w';
       const winnerId = isWhiteLoser ? game.playerB : game.playerW;
 
-      this.matchesService.saveMatchResult(
+      void this.matchesService.saveMatchResult(
         parseInt(game.playerW),
         parseInt(game.playerB),
         parseInt(winnerId),

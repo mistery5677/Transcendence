@@ -2,6 +2,20 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PresenceService } from 'src/presence/presence.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+interface ActiveChatSummary {
+  id: string;
+  status: string;
+  username: string;
+  avatarUrl: string | null;
+  lastMessage: {
+    message: string;
+    timestamp: string;
+    fromId: string;
+    toId: string;
+  };
+  timestamp: string;
+}
+
 @Injectable()
 export class ChatService {
   constructor(
@@ -44,7 +58,7 @@ export class ChatService {
     return history.reverse();
   }
 
-  async getActiveChats(userId: number) {
+  async getActiveChats(userId: number): Promise<ActiveChatSummary[]> {
     const messages = await this.prismaService.privateMessage.findMany({
       where: {
         OR: [{ fromId: userId }, { toId: userId }],
@@ -62,7 +76,7 @@ export class ChatService {
       },
     });
 
-    const chatMap = new Map();
+    const chatMap = new Map<string, ActiveChatSummary>();
 
     for (const msg of messages) {
       const isSender = msg.fromId === userId;

@@ -14,6 +14,18 @@ import {
 } from '../notification/notification.service';
 import { TimeControl } from './interfaces/gameLogic.interface';
 
+interface SocketUser {
+  userId: string;
+  username: string;
+  avatarUrl?: string;
+}
+
+interface AuthenticatedSocket extends Socket {
+  data: {
+    user: SocketUser;
+  };
+}
+
 interface QueuePayload {
   time: TimeControl;
 }
@@ -36,7 +48,7 @@ export class MatchGateway {
 
   @SubscribeMessage('inviteToPlay')
   async handleInviteToPlay(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() body: { friendId: number },
   ) {
     if (!client.data.user) return;
@@ -70,7 +82,7 @@ export class MatchGateway {
 
   @SubscribeMessage('respondToGameInvite')
   async handleRespondToInvite(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody()
     body: { hostId: string; accept: boolean; notificationId: string },
   ) {
@@ -106,7 +118,7 @@ export class MatchGateway {
         timeStamp: '5 min',
       });
 
-      client.join(gameId);
+      void client.join(gameId);
       console.log('Game by invitation created', gameId);
 
       this.server.in(`user_${hostId}`).socketsJoin(gameId);
@@ -133,13 +145,13 @@ export class MatchGateway {
       return { success: true, status: 'STARTED', gameId };
     } catch (error) {
       console.error('Error starting match:', error);
-      return { error: `Match could\'nt started ` };
+      return { error: `Match couldn't started ` };
     }
   }
 
   @SubscribeMessage('joinQueue')
   handleJoinQueue(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload?: QueuePayload,
   ) {
     this.matchMakingService.addToQueue(client, this.server, payload);
@@ -147,7 +159,7 @@ export class MatchGateway {
 
   @SubscribeMessage('startBotGame')
   handleStartBot(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: BotGamePayload,
   ) {
     const userId = client.data.user.userId;
@@ -157,7 +169,7 @@ export class MatchGateway {
       timeStamp: payload.time,
     });
 
-    client.join(gameId);
+    void client.join(gameId);
 
     const gameState = this.gameService.buildGameStatePayload(
       gameId,
@@ -169,7 +181,7 @@ export class MatchGateway {
 
   @SubscribeMessage('startAIGame')
   handleStartAI(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() payload: BotGamePayload,
   ) {
     const userId = client.data.user.userId;
@@ -182,7 +194,7 @@ export class MatchGateway {
       level: level,
     });
 
-    client.join(gameId);
+    void client.join(gameId);
 
     const gameState = this.gameService.buildGameStatePayload(
       gameId,
@@ -194,7 +206,7 @@ export class MatchGateway {
   }
 
   @SubscribeMessage('checkActiveGame')
-  handleCheckActiveGame(@ConnectedSocket() client: Socket) {
+  handleCheckActiveGame(@ConnectedSocket() client: AuthenticatedSocket) {
     const userId = client.data.user.userId;
 
     if (!userId) {
@@ -211,7 +223,7 @@ export class MatchGateway {
 
     const { gameId, game } = activeMatch;
     console.log(`[Reconnection] User ${userId} has an active game ${gameId}`);
-    client.join(gameId);
+    void client.join(gameId);
 
     const gameState = this.gameService.buildGameStatePayload(
       gameId,
@@ -223,7 +235,7 @@ export class MatchGateway {
 
   //do spectator
   @SubscribeMessage('listActiveGames')
-  async handleListActiveGames(@ConnectedSocket() client: Socket) {
+  async handleListActiveGames(@ConnectedSocket() client: AuthenticatedSocket) {
     const activeGames = await this.gameService.listActiveGames();
     client.emit('activeGames', activeGames);
   }

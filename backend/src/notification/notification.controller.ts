@@ -4,13 +4,19 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { NotificationService } from './notification.service';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    userId: string | number;
+  };
+}
 
 @Controller('notification')
 @UseGuards(AuthGuard)
@@ -18,7 +24,7 @@ export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Get('')
-  async getNotification(@Req() req: any) {
+  async getNotification(@Req() req: AuthenticatedRequest) {
     const userId = Number(req.user.userId);
     if (!userId || Number.isNaN(userId)) {
       throw new BadRequestException('User session is invalid or unauthorized');
@@ -28,7 +34,7 @@ export class NotificationController {
   }
 
   @Patch('read-all')
-  async readAllNotifications(@Req() req: any) {
+  async readAllNotifications(@Req() req: AuthenticatedRequest) {
     const userId = Number(req.user.userId);
     if (!userId || Number.isNaN(userId)) {
       throw new BadRequestException('User session is invalid or unauthorized');
@@ -39,7 +45,7 @@ export class NotificationController {
 
   @Patch('read/:notificationId')
   async readNotification(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('notificationId') notificationId: string,
   ) {
     const userId = Number(req.user.userId);
@@ -54,7 +60,7 @@ export class NotificationController {
   }
 
   @Delete('delete-all')
-  async deleteAllNotification(@Req() req: any) {
+  async deleteAllNotification(@Req() req: AuthenticatedRequest) {
     const userId = Number(req.user.userId);
     if (!userId || Number.isNaN(userId)) {
       throw new BadRequestException('User session is invalid or unauthorized');
@@ -64,10 +70,9 @@ export class NotificationController {
 
   @Delete('delete/:notificationId')
   async deleteOneNotification(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('notificationId') notificationId: string,
   ) {
-    console.log('Here');
     const userId = Number(req.user.userId);
     if (!userId || Number.isNaN(userId)) {
       throw new BadRequestException('User session is invalid or unauthorized');

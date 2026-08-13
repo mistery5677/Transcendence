@@ -5,9 +5,10 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { GameService } from '../game/game.service';
 import { ChatService } from './chat.service';
+import type { AuthenticatedSocket } from 'src/common/types/authenticated-socket.interface';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway {
@@ -21,12 +22,12 @@ export class ChatGateway {
   // (ROOM CHAT)
   @SubscribeMessage('sendRoomMessage')
   handleRoomMessage(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { gameId: string; message: string },
   ) {
     if (!client.data.user) return;
 
-    const rawUserId = client.data?.user?.userId;
+    const rawUserId = client.data.user.userId;
     const userId = Number(rawUserId);
 
     if (!Number.isInteger(userId)) {
@@ -57,10 +58,10 @@ export class ChatGateway {
 
   @SubscribeMessage('sendPrivateMessage')
   async handlePrivateMessage(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { toUserId: string; message: string },
   ) {
-    if (!client.data?.user) return;
+    if (!client.data.user) return;
 
     const fromUserId = Number(client.data.user.userId);
     const toUserId = Number(data.toUserId);
@@ -84,7 +85,7 @@ export class ChatGateway {
         toId: String(data.toUserId),
         fromUsername: savedMsg.fromUser.username,
         fromAvatarUrl: savedMsg.fromUser.avatarUrl,
-        message: data.message.trim(),
+        message: cleanMessage,
         timestamp: new Date().toISOString(),
       };
 

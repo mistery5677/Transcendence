@@ -14,6 +14,17 @@ import { UsersService } from 'src/users/users.service';
 import { NotificationService } from '../notification/notification.service';
 import { MatchMakingService } from 'src/game/matchmaking.service';
 
+interface SocketUser {
+  userId: string;
+  username: string;
+}
+
+interface AuthenticatedSocket extends Socket {
+  data: {
+    user?: SocketUser;
+  };
+}
+
 @WebSocketGateway({ cors: true })
 export class PresenceGateway
   implements OnGatewayConnection, OnGatewayInit, OnGatewayDisconnect
@@ -36,8 +47,8 @@ export class PresenceGateway
     }
   }
 
-  handleConnection(client: Socket) {
-    const user = client.data?.user;
+  handleConnection(client: AuthenticatedSocket) {
+    const user = client.data.user;
     if (!user || !user.userId) {
       console.error(
         `[Presence] Connection rejected: User data missing in socket.data`,
@@ -50,7 +61,7 @@ export class PresenceGateway
 
     this.presenceService.setConnected(userId, client.id);
 
-    client.join(`user_${userId}`);
+    void client.join(`user_${userId}`);
 
     this.server?.emit('userStatusChanged', { userId, status: 'online' });
 
@@ -61,7 +72,7 @@ export class PresenceGateway
         client.emit('haveActiveGame');
       }
       this.gameService.clearAbandonTimeout(activeMatch.gameId);
-      client.join(activeMatch.gameId);
+      void client.join(activeMatch.gameId);
     }
 
     console.log(
@@ -69,8 +80,8 @@ export class PresenceGateway
     );
   }
 
-  handleDisconnect(client: Socket) {
-    const user = client.data?.user;
+  handleDisconnect(client: AuthenticatedSocket) {
+    const user = client.data.user;
 
     if (!user || !user.userId) return;
 

@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 

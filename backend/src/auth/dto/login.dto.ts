@@ -1,13 +1,15 @@
-import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { Transform, TransformFnParams } from 'class-transformer';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginDto {
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value.trim().toLowerCase()) 
+  @Transform(({ value }: TransformFnParams) =>
+    (value as string).trim().toLowerCase(),
+  )
   identity!: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }: TransformFnParams) => (value as string).trim())
   password!: string;
 }

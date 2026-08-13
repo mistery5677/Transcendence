@@ -7,7 +7,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
-import { v4 as uuidv4 } from 'uuid';
 import { StockfishService } from 'src/stockfish/stockfish.service';
 import { AchievementsService } from 'src/achievements/achievements.service';
 import { GameInstance, MoveResult } from './interfaces/gameLogic.interface';
@@ -18,6 +17,17 @@ import {
   RespondRematchDto,
   ServerToClientEvents,
 } from './dtos/gameEvents.dtos';
+
+interface SocketUser {
+  userId: string;
+  username: string;
+}
+
+interface AuthenticatedSocket extends Socket {
+  data: {
+    user?: SocketUser;
+  };
+}
 
 @WebSocketGateway({ cors: true })
 export class GameGateway {
@@ -31,7 +41,7 @@ export class GameGateway {
   ) {}
 
   private validatePlayerAndGetGame(
-    client: Socket,
+    client: AuthenticatedSocket,
     gameId: string,
   ): GameInstance | null {
     const game = this.gameService.getGame(gameId);
@@ -98,11 +108,11 @@ export class GameGateway {
 
   @SubscribeMessage('requestSurrender')
   handleSurrender(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: GameIdDto,
   ): void {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
-    if (!game) return;
+    if (!game || !client.data.user) return;
 
     const result = this.gameService.surrender(
       data.gameId,
@@ -110,7 +120,7 @@ export class GameGateway {
     );
     if (result) {
       this.server.to(data.gameId).emit('gameOver', { gameOver: result });
-      this.checkAchievements(data.gameId, result.winnerId);
+      void this.checkAchievements(data.gameId, result.winnerId);
 
       if (game.mode === 'ai') {
         this.stockfishAI.stopEngine();
@@ -120,7 +130,7 @@ export class GameGateway {
 
   @SubscribeMessage('proposeDraw')
   handleDrawPropose(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: GameIdDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
@@ -131,7 +141,7 @@ export class GameGateway {
 
   @SubscribeMessage('respondDraw')
   handleRespondDraw(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: RespondDrawDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
@@ -148,11 +158,11 @@ export class GameGateway {
 
   @SubscribeMessage('proposeRematch')
   handleRematchPropose(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: GameIdDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
-    if (!game) return;
+    if (!game || !client.data.user) return;
 
     client
       .to(data.gameId)
@@ -161,7 +171,7 @@ export class GameGateway {
 
   @SubscribeMessage('respondRematch')
   handleRespondRematch(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: RespondRematchDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
@@ -173,7 +183,6 @@ export class GameGateway {
       return;
     }
 
-    const newGameId = uuidv4();
     const isOnline = game.mode === 'online';
 
     const playerW = isOnline ? game.playerB : game.playerW;
@@ -197,11 +206,11 @@ export class GameGateway {
 
   @SubscribeMessage('move')
   async handleMove(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: MoveDto,
   ) {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
-    if (!game) return;
+    if (!game || !client.data.user) return;
 
     const userId = client.data.user.userId;
     const currentTurn = game.chess.turn() as 'w' | 'b';
@@ -229,12 +238,12 @@ export class GameGateway {
   }
 
   @SubscribeMessage('timeOut')
-  async handleTimeOut(
-    @ConnectedSocket() client: Socket,
+  handleTimeOut(
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: GameIdDto,
-  ): Promise<void> {
+  ): void {
     const game = this.validatePlayerAndGetGame(client, data.gameId);
-    if (!game) return;
+    if (!game || !client.data.user) return;
 
     const result = this.gameService.handleTimeOut(
       data.gameId,
@@ -243,7 +252,7 @@ export class GameGateway {
 
     if (result) {
       this.server.to(data.gameId).emit('gameOver', { gameOver: result });
-      this.checkAchievements(data.gameId, result.winnerId);
+      void this.checkAchievements(data.gameId, result.winnerId);
     }
   }
 
@@ -258,7 +267,7 @@ export class GameGateway {
       whiteTimeLeft: moveData.whiteTimeLeft,
       blackTimeLeft: moveData.blackTimeLeft,
     });
-	
+
     const gameOver = this.gameService.checkGameOver(gameId);
     if (gameOver) {
       this.server.to(gameId).emit('gameOver', { gameOver });
@@ -288,7 +297,10 @@ export class GameGateway {
 
   // Request when we want to check our achievements
   @SubscribeMessage('requestAchievements')
-  async handleRequestAchievements(@ConnectedSocket() client: Socket) {
+  async handleRequestAchievements(
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ) {
+    if (!client.data.user) return;
     const userId = client.data.user.userId;
     const unlockedIds =
       await this.achievementsService.getUserUnlockedAchievements(userId);
@@ -298,7 +310,7 @@ export class GameGateway {
   //Go watch a game. Get your popcorn...
   @SubscribeMessage('spectateGame')
   async handleSpectateGame(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { gameId: string },
   ) {
     const game = this.gameService.getGame(data.gameId);
@@ -307,7 +319,7 @@ export class GameGateway {
       return;
     }
 
-    client.join(data.gameId);
+    void client.join(data.gameId);
 
     const payload = await this.gameService.buildSpectatorPayload(data.gameId);
     if (payload) {

@@ -14,6 +14,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './guard/auth.guard';
 import type { Response } from 'express';
+import type { AuthenticatedRequest } from './guard/auth.guard';
 
 @Controller('/auth')
 export class AuthController {
@@ -39,22 +40,20 @@ export class AuthController {
 
   @Post('/signup')
   signup(@Body() registerDto: RegisterDto) {
-
     return this.authService.signup(registerDto);
   }
 
   @Post('logout')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async logout(@Res({ passthrough: true }) response: Response) {
+  logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('access_token');
     return { message: 'Logged out' };
   }
 
   @Get('/me')
   @UseGuards(AuthGuard)
-  async getProfile(@Req() req) {
-    return await this.authService.getProfile(parseInt(req.user.userId));
+  async getProfile(@Req() req: AuthenticatedRequest) {
+    return await this.authService.getProfile(req.user.userId);
   }
-
 }

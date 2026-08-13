@@ -7,15 +7,13 @@ export class MailService {
 
   constructor(private readonly mailer: MailerService) {}
 
-  async sendResetPasswordEmail(email: string, token: string) {
+  async sendResetPasswordEmail(email: string, token: string): Promise<void> {
     const url = `https://localhost:8443/reset-password?token=${token}`;
-    // const url = `https://192.168.1.219:8443/reset-password?token=${token}`;
-    // const url = `https://25.12.45.193:8443/reset-password?token=${token}`;
 
     this.logger.log(`Sending password reset email to ${email}`);
 
     try {
-      const result = await this.mailer.sendMail({
+      await this.mailer.sendMail({
         from: '"Chess" <no-reply@chess.com>',
         to: email,
         subject: 'Reset your password',
@@ -31,8 +29,6 @@ export class MailService {
       });
 
       this.logger.log(`Password reset email sent to ${email}`);
-
-      return result;
     } catch (error) {
       this.logger.error(`Failed to send email to ${email}`, error);
       throw error;

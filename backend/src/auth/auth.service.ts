@@ -1,7 +1,6 @@
 import {
   ConflictException,
   Injectable,
-  Req,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
@@ -10,7 +9,6 @@ import * as bcryptjs from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { getMyProfileDto } from './dto/getProfile.dto';
-import { randomBytes, createHash } from 'crypto';
 import { MailService } from 'src/mail/mail.service';
 import { PasswordResetService } from './password-reset/password-reset.service';
 
@@ -84,30 +82,29 @@ export class AuthService {
     });
   }
 
-  async forgotPassword( email: string,): Promise<{ message: string }> {
+  async forgotPassword(email: string): Promise<{ message: string }> {
     const user = await this.usersService.findOneByEmail(email);
 
     if (user) {
-      const token =
-        await this.passwordResetService.createToken(user.id);
+      const token = await this.passwordResetService.createToken(user.id);
 
-      await this.mailService.sendResetPasswordEmail(
-        user.email,
-        token,
-      );
+      await this.mailService.sendResetPasswordEmail(user.email, token);
     }
 
     return {
       message:
-        "If an account exists for this email, a password reset link has been sent.",
+        'If an account exists for this email, a password reset link has been sent.',
     };
   }
 
-  async resetPassword(token: string, password: string) : Promise<{message: string}> {
+  async resetPassword(
+    token: string,
+    password: string,
+  ): Promise<{ message: string }> {
     const resetToken = await this.passwordResetService.validateToken(token);
 
     if (!resetToken) {
-      throw new UnauthorizedException("Invalid or expired reset token");
+      throw new UnauthorizedException('Invalid or expired reset token');
     }
 
     const salt = await bcryptjs.genSalt(10);
@@ -118,11 +115,9 @@ export class AuthService {
     await this.passwordResetService.deleteToken(resetToken.userId);
 
     return {
-      message: "Password updated Successfuly."
-    }
+      message: 'Password updated Successfuly.',
+    };
   }
-
-
 
   async getProfile(id: number): Promise<getMyProfileDto> {
     const user = await this.usersService.findOneById(id);

@@ -44,8 +44,7 @@ export class PresenceService {
 
   getConnectedUsers(): number[] {
     return Array.from(this.userStatus.entries())
-      .filter(([_, status]) => status === 'online')
-      .map(([userId, _]) => userId);
+      .filter(([, status]) => status === 'online')
+      .map(([userId]) => userId);
   }
 }
-

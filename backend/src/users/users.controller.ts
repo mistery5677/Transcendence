@@ -18,6 +18,7 @@ import {
   ForbiddenException,
   ParseIntPipe,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -35,6 +36,12 @@ import {
   UpdateBoardThemeDto,
   UpdateBackgroundThemeDto,
 } from './dto/update-theme.dto';
+
+type AuthenticatedRequest = Request & {
+  user?: {
+    userId: string;
+  };
+};
 
 @Controller('/users')
 export class UsersController {
@@ -83,7 +90,7 @@ export class UsersController {
       storage: diskStorage({
         destination: './assets/avatars/uploaded',
         filename: (req, file, cb) => {
-          const user = (req as any).user;
+          const user = (req as AuthenticatedRequest).user;
           if (!user) return cb(new Error('Unauthorized'), '');
           const filename = `user_${user.userId}${extname(file.originalname)}`;
           cb(null, filename);
@@ -93,12 +100,16 @@ export class UsersController {
   )
   async uploadAvatar(
     @UploadedFile() file: Express.Multer.File,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     if (!file) {
       throw new BadRequestException('File not received Correctly');
     }
-    const userId = req.user.userId;
+
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new BadRequestException('Unauthorized');
+    }
 
     const avatarUrl = `/assets/avatars/uploaded/${file.filename}`;
 
@@ -107,8 +118,8 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Get('achievements')
-  async getMyAchievements(@Req() req: any) {
-    const userId = req.user.userId;
+  async getMyAchievements(@Req() req: AuthenticatedRequest) {
+    const userId = req.user?.userId;
 
     if (!userId) {
       return [];
@@ -120,8 +131,15 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Patch('me/password')
-  async changePassword(@Body() dto: ChangePasswordDto, @Req() req) {
-    const userId = req.user.userId;
+  async changePassword(
+    @Body() dto: ChangePasswordDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new BadRequestException('Unauthorized');
+    }
+
     return await this.usersService.changePassword(
       parseInt(userId),
       dto.currentPassword,
@@ -131,8 +149,14 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Patch('me/board-theme')
-  async updateBoardTheme(@Body() dto: UpdateBoardThemeDto, @Req() req) {
-    const userId = req.user.userId;
+  async updateBoardTheme(
+    @Body() dto: UpdateBoardThemeDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new BadRequestException('Unauthorized');
+    }
 
     return await this.usersService.updateBoardTheme(
       parseInt(userId),
@@ -144,9 +168,12 @@ export class UsersController {
   @Patch('me/background-theme')
   async updateBackgroundTheme(
     @Body() dto: UpdateBackgroundThemeDto,
-    @Req() req,
+    @Req() req: AuthenticatedRequest,
   ) {
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new BadRequestException('Unauthorized');
+    }
 
     return await this.usersService.updateBackgroundTheme(
       parseInt(userId),
@@ -156,16 +183,28 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Patch('me/email')
-  async updateEmail(@Body() dto: UpdateEmailDto, @Req() req) {
-    const userId = req.user.userId;
+  async updateEmail(
+    @Body() dto: UpdateEmailDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new BadRequestException('Unauthorized');
+    }
 
     return await this.usersService.updateEmail(parseInt(userId), dto.email);
   }
 
   @UseGuards(AuthGuard)
   @Patch('me/username')
-  async updateUsername(@Body() dto: UpdateUsernameDto, @Req() req) {
-    const userId = req.user.userId;
+  async updateUsername(
+    @Body() dto: UpdateUsernameDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new BadRequestException('Unauthorized');
+    }
 
     return await this.usersService.updateUsername(
       parseInt(userId),
@@ -211,8 +250,16 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
-    if (Number(req.user.userId) !== id) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new ForbiddenException('You can only delete your own account');
+    }
+
+    if (Number(userId) !== id) {
       throw new ForbiddenException('You can only delete your own account');
     }
     return this.usersService.remove(id);

@@ -19,7 +19,7 @@ export class PresenceController {
   }
 
   @Get(':id')
-  async getUserStatus(@Param('friendId', ParseIntPipe) UserId: number) {
+  getUserStatus(@Param('friendId', ParseIntPipe) UserId: number) {
     return this.presenceService.getStatus(UserId);
   }
 }

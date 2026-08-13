@@ -7,8 +7,15 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { ChatService } from './chat.service';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    userId: string | number;
+  };
+}
 
 @Controller('chat')
 export class ChatController {
@@ -16,9 +23,8 @@ export class ChatController {
 
   @Get('active_chats')
   @UseGuards(AuthGuard)
-  async getActiveChats(@Req() req: any) {
-    const rawUserId = req.user.userId;
-    const myUserId = Number(rawUserId);
+  async getActiveChats(@Req() req: AuthenticatedRequest) {
+    const myUserId = Number(req.user.userId);
 
     return this.chatService.getActiveChats(myUserId);
   }
@@ -27,12 +33,10 @@ export class ChatController {
   @UseGuards(AuthGuard)
   async getHistory(
     @Param('friendId', ParseIntPipe) friendId: number,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Query('limit') limit?: string,
   ) {
-    const rawUserId = req.user.userId;
-    const myUserId = Number(rawUserId);
-
+    const myUserId = Number(req.user.userId);
     const maxMessages = limit ? Number(limit) : 50;
 
     const history = await this.chatService.getChatHistory(
@@ -41,7 +45,7 @@ export class ChatController {
       maxMessages,
     );
 
-    return history.map((msg: any) => ({
+    return history.map((msg) => ({
       fromId: String(msg.fromId),
       toId: String(msg.toId),
       fromUsername: msg.fromUser.username,

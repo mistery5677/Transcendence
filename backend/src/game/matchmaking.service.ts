@@ -3,12 +3,23 @@ import { Socket, Server } from 'socket.io';
 import { TimeControl } from './interfaces/gameLogic.interface';
 import { GameService } from './game.service';
 
+interface SocketUser {
+  userId: string;
+  username: string;
+}
+
+interface AuthenticatedSocket extends Socket {
+  data: {
+    user: SocketUser;
+  };
+}
+
 type QueuePayload = {
   time?: TimeControl;
 };
 
 type QueueEntry = {
-  client: Socket;
+  client: AuthenticatedSocket;
   time: TimeControl;
 };
 
@@ -19,7 +30,11 @@ export class MatchMakingService {
 
   constructor(private readonly gameService: GameService) {}
 
-  addToQueue(client: Socket, server: Server, payload?: QueuePayload) {
+  addToQueue(
+    client: AuthenticatedSocket,
+    server: Server,
+    payload?: QueuePayload,
+  ) {
     const userId = client.data.user.userId;
     const selectedTime: TimeControl = payload?.time ?? '5 min';
 
@@ -33,10 +48,10 @@ export class MatchMakingService {
       `Player ${client.data.user.username} joined queue (${selectedTime}). Current queue size: ${this.queue.length}`,
     );
 
-    this.tryCreateMatch(server);
+    this.tryCreateMatch();
   }
 
-  private tryCreateMatch(server: Server) {
+  private tryCreateMatch() {
     if (this.queue.length < 2) return;
 
     const first = this.queue[0];
@@ -65,8 +80,8 @@ export class MatchMakingService {
       timeStamp: selectedTime,
     });
 
-    player1.client.join(gameId);
-    player2.client.join(gameId);
+    void player1.client.join(gameId);
+    void player2.client.join(gameId);
 
     const payloadP1 = this.gameService.buildGameStatePayload(
       gameId,
@@ -87,7 +102,7 @@ export class MatchMakingService {
     );
   }
 
-  removeFromQueue(client: Socket) {
+  removeFromQueue(client: AuthenticatedSocket) {
     const userId = client.data?.user?.userId;
     const username = client.data?.user?.username;
     if (!userId) return;

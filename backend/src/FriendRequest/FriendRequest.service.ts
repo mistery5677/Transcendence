@@ -73,16 +73,20 @@ export class FriendRequestService {
     });
 
     if (sender) {
-      this.notificationService.sendNotification(receiver.id, {
-        title: 'Friend Request',
-        message: `sent you a Friend Request.`,
-        type: 'friendRequest',
-        payload: {
-          senderId: senderId,
-          senderAvatarUrl: sender.avatarUrl,
-          senderUsername: sender.username,
-        },
-      });
+      this.notificationService
+        .sendNotification(receiver.id, {
+          title: 'Friend Request',
+          message: `sent you a Friend Request.`,
+          type: 'friendRequest',
+          payload: {
+            senderId: senderId,
+            senderAvatarUrl: sender.avatarUrl,
+            senderUsername: sender.username,
+          },
+        })
+        .catch((err) => {
+          console.error('Failed to send friend request notification:', err);
+        });
     }
 
     return newRequest;

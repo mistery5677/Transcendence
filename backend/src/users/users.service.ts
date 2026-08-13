@@ -7,7 +7,6 @@ import {
 import * as bcryptjs from 'bcryptjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RegisterDto } from 'src/auth/dto/register.dto';
-import { userInfo } from 'node:os';
 
 @Injectable()
 export class UsersService {
@@ -68,14 +67,14 @@ export class UsersService {
     });
   }
 
-  async updatePassword(userId: number, hashedPassword: string) : Promise<void> {
+  async updatePassword(userId: number, hashedPassword: string): Promise<void> {
     await this.prisma.user.update({
       where: {
         id: userId,
       },
       data: {
         password: hashedPassword,
-      }
+      },
     });
   }
 
@@ -162,35 +161,7 @@ export class UsersService {
       where: { id },
     });
   }
-  //   async findOneById(id: number) {
-  //     return await this.prisma.user.findUnique({
-  //       where: { id },
-  //       include: {
-  //         score: true,
-  //       },
-  //       select: {
-  //         id: true,
-  //         username: true,
-  //         email: true,
-  //         elo: true,
-  //         wins: true,
-  //         losses: true,
-  //         avatarUrl: true,
-  //         createdAt: true,
-  //         name: true,
-  //         boardTheme: true,
-  //         backgroundTheme: true,
-  //         draws: true,
-  //         updatedAt: true,
-  //         totalGames: true,
-  //         bestWinStreak: true,
-  //         currentWinStreak: true,
-  //         averageEloGain: true,
-  //         averageEloLoss: true,
-  //         bestElo: true,
-  //       },
-  //     });
-  //   }
+
   async findOneById(id: number) {
     return await this.prisma.user.findUnique({
       where: { id },
@@ -226,7 +197,7 @@ export class UsersService {
       return await this.prisma.user.delete({
         where: { id },
       });
-    } catch (error) {
+    } catch {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
   }
