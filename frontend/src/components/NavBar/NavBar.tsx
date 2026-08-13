@@ -9,9 +9,9 @@ import {
 	MenuItem,
 	MenuItems,
 } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../../context/auth";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { NotificationBell } from "../NotificationBell/NotificationBell";
 const navigation = [
 	{ name: "Login", href: "/login", current: false },
@@ -32,13 +32,11 @@ type NavBarProps = {
 export function NavBar({ onModal }: NavBarProps) {
 	const { state, logout } = useAuth();
 	const navigate = useNavigate();
-	const [avatarUrlKey, setAvatarUrlKey] = useState(Date.now());
 
-	useEffect(() => {
-		if (state.user) {
-			setAvatarUrlKey(Date.now());
-		}
-	}, [state.user, state.user?.avatarUrl]);
+	const avatarSrc = useMemo(() => {
+		if (!state.user?.avatarUrl) return undefined;
+		return `${state.user.avatarUrl}?t=${state.user.avatarUrl}`;
+	}, [state.user?.avatarUrl]);
 
 	const handleLogout = async () => {
 		console.log("POST Logout");
@@ -59,7 +57,6 @@ export function NavBar({ onModal }: NavBarProps) {
 		}
 	};
 
-	const avatarSrc = state.user?.avatarUrl ? `${state.user.avatarUrl}?t=${avatarUrlKey}` : undefined; // -> /api/assets/avatars/default1.png
 	const isLoggedIn = !!state.user;
 
 	return (

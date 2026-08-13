@@ -62,7 +62,7 @@ export function Signup({ onModal }: SignupProps) {
 		const value = e.target.value;
 
 		try {
-			let isAvailable = await verifyUsername(value);
+			const isAvailable = await verifyUsername(value);
 			setUsernameAvailable(isAvailable);
 		} catch (error) {
 			console.error("Failed to check username", error);
@@ -227,8 +227,6 @@ export function Signup({ onModal }: SignupProps) {
 										value={email}
 										onChange={(e) => setEmail(e.target.value)}
 										required
-										value={email}
-										onChange={(e) => setEmail(e.target.value)}
 										className="text-board-text bg-board-input border-2 border-board-border w-full
 										 text-sm pl-4 pr-8 py-2.5 rounded-xl focus:border-board-focus focus:outline-none placeholder-board-text-muted"
 										placeholder="Enter your email"

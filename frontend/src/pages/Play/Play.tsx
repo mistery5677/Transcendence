@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Board, PlayerHeader, MatchSidebar } from "../../components";
 import type { PieceColor } from "../../components/Board/Board";
 import { useAuth } from "../../context/auth";
-import { useGame } from "../../context/Game/GameContext";
+import { useGame } from "../../context/Game/useGame";
 import { GameOverModal } from "../../components/GameModals/GameOverModal";
 import chess from "../../assets/chess-pieces.png";
 import penguin from "../../assets/penguin.jpg";
@@ -22,7 +22,7 @@ export function Play() {
 	const { state } = useAuth();
 	const [currentTurn, setCurrentTurn] = useState<PieceColor>("w");
 
-	const { color, handleTimeOut } = useGame();
+	const { color, handleTimeOut, gameOver } = useGame();
 
 	const handleTurnChange = (newTurn: PieceColor) => {
 		setCurrentTurn(newTurn);
@@ -39,7 +39,9 @@ export function Play() {
 			{/* GameProposalRespond */}
 			<GameProposalsRespond />
 			{/* GameOver */}
-			<GameOverModal />
+			{gameOver ? (
+				<GameOverModal key={`${gameOver.winnerColor ?? "draw"}-${gameOver.reason}-${gameOver.resultString}`} />
+			) : null}
 
 			<div
 				className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 xl:max-w-380 

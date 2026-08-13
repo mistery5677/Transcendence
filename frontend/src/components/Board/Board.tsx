@@ -81,7 +81,7 @@ export function Board({ onTurnChange }: BoardProps) {
 				<Chessboard
 					options={{
 						...idleBoardOptions,
-						boardWidth,
+						width: boardWidth,
 					}}
 				/>
 			</div>
@@ -95,7 +95,7 @@ export function Board({ onTurnChange }: BoardProps) {
 				<Chessboard
 					options={{
 						...chessboardOptions,
-						boardWidth,
+						width: boardWidth,
 					}}
 				/>
 			</div>

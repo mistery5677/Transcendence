@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import penguinBot from "../../../assets/penguin-pudgy.gif";
 import penguinPlayer from "../../../assets/penguin-player.gif";
 import penguinMaster from "../../../assets/penguin-master.gif";
-import { useGame } from "../../../context/Game/GameContext";
+import { useGame } from "../../../context/Game/useGame";
 import { toastWrapper } from "../../../adapters/toastWrapper";
 import { PlayOptionsCard, type PlayMode, type PlayOptionCardContent } from "./PlayOptionsCard";
-import { useMatchMaking } from "../../../context/MatchMaking/MatchMakingContext";
+import { useMatchMaking } from "../../../context/MatchMaking/useMatchMaking";
 
 type ModeVisual = {
 	imageSrc: string;
@@ -50,11 +50,6 @@ export function PlayOptions() {
 		AI: "5 min",
 	});
 	const [aiLevel, setAiLevel] = useState(5);
-	const [pendingStart, setPendingStart] = useState<{
-		mode: PlayMode;
-		time: string;
-		level?: number;
-	} | null>(null);
 
 	useEffect(() => {
 		(window as { Tenor?: { Embed?: { load?: () => void } } }).Tenor?.Embed?.load?.();
@@ -62,19 +57,6 @@ export function PlayOptions() {
 
 	const { gameId, surrender, markSwitchingGame } = useGame();
 	const { startOnlineGame, startBotGame, startAIGame } = useMatchMaking();
-	useEffect(() => {
-		if (!pendingStart || gameId) return;
-
-		if (pendingStart.mode === "bot") {
-			startBotGame({ time: pendingStart.time });
-		} else if (pendingStart.mode === "AI") {
-			startAIGame({ time: pendingStart.time, level: pendingStart.level ?? aiLevel });
-		} else {
-			startOnlineGame({ time: pendingStart.time });
-		}
-
-		setPendingStart(null);
-	}, [pendingStart, gameId, startBotGame, startAIGame, startOnlineGame]);
 
 	const handleStartRequest = (mode: PlayMode, time: string) => {
 		if (!gameId) {
@@ -94,7 +76,6 @@ export function PlayOptions() {
 
 		toastWrapper.confirm("You are currently in a match. To continue, do you want to surrender this game?", {
 			onAccept: () => {
-				setPendingStart({ mode, time, level: mode === "AI" ? aiLevel : undefined });
 				markSwitchingGame();
 				surrender();
 			},

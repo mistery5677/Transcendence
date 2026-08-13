@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { useNotifications } from "../../context/NotificationContext/NotificationContext";
+import { useNotifications } from "../../context/NotificationContext/useNotifications";
 import { BellIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { useMatchMaking } from "../../context/MatchMaking/MatchMakingContext";
+import { useMatchMaking } from "../../context/MatchMaking/useMatchMaking";
 import type { NotificationType } from "../../context/NotificationContext/notificationTypes";
 
 export function NotificationBell() {

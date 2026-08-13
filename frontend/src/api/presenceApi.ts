@@ -1,4 +1,4 @@
-import type { UserStatus } from "../components/UserStatusBandage/UserStatusBandage";
+import type { UserStatus } from "../types/userStatusType";
 
 export async function getUserStatus(userId: number): Promise<UserStatus> {
 	try {

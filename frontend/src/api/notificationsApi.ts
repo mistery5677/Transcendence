@@ -1,4 +1,6 @@
-export async function getMyNotifications(): Promise<any[]> {
+import type { NotificationType } from "../context/NotificationContext/notificationTypes";
+
+export async function getMyNotifications(): Promise<NotificationType[]> {
 	try {
 		const response = await fetch("/api/notification", {
 			method: "GET",

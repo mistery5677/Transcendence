@@ -1,4 +1,6 @@
-export async function getChatHistory(friendId: string | number): Promise<any[]> {
+import type { PrivateMessage } from "../context/Chat/ChatContextType";
+
+export async function getChatHistory(friendId: string | number): Promise<PrivateMessage[]> {
 	const res = await fetch(`/api/chat/getHistory/${friendId}`, {
 		method: "GET",
 		credentials: "include",

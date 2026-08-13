@@ -1,10 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import type { ChatContextType, PrivateMessage } from "./ChatContextType";
-import { useGlobalSocket } from "../GlobalSocket/GlobalSocketContext";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { PrivateMessage } from "./ChatContextType";
+import { useGlobalSocket } from "../GlobalSocket/useGlobalSocket";
 import { useAuth } from "../auth";
 import { getChatHistory } from "../../api/privateChatApi";
-
-const ChatContext = createContext<ChatContextType | undefined>(undefined);
+import { ChatContext } from "./chatContextValue";
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 	const { socket } = useGlobalSocket();
@@ -105,14 +104,4 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 			{children}
 		</ChatContext.Provider>
 	);
-};
-
-export const useChat = () => {
-	const context = useContext(ChatContext);
-
-	if (!context) {
-		throw new Error("useChat must be used within a ChatProvider");
-	}
-
-	return context;
 };

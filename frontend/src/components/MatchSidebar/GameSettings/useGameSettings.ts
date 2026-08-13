@@ -19,7 +19,7 @@ export function useGameSettings() {
 					},
 				});
 			}
-		} catch (error) {
+		} catch {
 			toastWrapper.error("Error updating board theme.");
 		}
 	};
@@ -37,7 +37,7 @@ export function useGameSettings() {
 					},
 				});
 			}
-		} catch (error) {
+		} catch {
 			toastWrapper.error("Error updating background theme.");
 		}
 	};

@@ -14,7 +14,7 @@ export type User = {
 	score: Score | null;
 };
 
-export const friends: {
+export type FriendUser = {
 	status: UserStatus;
 	id: number;
 	username: string;
@@ -31,4 +31,6 @@ export const friends: {
 		currentWinStreak: number;
 		bestElo: number;
 	} | null;
-}[];
+};
+
+export const friends: FriendUser[] = [];

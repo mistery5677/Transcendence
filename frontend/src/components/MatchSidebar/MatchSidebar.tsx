@@ -5,7 +5,7 @@ import { GameSettings } from "./GameSettings/GameSettings";
 import { PlayOptions } from "./PlayOptions/PlayOptions";
 import { Actions } from "./Actions/Actions";
 import { SurrenderButton } from "./SurrenderButton/SurrenderButton";
-import { useGame } from "../../context/Game/GameContext";
+import { useGame } from "../../context/Game/useGame";
 import { OfferDrawButton } from "./OfferDrawButton/OfferDrawButton";
 import { GameSettingsButton } from "./GameSettingsButton/GameSettingsButton";
 
@@ -27,7 +27,7 @@ export function MatchSidebar() {
 		}));
 		console.log(menu.currentTab);
 	};
-	const dontShowOfferDrawButton = mode === "ai" || mode === "bot" || Boolean(gameOver) || !gameId;
+	const dontShowOfferDrawButton = mode === "ai" || mode === "bot" || gameOver !== null || !gameId;
 
 	return (
 		<div
@@ -75,7 +75,7 @@ export function MatchSidebar() {
 			<section className="mt-auto w-full p-5 bg-sidebar-bg border-t border-stone-700/60 shrink-0">
 				<div className="grid grid-cols-3 gap-3 w-full h-14">
 					{/* Surrender Button (Left) */}
-					{gameId && !Boolean(gameOver) && <SurrenderButton onSurrender={surrender} />}
+					{gameId && gameOver === null && <SurrenderButton onSurrender={surrender} />}
 
 					{/* Settings Button */}
 					<div className="col-2">

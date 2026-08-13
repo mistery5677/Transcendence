@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { loadMoveEffect } from "../../utils/loadMoveEffect";
 import { Chess, type Square } from "chess.js";
-import { useGame } from "../../context/Game/GameContext";
+import { useGame } from "../../context/Game/useGame";
 import { analyzePosition } from "../../api/stockfishApi";
 
 type PieceColor = "w" | "b";
@@ -77,20 +77,22 @@ export function useBoardController({
 	learnLevel,
 }: UseBoardControllerParams) {
 	const playMoveEffect = useRef<ReturnType<typeof loadMoveEffect>>(null);
-	const chessGameRef = useRef(new Chess());
-	const chessGame = chessGameRef.current;
+	const chessGame = useMemo(() => new Chess(), []);
 
 	const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
 
 	const { socket, gameId, color, fen, currentTurn, gameOver, isSpectator, gameHistory } = useGame();
 
-	const [chessPosition, setChessPosition] = useState(() => {
-		if (fen && fen != "start") return fen;
-		return chessGame.fen();
-	});
+	const chessPosition = fen === "start" ? chessGame.fen() : fen || chessGame.fen();
+
+	type CanDragPieceArgs = {
+		piece?: {
+			pieceType?: string;
+		};
+	};
 
 	const canDragPiece = useCallback(
-		(args: any) => {
+		(args: CanDragPieceArgs) => {
 			if (isSpectator || currentTurn !== color || gameOver) return false;
 
 			const pieceString = args?.piece?.pieceType;
@@ -148,41 +150,26 @@ export function useBoardController({
 			});
 
 		return () => controller.abort();
-	}, [enableHelperMode, learnLevel, chessPosition, gameId, color, chessGame]);
-
-	/// Reset the helper state when it's not the player's turn or when helper mode is disabled.
-	useEffect(() => {
-		if (!enableHelperMode) return;
-		if (isMyLocalTurn) return;
-
-		setHelper((prev) => ({
-			...prev,
-			bestMove: "",
-			bestLine: "",
-			possibleMate: "",
-		}));
-	}, [enableHelperMode, isMyLocalTurn]);
+	}, [enableHelperMode, learnLevel, chessPosition, gameId, color, chessGame, isMyLocalTurn]);
 
 	useEffect(() => {
 		playMoveEffect.current = loadMoveEffect();
 	}, []);
 
-	/// Update the chess position when the FEN changes, and notify the parent component of turn changes.
+	/// Update the local chess instance when the FEN changes, and notify the parent component of turn changes.
 	useEffect(() => {
 		if (!fen) return;
 
 		if (fen === "start") {
 			chessGame.reset();
-			setChessPosition(chessGame.fen());
 			if (onTurnChange) onTurnChange("w");
 			return;
 		}
 
 		try {
 			chessGame.load(fen);
-			setChessPosition(fen);
 		} catch {
-			setChessPosition(chessGame.fen());
+			// Ignore invalid FEN updates and keep the last valid board state.
 		}
 
 		onTurnChange?.(currentTurn);
@@ -221,13 +208,12 @@ export function useBoardController({
 				}
 
 				socket.emit("move", { gameId, move: moveData });
-				setChessPosition(chessGame.fen());
 				return true;
 			} catch {
 				return false;
 			}
 		},
-		[socket, gameId, color, currentTurn, chessGame],
+		[socket, gameId, color, currentTurn, chessGame, gameOver],
 	);
 
 	/// Handle piece drop events on the chessboard, including promotion handling.
@@ -251,7 +237,7 @@ export function useBoardController({
 
 			return submitMove(sourceSquare, targetSquare);
 		},
-		[socket, gameId, color, currentTurn, chessGame, isPromotionMove, submitMove],
+		[socket, gameId, color, currentTurn, chessGame, gameOver, isPromotionMove, submitMove],
 	);
 
 	/// Handle promotion selection by submitting the move with the selected promotion piece.
@@ -265,12 +251,14 @@ export function useBoardController({
 		[pendingPromotion, submitMove],
 	);
 	const isMyTurn = isMyLocalTurn;
+	const displayHelper =
+		enableHelperMode && isMyTurn ? helper : { ...helper, bestMove: "", bestLine: "", possibleMate: "" };
 
 	const bestMoveSquares =
-		isMyTurn && helper.bestMove.length >= 4
+		isMyTurn && displayHelper.bestMove.length >= 4
 			? {
-					from: helper.bestMove.slice(0, 2),
-					to: helper.bestMove.slice(2, 4),
+					from: displayHelper.bestMove.slice(0, 2),
+					to: displayHelper.bestMove.slice(2, 4),
 				}
 			: null;
 
@@ -359,6 +347,6 @@ export function useBoardController({
 		onPromotionCancel: () => setPendingPromotion(null),
 		chessboardOptions,
 		idleBoardOptions,
-		helper,
+		helper: displayHelper,
 	};
 }

@@ -3,7 +3,8 @@ import type { FormEvent } from "react";
 import { useModalReveal } from "../../hooks/useModalReveal";
 import { resetPassword } from "../../api";
 import successIcon from "../../assets/successfully_register.gif";
-import { evaluatePasswordRequirements, PasswordRequirements } from "./PasswordRequirements";
+import { PasswordRequirements } from "./PasswordRequirements";
+import { evaluatePasswordRequirements } from "./evaluatePasswordRequirements";
 
 type ResetPasswordProps = {
 	onModal: (modal: "login" | "signup" | "forgot" | "checkEmail" | "resetPassword" | null) => void;

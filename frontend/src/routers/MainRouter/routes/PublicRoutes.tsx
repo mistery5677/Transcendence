@@ -2,7 +2,7 @@ import { Route } from "react-router-dom";
 
 import { RouterPaths } from "../RouterPath";
 
-import { Error, HistoryPage, Home, LeaderBoards, Privacy, Terms, Ze } from "../../../pages";
+import { Error, HistoryPage, Home, LeaderBoards, Privacy, Terms } from "../../../pages";
 
 import { ProfilePage } from "../../../pages/Profile/ProfilePage";
 import { Rules } from "../../../pages/Rules/Rules";
@@ -16,11 +16,6 @@ export const PublicRoutes = (
 		<Route
 			path={RouterPaths.ERROR}
 			element={<Error />}
-		/>
-
-		<Route
-			path={RouterPaths.ZE}
-			element={<Ze />}
 		/>
 
 		<Route

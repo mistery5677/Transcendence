@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useGame } from "../../context/Game/GameContext";
+import { useState } from "react";
+import { useGame } from "../../context/Game/useGame";
 
 export function GameOverModal() {
 	const {
@@ -16,25 +16,6 @@ export function GameOverModal() {
 		mode,
 	} = useGame();
 	const [isDismissed, setIsDismissed] = useState(false);
-	const [isWaitingForRematchProposal, setIsWaitingForRematchProposal] = useState(false);
-
-	useEffect(() => {
-		if (gameOver) {
-			setIsDismissed(false);
-			setIsWaitingForRematchProposal(false);
-		}
-	}, [gameOver]);
-
-	useEffect(() => {
-		if (isSpectator) return;
-		const isVsComputer = mode === "ai" || mode === "bot";
-
-		if (isVsComputer && isWaitingForRematchProposal) {
-			console.log("Auto-accepting AI rematch proposal");
-			handleRematchResponse(true);
-			setIsWaitingForRematchProposal(false);
-		}
-	}, [isWaitingForRematchProposal, mode, handleRematchResponse, isSpectator]);
 
 	if (!gameOver || isDismissed || isSwitchingGame) return null;
 
@@ -75,12 +56,14 @@ export function GameOverModal() {
 	const handlePlayAgain = () => {
 		if (rematchProposal) {
 			handleRematchResponse(true);
-			setIsWaitingForRematchProposal(false);
-		} else {
-			proposeRematch();
-			setIsWaitingForRematchProposal(true);
+			return;
 		}
-		// setIsDismissed(true);
+
+		proposeRematch();
+
+		if (mode === "ai" || mode === "bot") {
+			handleRematchResponse(true);
+		}
 	};
 
 	const getMatchMessage = () => {

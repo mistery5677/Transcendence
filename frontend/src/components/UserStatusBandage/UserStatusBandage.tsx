@@ -1,6 +1,8 @@
 import bishop from "../../assets/chess-piece-bishop.png";
 import type { UserStatus } from "../../types/userStatusType";
 
+export type { UserStatus };
+
 interface UserStatusBadgeProps {
 	status: UserStatus | string;
 	size?: "sm" | "md";

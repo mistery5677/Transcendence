@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { displayElo } from "../../utils/displayElo";
 import { Timer } from "../Timer/Timer";
-import { useGame } from "../../context/Game/GameContext";
+import { useGame } from "../../context/Game/useGame";
 import { getOpponentData } from "../../api/usersApi";
 import type { PlayerData } from "../../types/playerDataType";
 import magnusImg from "../../assets/magnus-carlsen.jpg";
-import { useMatchMaking } from "../../context/MatchMaking/MatchMakingContext";
+import { useMatchMaking } from "../../context/MatchMaking/useMatchMaking";
 
 type RightUserProps = {
 	onTimeOut: (loserColor: "w" | "b") => void;
@@ -31,11 +31,8 @@ export function RightUser({ onTimeOut }: RightUserProps) {
 	const isAIOpponent = normalizedOpponentId.includes("ai") || normalizedOpponentId.includes("stockfish");
 	const isEngineOpponent = isBotOpponent || isAIOpponent;
 
-	// 2. Data Sourcing Lifecycle
 	useEffect(() => {
-		if (isSpectator) return;
-		if (!opponentId || isEngineOpponent) {
-			setOpponentProfile(null);
+		if (isSpectator || !opponentId || isEngineOpponent) {
 			return;
 		}
 
@@ -51,7 +48,7 @@ export function RightUser({ onTimeOut }: RightUserProps) {
 		return () => {
 			cancelled = true;
 		};
-	}, [opponentId, isEngineOpponent, isSpectator]);
+	}, [isSpectator, opponentId, isEngineOpponent]);
 
 	// 3. Computed Status States
 	const isActiveTurn = isSpectator

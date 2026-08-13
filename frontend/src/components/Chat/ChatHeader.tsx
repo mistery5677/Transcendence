@@ -1,5 +1,3 @@
-import React from "react";
-
 export function ChatHeader() {
 	return (
 		<div className="bg-stone-900 border-b border-stone-700 px-6 py-4 shadow-sm">

@@ -16,7 +16,7 @@ export async function handleGameOver(playerAId: number, playerBId: number, match
 			console.log("Match finished");
 		}
 	} catch (error) {
-		console.error("Failed to save the match");
+		console.error("Failed to save the match ", error);
 	}
 }
 
@@ -68,5 +68,3 @@ export async function getHistoryByUsername(username: string): Promise<Match[]> {
 		return [];
 	}
 }
-
-

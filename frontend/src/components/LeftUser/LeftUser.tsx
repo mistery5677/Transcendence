@@ -1,7 +1,7 @@
 import { displayElo } from "../../utils/displayElo";
 import { Timer } from "../Timer/Timer";
-import { useGame } from "../../context/Game/GameContext";
-import type { User } from "../../context/auth/authTypes";
+import { useGame } from "../../context/Game/useGame";
+import type { User } from "../../types/userType";
 
 type LeftUserProps = {
 	state: { user: User | null; isLoading: boolean };
@@ -23,11 +23,7 @@ export function LeftUser({ state, onTimeOut }: LeftUserProps) {
 	const isActiveTurn = isSpectator ? currentTurn === "w" : color != null && currentTurn === color;
 	const myTimeLeft = color === "w" ? whiteTimeLeft : blackTimeLeft;
 
-	const username = isSpectator
-		? (spectatorPlayerWName ?? "Player")
-		: state.user
-			? state.user.username
-			: "Player 1";
+	const username = isSpectator ? (spectatorPlayerWName ?? "Player") : state.user ? state.user.username : "Player 1";
 	const avatarSrc = isSpectator ? (spectatorPlayerWAvatar ?? undefined) : state.user?.avatarUrl;
 	const eloRating = state.user?.score?.elo;
 

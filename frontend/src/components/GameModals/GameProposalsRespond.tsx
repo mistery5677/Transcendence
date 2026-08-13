@@ -1,4 +1,4 @@
-import { useGame } from "../../context/Game/GameContext";
+import { useGame } from "../../context/Game/useGame";
 import { ConfirmationModal } from "./ConfirmationModal";
 
 export function GameProposalsRespond() {

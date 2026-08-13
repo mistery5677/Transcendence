@@ -1,5 +1,3 @@
-import React from "react";
-
 interface ChatMessageProps {
 	from: string;
 	message: string;

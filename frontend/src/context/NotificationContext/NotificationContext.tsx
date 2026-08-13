@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { type NotificationContextType, type NotificationType } from "./notificationTypes";
-import { useGlobalSocket } from "../GlobalSocket/GlobalSocketContext";
+import { useEffect, useState } from "react";
+import { type NotificationType } from "./notificationTypes";
+import { useGlobalSocket } from "../GlobalSocket/useGlobalSocket";
 import {
 	deleteAllNotifications,
 	deleteOneNotification,
@@ -9,15 +9,13 @@ import {
 	markNotificationAsRead,
 } from "../../api/notificationsApi";
 import { useAuth } from "../auth";
-
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+import { NotificationContext } from "./notificationContextValue";
 
 export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
 	const { socket } = useGlobalSocket();
-	const {state} = useAuth();
+	const { state } = useAuth();
 	const [notifications, setNotifications] = useState<NotificationType[]>([]);
-
-	let unreadCount = notifications.filter((n) => !n.read).length;
+	const unreadCount = notifications.filter((n) => !n.read).length;
 
 	useEffect(() => {
 		const fetchNotifications = async () => {
@@ -27,8 +25,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 			}
 		};
 		fetchNotifications();
-		unreadCount = notifications.filter((n) => !n.read).length;
-	}, []);
+	}, [state.user]);
 
 	useEffect(() => {
 		if (!socket) return;
@@ -37,7 +34,6 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 			setNotifications((prev) => [newNotification, ...prev]);
 		};
 
-		unreadCount = notifications.filter((n) => !n.read).length;
 		socket.on("notification", handleIncomingNotification);
 		return () => {
 			socket.off("notification", handleIncomingNotification);
@@ -81,10 +77,4 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 			{children}
 		</NotificationContext.Provider>
 	);
-};
-
-export const useNotifications = () => {
-	const context = useContext(NotificationContext);
-	if (!context) throw new Error("useNotifications must use on NotificationProvider");
-	return context;
 };

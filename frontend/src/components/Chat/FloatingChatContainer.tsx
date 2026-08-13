@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { getFriendsList } from "../../api/friendRequestApi";
 import { useNavigate } from "react-router-dom";
-import { useChat } from "../../context/Chat/ChatContext";
+import { useChat } from "../../context/Chat/useChat";
 import { getActiveChats } from "../../api/privateChatApi";
 import { useAuth } from "../../context/auth";
 import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { UserStatusBadge } from "../UserStatusBandage/UserStatusBandage";
 import type { Friend, UserStatus } from "../../types/";
+import type { PrivateMessage } from "../../context/Chat/ChatContextType";
 
 interface ChatListItemProps {
 	avatarUrl: string;
@@ -41,7 +42,7 @@ function ChatListItem({ avatarUrl, username, status, onClick, children }: ChatLi
 	);
 }
 
-function ShowFriendList({ onSelectFriend }: { onSelectFriend: (friend: any) => void }) {
+function ShowFriendList({ onSelectFriend }: { onSelectFriend: (friend: Friend) => void }) {
 	const [friends, setFriends] = useState<Friend[]>([]);
 	const [loading, setLoading] = useState(true);
 	const navigate = useNavigate();
@@ -91,15 +92,16 @@ function ShowFriendList({ onSelectFriend }: { onSelectFriend: (friend: any) => v
 	);
 }
 
-function ActiveChatBox({ activeChat }: { activeChat: any }) {
+function ActiveChatBox({ activeChat }: { activeChat: Friend }) {
 	const { privateChats, sendPrivateMessage, setActiveChatUserId, loadChatHistory } = useChat();
 	const [input, setInput] = useState("");
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
 		if (activeChat?.id) {
-			setActiveChatUserId(activeChat.id);
-			loadChatHistory(activeChat.id);
+			const activeChatId = String(activeChat.id);
+			setActiveChatUserId(activeChatId);
+			loadChatHistory(activeChatId);
 		}
 
 		return () => {
@@ -120,7 +122,7 @@ function ActiveChatBox({ activeChat }: { activeChat: any }) {
 
 	const handleSend = () => {
 		if (!input.trim()) return;
-		sendPrivateMessage(activeChat.id, input.trim());
+		sendPrivateMessage(String(activeChat.id), input.trim());
 		setInput("");
 	};
 
@@ -178,7 +180,7 @@ function ActiveChatBox({ activeChat }: { activeChat: any }) {
 											: ""}
 									</span>
 								</div>
-								<p className="mt-0.5 text-xs leading-tight break-words">{msg.message}</p>
+								<p className="mt-0.5 text-xs leading-tight wrap-break-word">{msg.message}</p>
 							</div>
 						);
 					})
@@ -208,8 +210,10 @@ function ActiveChatBox({ activeChat }: { activeChat: any }) {
 	);
 }
 
-function ShowActiveChats({ onSelectFriend }: { onSelectFriend: (friend: any) => void }) {
-	const [activeChats, setActiveChats] = useState<any[]>([]);
+function ShowActiveChats({ onSelectFriend }: { onSelectFriend: (friend: Friend) => void }) {
+	const [activeChats, setActiveChats] = useState<(Friend & { id: string; lastMessage?: PrivateMessage | null })[]>(
+		[],
+	);
 	const { state } = useAuth();
 
 	useEffect(() => {
@@ -235,7 +239,7 @@ function ShowActiveChats({ onSelectFriend }: { onSelectFriend: (friend: any) => 
 					{activeChats.map((activeChat) => (
 						<ChatListItem
 							key={activeChat.id}
-							avatarUrl={activeChat.avatarUrl}
+							avatarUrl={activeChat.avatarUrl ?? ""}
 							status={activeChat.status}
 							username={activeChat.username}
 							onClick={() => onSelectFriend(activeChat)}>
@@ -258,7 +262,7 @@ function ShowActiveChats({ onSelectFriend }: { onSelectFriend: (friend: any) => 
 export function FloatingChatContainer() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [showFriends, setShowFriends] = useState(false);
-	const [activeChat, setActiveChat] = useState<any | null>(null);
+	const [activeChat, setActiveChat] = useState<Friend | null>(null);
 	const { state } = useAuth();
 	const { newMessage, setNewMessage } = useChat();
 
@@ -268,7 +272,7 @@ export function FloatingChatContainer() {
 		}
 	}, [isOpen, setNewMessage]);
 
-	const handleSelectFriend = (friend: any) => {
+	const handleSelectFriend = (friend: Friend) => {
 		setActiveChat(friend);
 		setShowFriends(false);
 	};
@@ -292,8 +296,8 @@ export function FloatingChatContainer() {
 			{isOpen && (
 				<div
 					className="bg-stone-800 text-white flex flex-col justify-between rounded-lg shadow-2xl overflow-hidden border border-stone-750 transition-all duration-200
-				w-[calc(100vw-16px)] h-[75vh] max-h-[500px]
-				md:w-[22vw] md:h-[45vh] md:min-w-[320px] md:max-w-[400px] md:min-h-[400px] md:max-h-[600px]
+				w-[calc(100vw-16px)] h-[75vh] max-h-125
+				md:w-[22vw] md:h-[45vh] md:min-w-[320px] md:max-w-100 md:min-h-100 md:max-h-150
                 ">
 					{/* Header */}
 					<div className="flex items-center justify-between bg-stone-800 p-2.5 border-b border-stone-600 shrink-0">

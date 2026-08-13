@@ -1,12 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import type { MatchMakingContextType } from "./MatchMakingType";
-import { useGlobalSocket } from "../GlobalSocket/GlobalSocketContext";
+import React, { useEffect, useState } from "react";
+import { useGlobalSocket } from "../GlobalSocket/useGlobalSocket";
 import { useAuth } from "../auth";
 import type { MatchStartOptions } from "../Game/GameContextType";
 import { useNavigate } from "react-router-dom";
 import { toastWrapper } from "../../adapters/toastWrapper";
-
-const MatchMakingContext = createContext<MatchMakingContextType | undefined>(undefined);
+import { MatchMakingContext } from "./matchMakingContextValue";
 
 export const MatchMakingProvider = ({ children }: { children: React.ReactNode }) => {
 	const { socket } = useGlobalSocket();
@@ -84,10 +82,4 @@ export const MatchMakingProvider = ({ children }: { children: React.ReactNode })
 			{children}
 		</MatchMakingContext.Provider>
 	);
-};
-
-export const useMatchMaking = () => {
-	const context = useContext(MatchMakingContext);
-	if (!context) throw new Error("useMatchmaking must be used within a MatchmakingProvider");
-	return context;
 };

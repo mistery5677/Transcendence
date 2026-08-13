@@ -5,3 +5,5 @@ export * from "./publicProfileType";
 export * from "./playerDataType";
 export * from "./FriendType";
 export * from "./userStatusType";
+export * from "./friendRequestItemType";
+export * from "./signupUserData";

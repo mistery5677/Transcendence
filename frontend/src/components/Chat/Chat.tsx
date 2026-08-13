@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useGame } from "../../context/Game/GameContext";
+import { useGame } from "../../context/Game/useGame";
 import { ChatHeader, ChatMessages, ChatInput } from "./index";
 
 interface ChatProps {
@@ -54,7 +54,6 @@ export function Chat({ classname = "" }: ChatProps) {
 
 		if (isAtBottom) {
 			container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
-			setPendingNewMessages(false);
 		}
 	}, [messages, isAtBottom]);
 
@@ -67,6 +66,7 @@ export function Chat({ classname = "" }: ChatProps) {
 		if (!container) return;
 		container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
 		setPendingNewMessages(false);
+		setIsAtBottom(true);
 	};
 
 	return (

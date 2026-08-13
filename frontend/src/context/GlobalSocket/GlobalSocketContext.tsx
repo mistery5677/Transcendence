@@ -1,13 +1,8 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useState } from "react";
+import { io, type Socket } from "socket.io-client";
 import { useAuth } from "../auth";
 import { toastWrapper } from "../../adapters/toastWrapper";
-
-type GlobalSocketContextType = {
-	socket: Socket | null;
-};
-
-const GlobalSocketContext = createContext<GlobalSocketContextType | undefined>(undefined);
+import { GlobalSocketContext } from "./globalSocketContextValue";
 
 export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }) => {
 	const { state: authState } = useAuth();
@@ -15,7 +10,6 @@ export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }
 
 	useEffect(() => {
 		if (!authState.user) {
-			setSocket(null);
 			return;
 		}
 
@@ -27,13 +21,18 @@ export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }
 			autoConnect: false,
 		});
 
-		socketInstance.on("connect", () => {
+		const handleConnect = () => {
 			console.log("Global Socket Connected");
-		});
+			setSocket(socketInstance);
+		};
 
-		socketInstance.on("disconnect", () => {
+		const handleDisconnect = () => {
 			console.warn("Global Socket Disconnected");
-		});
+			setSocket(null);
+		};
+
+		socketInstance.on("connect", handleConnect);
+		socketInstance.on("disconnect", handleDisconnect);
 
 		const onHaveActiveGame = () => {
 			toastWrapper.success("Have an active Game ongoing, please go to play to continue");
@@ -42,26 +41,18 @@ export const GlobalSocketProvider = ({ children }: { children: React.ReactNode }
 		socketInstance.on("haveActiveGame", onHaveActiveGame);
 
 		socketInstance.connect();
-		(window as any).debugSocket = socketInstance;//to remove
-		setSocket(socketInstance);
+		(window as Window & { debugSocket?: Socket }).debugSocket = socketInstance;
 		return () => {
 			console.log("Disconnected Global Socket by logout or close Browser");
 
-			socketInstance.off("connect");
-			socketInstance.off("disconnect");
+			socketInstance.off("connect", handleConnect);
+			socketInstance.off("disconnect", handleDisconnect);
 			socketInstance.off("haveActiveGame", onHaveActiveGame);
+			setSocket(null);
 
 			socketInstance.disconnect();
 		};
 	}, [authState.user]);
 
 	return <GlobalSocketContext.Provider value={{ socket }}>{children}</GlobalSocketContext.Provider>;
-};
-
-export const useGlobalSocket = () => {
-	const context = useContext(GlobalSocketContext);
-	if (!context) {
-		throw new Error("useGlobalSocket must be used inside GlobalSocketProvider");
-	}
-	return context;
 };

@@ -29,15 +29,13 @@ export function PromotionPicker({ open, color, square, onSelect, onCancel }: Pro
 
 	useEffect(() => {
 		if (!open || !square) {
-			setPosition(null);
-			setHoveredPiece(null);
 			return;
 		}
 
 		const updatePosition = () => {
 			const squareEl =
 				document.getElementById(`${boardId}-square-${square}`) ??
-				(document.querySelector(`[data-square=\"${square}\"]`) as HTMLElement | null);
+				(document.querySelector(`[data-square="${square}"]`) as HTMLElement | null);
 			if (!squareEl) return;
 
 			const squareRect = squareEl.getBoundingClientRect();

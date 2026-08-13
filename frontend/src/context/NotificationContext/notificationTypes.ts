@@ -1,3 +1,10 @@
+export type NotificationPayload = {
+	senderId?: string | number;
+	senderUsername?: string;
+	senderAvatarUrl?: string | null;
+	action?: string;
+};
+
 export type NotificationType = {
 	id: string;
 	title: string;
@@ -5,7 +12,7 @@ export type NotificationType = {
 	type: "matchInvite" | "system" | "friendRequest";
 	read: boolean;
 	createdAt: string;
-	payload?: any;
+	payload?: NotificationPayload;
 };
 
 export type NotificationContextType = {

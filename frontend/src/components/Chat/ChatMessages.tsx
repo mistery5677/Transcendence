@@ -1,5 +1,3 @@
-import React from "react";
-
 interface Message {
 	from: string;
 	avatarUrl?: string;

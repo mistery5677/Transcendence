@@ -1,3 +1,5 @@
+import type { SignupUserData } from "../types";
+
 export async function login(identity: string, password: string) {
 	const res = await fetch("/api/auth/login", {
 		method: "POST",
@@ -13,12 +15,15 @@ export async function login(identity: string, password: string) {
 	}
 }
 
-// Function to sign up connecting to api
-export async function signupUser(userData: Record<string, any>): Promise<boolean> {
+export async function signupUser(userData: SignupUserData): Promise<boolean> {
 	const response = await fetch("/api/auth/signup", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(userData),
+		body: JSON.stringify({
+			username: userData.username,
+			email: userData.email,
+			password: userData.password,
+		}),
 	});
 
 	if (!response.ok) {
@@ -60,18 +65,13 @@ export async function forgotPassword(email: string): Promise<string> {
 	const data = await response.json();
 
 	if (!response.ok) {
-		throw new Error(
-			data.message ?? "Failed to send password reset email."
-		);
+		throw new Error(data.message ?? "Failed to send password reset email.");
 	}
 
 	return data.message;
 }
 
-export async function resetPassword(
-	token: string,
-	password: string,
-): Promise<string> {
+export async function resetPassword(token: string, password: string): Promise<string> {
 	const response = await fetch("/api/password-reset", {
 		method: "POST",
 		headers: {
@@ -83,9 +83,7 @@ export async function resetPassword(
 	const data = await response.json();
 
 	if (!response.ok) {
-		throw new Error(
-			data.message ?? "Failed to reset password."
-		);
+		throw new Error(data.message ?? "Failed to reset password.");
 	}
 
 	return data.message;

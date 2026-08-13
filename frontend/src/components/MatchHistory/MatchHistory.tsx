@@ -1,4 +1,3 @@
-import Link from "@mui/material/Link";
 import type { Match } from "../../types";
 
 type Props = {

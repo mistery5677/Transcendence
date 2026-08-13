@@ -1,4 +1,4 @@
-import { toast, type Id, type ToastOptions } from "react-toastify";
+import { toast, type ToastOptions } from "react-toastify";
 
 type ConfirmToastOptions = {
 	onAccept: () => void;

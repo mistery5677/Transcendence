@@ -13,8 +13,9 @@ import { toastWrapper } from "../../adapters/toastWrapper";
 import { getUsers } from "../../api/usersApi";
 import { Link } from "react-router-dom";
 import { UserStatusBadge } from "../../components/UserStatusBandage/UserStatusBandage";
-import { useMatchMaking } from "../../context/MatchMaking/MatchMakingContext";
-import { useNotifications } from "../../context/NotificationContext/NotificationContext";
+import { useMatchMaking } from "../../context/MatchMaking/useMatchMaking";
+import { useNotifications } from "../../context/NotificationContext/useNotifications";
+import type { Friend, FriendRequestItem } from "../../types/";
 
 type FriendsTab = "list" | "requests" | "add";
 
@@ -36,8 +37,8 @@ export function Friends({ activeTab: initialTab }: FriendsProps) {
 	const [activeTab, setActiveTab] = useState<FriendsTab>(initialTab || "list");
 
 	// Data States
-	const [friends, setFriends] = useState<any[]>([]);
-	const [requests, setRequests] = useState<any[]>([]);
+	const [friends, setFriends] = useState<Friend[]>([]);
+	const [requests, setRequests] = useState<FriendRequestItem[]>([]);
 	const [searchUsername, setSearchUsername] = useState("");
 	const [suggestions, setSuggestions] = useState<FriendSuggestion[]>([]);
 	const [showSuggestions, setShowSuggestions] = useState(false);
@@ -55,12 +56,6 @@ export function Friends({ activeTab: initialTab }: FriendsProps) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	// Early return protection if auth state is loading or absent
-	if (!state?.user) {
-		return <div className="text-white text-center mt-20 animate-pulse">Loading profile...</div>;
-	}
-
-	// Handle sending a friend request
 	const handleAddFriend = async (username: string) => {
 		if (!username.trim()) return;
 		try {
@@ -68,8 +63,9 @@ export function Friends({ activeTab: initialTab }: FriendsProps) {
 			toastWrapper.success(`Friend request sent to ${username}`);
 			setSearchUsername("");
 			setSuggestions([]);
-		} catch (error: any) {
-			toastWrapper.warn(error.message || "Error sending friend request");
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : "Error sending friend request";
+			toastWrapper.warn(message);
 		}
 	};
 
@@ -190,6 +186,10 @@ export function Friends({ activeTab: initialTab }: FriendsProps) {
 	const handleBlur = () => {
 		setTimeout(() => setShowSuggestions(false), 180);
 	};
+
+	if (!state?.user) {
+		return <div className="text-white text-center mt-20 animate-pulse">Loading profile...</div>;
+	}
 
 	return (
 		<div className="relative min-h-screen overflow-hidden bg-stone-900 py-16 selection:bg-emerald-500/30 selection:text-emerald-200">
