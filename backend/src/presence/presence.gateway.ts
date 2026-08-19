@@ -13,17 +13,7 @@ import { GameService } from '../game/game.service';
 import { UsersService } from 'src/users/users.service';
 import { NotificationService } from '../notification/notification.service';
 import { MatchMakingService } from 'src/game/matchmaking.service';
-
-interface SocketUser {
-  userId: string;
-  username: string;
-}
-
-interface AuthenticatedSocket extends Socket {
-  data: {
-    user?: SocketUser;
-  };
-}
+import { AuthenticatedSocket } from 'src/common/types/authenticated-socket.interface';
 
 @WebSocketGateway({ cors: true })
 export class PresenceGateway
@@ -100,13 +90,16 @@ export class PresenceGateway
         console.log(`[Presence] User ${user.username} fully disconnected.`);
         const activeMatch = this.gameService.findActiveGameByUserId(userId);
         if (activeMatch && activeMatch.game.mode === 'online') {
+          const server = this.server;
+          if (!server) return;
+
           this.gameService.startAbandonTimeout(
             activeMatch.gameId,
             userId,
-            this.server,
+            server,
           );
           console.log(activeMatch.gameId, 'before emit opponentDisconnected');
-          this.server?.to(activeMatch.gameId).emit('opponentDisconnected');
+          server.to(activeMatch.gameId).emit('opponentDisconnected');
         } else {
           console.log(
             `[Presence] Ignored old socket cleanup for user ${user.username}`,

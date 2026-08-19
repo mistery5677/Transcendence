@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
+import { Server } from 'socket.io';
 import { TimeControl } from './interfaces/gameLogic.interface';
 import { GameService } from './game.service';
+import {
+  AuthenticatedSocket,
+  SocketUser,
+} from 'src/common/types/authenticated-socket.interface';
 
-interface SocketUser {
-  userId: string;
-  username: string;
-}
-
-interface AuthenticatedSocket extends Socket {
+interface QueueAuthenticatedSocket extends AuthenticatedSocket {
   data: {
     user: SocketUser;
   };
@@ -19,7 +18,7 @@ type QueuePayload = {
 };
 
 type QueueEntry = {
-  client: AuthenticatedSocket;
+  client: QueueAuthenticatedSocket;
   time: TimeControl;
 };
 
@@ -31,7 +30,7 @@ export class MatchMakingService {
   constructor(private readonly gameService: GameService) {}
 
   addToQueue(
-    client: AuthenticatedSocket,
+    client: QueueAuthenticatedSocket,
     server: Server,
     payload?: QueuePayload,
   ) {

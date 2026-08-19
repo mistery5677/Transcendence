@@ -1,20 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PresenceService } from 'src/presence/presence.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-
-interface ActiveChatSummary {
-  id: string;
-  status: string;
-  username: string;
-  avatarUrl: string | null;
-  lastMessage: {
-    message: string;
-    timestamp: string;
-    fromId: string;
-    toId: string;
-  };
-  timestamp: string;
-}
+import { ActiveChatSummary } from './chat.types';
 
 @Injectable()
 export class ChatService {

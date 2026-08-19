@@ -303,7 +303,9 @@ export class GameGateway {
     if (!client.data.user) return;
     const userId = client.data.user.userId;
     const unlockedIds =
-      await this.achievementsService.getUserUnlockedAchievements(userId);
+      await this.achievementsService.getUserUnlockedAchievements(
+        Number(userId),
+      );
     client.emit('loadAchievements', unlockedIds);
   }
 

@@ -10,6 +10,7 @@ import {
 import { Request } from 'express';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { ChatService } from './chat.service';
+import { ActiveChatSummary } from './chat.types';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -23,7 +24,9 @@ export class ChatController {
 
   @Get('active_chats')
   @UseGuards(AuthGuard)
-  async getActiveChats(@Req() req: AuthenticatedRequest) {
+  async getActiveChats(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<ActiveChatSummary[]> {
     const myUserId = Number(req.user.userId);
 
     return this.chatService.getActiveChats(myUserId);
