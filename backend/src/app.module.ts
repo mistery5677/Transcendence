@@ -12,6 +12,9 @@ import { GameModule } from './game/game.module';
 import { NotificationModule } from './notification/notification.module';
 import { PresenceGateway } from './presence/presence.gateway';
 import { MailModule } from './mail/mail.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -26,7 +29,15 @@ import { MailModule } from './mail/mail.module';
     GameModule,
     NotificationModule,
     MailModule,
+    ThrottlerModule.forRoot({
+      throttlers: [
+        { ttl: 60000, limit: 100 }, // 100 requests / 60s per IP
+      ],
+    }),
   ], //Allows to all variables be accessed
-  providers: [PresenceGateway],
+  providers: [
+    PresenceGateway,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

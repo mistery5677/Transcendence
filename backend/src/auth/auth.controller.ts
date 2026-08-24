@@ -15,12 +15,14 @@ import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './guard/auth.guard';
 import type { Response } from 'express';
 import type { AuthenticatedRequest } from './guard/auth.guard';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/login')
+  @Throttle({ default: { ttl: 60000, limit: 5 } }) // 5 attempts / min per IP
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginDto,
@@ -39,6 +41,7 @@ export class AuthController {
   }
 
   @Post('/signup')
+  @Throttle({ default: { ttl: 60000, limit: 5 } }) // 5 attempts / min per IP
   signup(@Body() registerDto: RegisterDto) {
     return this.authService.signup(registerDto);
   }
