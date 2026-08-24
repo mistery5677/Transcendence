@@ -22,8 +22,10 @@ import type { Request } from 'express';
 import { UsersService } from './users.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { extname } from 'node:path';
-import { diskStorage } from 'multer';
+import { join } from 'node:path';
+import { memoryStorage } from 'multer';
+import { fileTypeFromBuffer } from 'file-type';
+import sharp from 'sharp';
 import { AchievementsService } from '../achievements/achievements.service';
 import {
   getOpponentDto,
@@ -42,6 +44,9 @@ type AuthenticatedRequest = Request & {
     userId: string;
   };
 };
+
+const AVATAR_MAX_SIZE_BYTES = 2 * 1024 * 1024;
+const AVATAR_ALLOWED_MIME_TYPES = new Set(['image/png', 'image/jpeg']);
 
 @Controller('/users')
 export class UsersController {
@@ -87,15 +92,17 @@ export class UsersController {
   @Post('/me/avatar')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './assets/avatars/uploaded',
-        filename: (req, file, cb) => {
-          const user = (req as AuthenticatedRequest).user;
-          if (!user) return cb(new Error('Unauthorized'), '');
-          const filename = `user_${user.userId}${extname(file.originalname)}`;
-          cb(null, filename);
-        },
-      }),
+      storage: memoryStorage(),
+      limits: { fileSize: AVATAR_MAX_SIZE_BYTES },
+      fileFilter: (_req, file, cb) => {
+        if (!AVATAR_ALLOWED_MIME_TYPES.has(file.mimetype)) {
+          return cb(
+            new BadRequestException('Only PNG or JPEG images are allowed.'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
     }),
   )
   async uploadAvatar(
@@ -111,7 +118,25 @@ export class UsersController {
       throw new BadRequestException('Unauthorized');
     }
 
-    const avatarUrl = `/assets/avatars/uploaded/${file.filename}`;
+    const detected = await fileTypeFromBuffer(file.buffer);
+    if (!detected || !AVATAR_ALLOWED_MIME_TYPES.has(detected.mime)) {
+      throw new BadRequestException(
+        'File content does not match an allowed image type.',
+      );
+    }
+
+    const filename = `user_${userId}.png`;
+    const destination = join(
+      process.cwd(),
+      'assets/avatars/uploaded',
+      filename,
+    );
+    await sharp(file.buffer)
+      .resize(256, 256, { fit: 'cover' })
+      .png()
+      .toFile(destination);
+
+    const avatarUrl = `/assets/avatars/uploaded/${filename}`;
 
     return await this.usersService.updateAvatar(parseInt(userId), avatarUrl);
   }

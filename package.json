@@ -3,7 +3,9 @@
     "@nestjs-modules/mailer": "^2.3.7",
     "@prisma/client": "^7.8.0",
     "chess.js": "^1.4.0",
-    "nodemailer": "^9.0.3"
+    "file-type": "^22.0.2",
+    "nodemailer": "^9.0.3",
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@types/nodemailer": "^8.0.1",
