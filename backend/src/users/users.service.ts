@@ -149,7 +149,6 @@ export class UsersService {
       select: {
         id: true,
         username: true,
-        email: true,
         avatarUrl: true,
         createdAt: true,
         updatedAt: true,

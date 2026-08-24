@@ -55,6 +55,7 @@ export class UsersController {
     private readonly achievementsService: AchievementsService,
   ) {}
 
+  @UseGuards(AuthGuard)
   @Get()
   @Header('Cache-Control', 'no-store')
   findAll() {
@@ -82,6 +83,7 @@ export class UsersController {
     return this.usersService.getLeaderboard();
   }
 
+  @UseGuards(AuthGuard)
   @Get('search')
   async searchUsers(@Query('username') username: string) {
     return await this.usersService.getUsers(username || '');
